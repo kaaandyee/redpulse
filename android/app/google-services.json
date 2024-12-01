@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "134772036993",
+    "project_id": "redpulse-4cb99",
+    "storage_bucket": "redpulse-4cb99.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:134772036993:android:4a2bb96e4af5d77f16c480",
+        "android_client_info": {
+          "package_name": "com.example.redpulse"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBSIfd9R0-327Hr0wFU4pHrspmywiHJxQ4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
