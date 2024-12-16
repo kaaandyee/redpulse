@@ -1,6 +1,12 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:redpulse/features/models/user.dart';
+import 'package:flutter/material.dart';
+import 'package:redpulse/features/models/inventory.dart';
+import 'package:redpulse/features/models/bloodbank.dart';
+import 'package:redpulse/features/models/users.dart';
+import 'package:redpulse/features/screens/admin/home.dart';
+import 'package:redpulse/features/screens/admin/start.dart';
+import 'package:redpulse/features/screens/user/start.dart';
 import 'package:redpulse/utilities/constants/enums.dart';
 
 class AuthMethod {
@@ -31,7 +37,10 @@ class AuthMethod {
         //AppRole userRole = AppRole.values.firstWhere((e) => e.toString().split('.').last == role);
 
         // Generate a unique Firestore ID
-        String systemGeneratedId = _firestore.collection("users").doc().id;
+        //String systemGeneratedId = _firestore.collection("users").doc().id;
+        // Get the current user's UID
+        String uid = cred.user?.uid ?? '';
+        String systemGeneratedId = uid;
 
         // Create a UserAdminModel based on role and add to Firestore
         UserAdminModel userAdmin = UserAdminModel(
@@ -48,8 +57,13 @@ class AuthMethod {
         );
 
         // If the user is an Admin, include bloodBankId
-        if (userRole == AppRole.admin && bloodBankId != null) {
+        /*if (userRole == AppRole.admin && bloodBankId != null) {
           userAdmin = userAdmin.copyWith(bloodBankId: bloodBankId);
+        }*/
+
+        // If the user is an Admin and no bloodBankId is provided, set bloodBankId to null
+        if (userRole == AppRole.admin) {
+          userAdmin = userAdmin.copyWith(bloodBankId: bloodBankId ?? null); // Use null if no bloodBankId
         }
 
         // Save user data to Firestore
@@ -65,21 +79,134 @@ class AuthMethod {
     return res;
   }
 
+  /*Future<String> signupUser({
+    required String email,
+    required String phoneNumber,
+    required String address,
+    required String password,
+    required String firstName,
+    required String lastName,
+    required BloodType bloodType, // Assuming `BloodType` is an enum or similar
+    required AppRole userRole, // Use enum instead of raw strings
+    String? bloodBankId, // Only for Admins
+  }) async {
+    String res = "Some error Occurred";
+    try {
+      // Check if all necessary fields are filled
+      if (email.isNotEmpty &&
+          password.isNotEmpty &&
+          firstName.isNotEmpty &&
+          lastName.isNotEmpty &&
+          phoneNumber.isNotEmpty &&
+          address.isNotEmpty) {
+
+        // Register user in Firebase Authentication with email and password
+        UserCredential cred = await _auth.createUserWithEmailAndPassword(
+          email: email,
+          password: password,
+        );
+
+        // Get the current user's UID
+        String uid = cred.user?.uid ?? '';
+        String systemGeneratedId = uid;
+
+        // Create a UserAdminModel based on the role and add to Firestore
+        UserAdminModel userAdmin = UserAdminModel(
+          id: systemGeneratedId,
+          firstName: firstName,
+          lastName: lastName,
+          email: email,
+          phoneNumber: phoneNumber,
+          address: address,
+          bloodType: bloodType.toString().split('.').last, // Ensure bloodType is converted to string
+          role: userRole,  // Set the AppRole enum directly
+          password: password,
+          dateCreated: DateTime.now(),
+        );
+
+        // If the user is an Admin, include bloodBankId
+        if (userRole == AppRole.admin) {
+          userAdmin = userAdmin.copyWith(bloodBankId: bloodBankId ?? null); // Use null if no bloodBankId is provided
+        }
+
+        // Save user data to Firestore
+        saveUserToFirestore(userAdmin);
+        //await _firestore.collection("users").doc(systemGeneratedId).set(userAdmin.toJson());
+
+        res = "success"; // Indicate success
+      } else {
+        res = "Please fill in all the fields."; // Error message if fields are empty
+      }
+    } catch (err) {
+      res = err.toString(); // Return error message if an exception occurs
+    }
+    return res; // Return result (success or error message)
+}*/
+
+
   // Log in User or Admin
   Future<String> loginUser({
     required String email,
     required String password,
+    required BuildContext context,
   }) async {
     String res = "Some error Occurred";
     try {
       if (email.isNotEmpty && password.isNotEmpty) {
         // Log in user with email and password
-        await _auth.signInWithEmailAndPassword(
+        UserCredential userCredential = await _auth.signInWithEmailAndPassword(
           email: email,
           password: password,
         );
 
-        res = "success";
+        // Get the user from FirebaseAuth instance
+        final User? user = userCredential.user;
+
+        if (user != null) {
+          // Fetch the user document from Firestore
+          DocumentSnapshot userSnapshot = await FirebaseFirestore.instance
+              .collection('users')
+              .doc(user.uid)
+              .get();
+
+          if (!userSnapshot.exists) {
+            return "User document not found.";
+          }
+
+          // Get the user's data as a Map
+          Map<String, dynamic> userData = userSnapshot.data() as Map<String, dynamic>;
+
+          // Get the user's role and check if they are an admin
+          String role = userData['role'];
+          bool isAdmin = role == 'Admin';
+
+          // If the user is an admin, check if they are linked to a blood bank
+          bool isAdminLinkedToBloodBank = false;
+          if (isAdmin) {
+            // Safely check if bloodBankId exists in the document
+            String? bloodBankId = userData['bloodBankId'];
+            isAdminLinkedToBloodBank = bloodBankId != null && bloodBankId.isNotEmpty;
+          }
+
+          // Navigate based on the user role
+          if (isAdmin) {
+            Navigator.of(context).pushReplacement(
+              MaterialPageRoute(
+                builder: (context) => AdminStart(
+                  isAdminLinkedToBloodBank: isAdminLinkedToBloodBank,
+                ),
+              ),
+            );
+          } else {
+            Navigator.of(context).pushReplacement(
+              MaterialPageRoute(
+                builder: (context) => const UserStart(), // Regular user homepage
+              ),
+            );
+          }
+
+          res = "success";
+        }
       } else {
         res = "Please enter all the fields";
       }
@@ -88,6 +215,83 @@ class AuthMethod {
     }
     return res;
   }
+
+  /*Future<String> loginUser({
+  required String email,
+  required String password,
+  required BuildContext context,
+}) async {
+  String res = "Some error Occurred";
+  try {
+    if (email.isNotEmpty && password.isNotEmpty) {
+      // Log in user with email and password
+      UserCredential userCredential = await _auth.signInWithEmailAndPassword(
+        email: email,
+        password: password,
+      );
+
+      // Get the user from FirebaseAuth instance
+      final User? user = userCredential.user;
+
+      if (user != null) {
+        // Fetch the user document from Firestore
+        DocumentSnapshot userSnapshot = await FirebaseFirestore.instance
+            .collection('users')
+            .doc(user.uid)
+            .get();
+
+        if (!userSnapshot.exists) {
+          return "User document not found.";
+        }
+
+        // Get the user's data as a Map
+        Map<String, dynamic> userData = userSnapshot.data() as Map<String, dynamic>;
+
+        // Get the user's role and check if they are an admin
+        String role = userData['role'];
+        AppRole appRole = AppRole.values.firstWhere(
+          (e) => e.label == role,
+          orElse: () => AppRole.user, // Default to 'user' if not found
+        );
+
+        bool isAdmin = appRole == AppRole.admin;
+
+        // If the user is an admin, check if they are linked to a blood bank
+        bool isAdminLinkedToBloodBank = false;
+        if (isAdmin) {
+          // Safely check if bloodBankId exists in the document
+          String? bloodBankId = userData['bloodBankId'];
+          isAdminLinkedToBloodBank = bloodBankId != null && bloodBankId.isNotEmpty;
+        }
+
+        // Navigate based on the user role
+        if (isAdmin) {
+          Navigator.of(context).pushReplacement(
+            MaterialPageRoute(
+              builder: (context) => AdminStart(
+                isAdminLinkedToBloodBank: isAdminLinkedToBloodBank,
+              ),
+            ),
+          );
+        } else {
+          Navigator.of(context).pushReplacement(
+            MaterialPageRoute(
+              builder: (context) => const UserStart(), // Regular user homepage
+            ),
+          );
+        }
+
+        res = "success"; // Indicate success
+      }
+    } else {
+      res = "Please enter all the fields"; // Error message if fields are empty
+    }
+  } catch (err) {
+    res = err.toString(); // Return error message if an exception occurs
+  }
+  return res; // Return result (success or error message)
+}*/
+
 
   // SignOut User
   Future<void> signOut() async {
@@ -157,6 +361,163 @@ class AuthMethod {
   }
 }
 
+  Future<String> getAdminId() async {
+    try {
+      // Fetch the current authenticated user
+      final User? user = FirebaseAuth.instance.currentUser;
+      if (user == null) {
+        throw Exception("Admin is not logged in.");
+      }
+
+      // Use the user's UID to fetch the corresponding document
+      DocumentSnapshot adminSnapshot =
+          await FirebaseFirestore.instance.collection('users').doc(user.uid).get();
+
+      if (!adminSnapshot.exists) {
+        throw Exception("Admin document not found.");
+      }
+
+      // The document ID is the user's UID, no need to fetch the 'id' field
+      String adminId = user.uid; // Return the UID of the logged-in user
+      return adminId;
+    } catch (error) {
+      print("Error fetching admin ID: $error");
+      throw Exception("Failed to fetch admin ID.");
+    }
+  }
+
+  /// Registers a blood bank in the Firestore database.
+  Future<String> registerBloodBank({
+    required String bloodBankName,
+    required String email,
+    required String address,
+    required String contactNumber,
+    required double latitude,
+    required double longitude,
+  }) async {
+    try {
+      // Get the currently authenticated user
+      final User? user = FirebaseAuth.instance.currentUser;
+
+      if (user == null) {
+        return "No authenticated user found.";
+      }
+
+      // Call getAdminId() to fetch the admin ID
+      String adminId = await getAdminId();
+
+      // Generate unique Firestore IDs
+      String bloodBankId = _firestore.collection("bloodbanks").doc().id;
+      String inventoryId = _firestore.collection("inventories").doc().id;
+
+      // Create a BloodBankModel object with inventoryId
+      BloodBankModel bloodBank = BloodBankModel(
+        bloodBankId: bloodBankId,
+        adminId: adminId,
+        bloodBankName: bloodBankName,
+        email: email,
+        address: address,
+        contactNumber: contactNumber,
+        latitude: latitude,
+        longitude: longitude,
+        dateCreated: DateTime.now(),
+        inventoryId: inventoryId,
+      );
+
+      // Save blood bank data to Firestore
+      await _firestore.collection("bloodbanks").doc(bloodBankId).set(bloodBank.toJson());
+
+      // Initialize inventory for the blood bank by calling the Inventory class's method
+      await Inventory.initializeBloodTypeInventory(bloodBankId);
+
+      // Update the admin's document with the new blood bank ID
+      await _firestore.collection('users').doc(user.uid).update({
+        'bloodBankId': bloodBankId, // Link the blood bank to the admin
+      });
+
+      return "Blood bank successfully registered.";
+    } catch (error) {
+      // Log the error (for debugging purposes)
+      print("Error registering blood bank: $error");
+
+      // Return error message
+      return "Failed to register blood bank. Please try again.";
+    }
+}
+
+
+
+  /*Future<String> registerBloodBank({
+    required String bloodBankName,
+    required String email,
+    required String address,
+    required String contactNumber,
+    required double latitude,
+    required double longitude,
+  }) async {
+    try {
+      // Get the currently authenticated user
+      final User? user = FirebaseAuth.instance.currentUser;
+
+      if (user == null) {
+        return "No authenticated user found.";
+      }
+
+      // Call getAdminId() to fetch the admin ID
+      String adminId = await getAdminId();
+
+      // Generate unique Firestore IDs
+      String bloodBankId = _firestore.collection("bloodbanks").doc().id;
+      String inventoryId = _firestore.collection("inventories").doc().id;
+
+      // Create a BloodBankModel object with inventoryId
+      BloodBankModel bloodBank = BloodBankModel(
+        bloodBankId: bloodBankId,
+        adminId: adminId,
+        bloodBankName: bloodBankName,
+        email: email,
+        address: address,
+        contactNumber: contactNumber,
+        latitude: latitude,
+        longitude: longitude,
+        dateCreated: DateTime.now(),
+        inventoryId: inventoryId, // Link the inventory to the blood bank
+      );
+
+      // Save blood bank data to Firestore
+      await _firestore.collection("bloodbanks").doc(bloodBankId).set(bloodBank.toJson());
+
+      // Initialize inventory for the blood bank
+      await _firestore.collection("inventories").doc(inventoryId).set({
+        'inventoryId': inventoryId,
+        'bloodBankId': bloodBankId,
+        'bloodTypes': {
+          'A+': 0,
+          'A-': 0,
+          'B+': 0,
+          'B-': 0,
+          'O+': 0,
+          'O-': 0,
+          'AB+': 0,
+          'AB-': 0,
+        },
+        'lastUpdated': DateTime.now(),
+      });
+
+      // Update the admin's document with the new blood bank ID
+      await _firestore.collection('users').doc(user.uid).update({
+        'bloodBankId': bloodBankId, // Link the blood bank to the admin
+      });
+
+      return "Blood bank successfully registered.";
+    } catch (error) {
+      // Log the error (for debugging purposes)
+      print("Error registering blood bank: $error");
+
+      // Return error message
+      return "Failed to register blood bank. Please try again.";
+    }
+  }*/
 }
 
 /*

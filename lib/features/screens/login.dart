@@ -17,6 +17,117 @@ class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
 
   @override
+  State<LoginScreen> createState() => _LoginScreenState();
+}
+
+class _LoginScreenState extends State<LoginScreen> {
+  final TextEditingController emailController = TextEditingController();
+  final TextEditingController passwordController = TextEditingController();
+  bool isLoading = false;
+
+  @override
+  void dispose() {
+    super.dispose();
+    emailController.dispose();
+    passwordController.dispose();
+  }
+
+  void loginUser() async {
+    setState(() {
+      isLoading = true;
+    });
+
+    String email = emailController.text;
+    String password = passwordController.text;
+
+    String res = await AuthMethod().loginUser(
+      email: email,
+      password: password,
+      context: context,
+    );
+
+    if (res == "success") {
+      setState(() {
+        isLoading = false;
+      });
+      // Perform post-login actions like navigating to the respective home page.
+    } else {
+      setState(() {
+        isLoading = false;
+      });
+      showSnackBar(context, res); // Show error if login fails
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.white,
+      body: SafeArea(
+        child: SizedBox(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text("LOG IN", style: Styles.headerStyle8),
+              const SizedBox(height: 30),
+              TextFieldInput(
+                icon: Icons.person,
+                textEditingController: emailController,
+                hintText: 'Email',
+                textInputType: TextInputType.emailAddress,
+              ),
+              TextFieldInput(
+                icon: Icons.lock,
+                textEditingController: passwordController,
+                hintText: 'Password',
+                textInputType: TextInputType.text,
+                isPass: true,
+              ),
+              const ForgotPassword(),
+              MyButtons(onTap: loginUser, text: "Log In"),
+
+              Padding(
+                padding: const EdgeInsets.only(top: 5),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      "Don't have an account? ",
+                      style: Styles.headerStyle5.copyWith(color: Styles.accentColor),
+                    ),
+                    GestureDetector(
+                      onTap: () {
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (context) => const SignupScreen(),
+                          ),
+                        );
+                      },
+                      child: Text(
+                        "Sign Up",
+                        style: Styles.headerStyle5.copyWith(color: Colors.blue),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+
+
+
+
+
+/*class LoginScreen extends StatefulWidget {
+  const LoginScreen({super.key});
+
+  @override
   State<LoginScreen> createState() => _SignupScreenState();
 }
 
@@ -43,9 +154,9 @@ class _SignupScreenState extends State<LoginScreen> {
   String password = passwordController.text;
 
   // Login user using the AuthMethod
-  String res = await AuthMethod().loginUser(email: email, password: password);
+  String res = await AuthMethod().loginUser(email: email, password: password, context: context,);
 
-  if (res == "success") {
+  /*if (res == "success") {
     try {
       // Get the user role after successful login
       AppRole userRole = await AuthMethod().getUserRole(email);
@@ -78,11 +189,20 @@ class _SignupScreenState extends State<LoginScreen> {
   } else {
     setState(() {
       isLoading = false;
-    });
+    });*/
+
+    if (res == "success") {
+      setState(() {
+        isLoading = false;
+      });
+    } else {
+      setState(() {
+        isLoading = false;
+      });
 
     // Show error message if login fails
     showSnackBar(context, res);
-  }
+    }
 }
 
 
@@ -211,4 +331,4 @@ class _SignupScreenState extends State<LoginScreen> {
       ),
     );
   }
-}
+}*/
