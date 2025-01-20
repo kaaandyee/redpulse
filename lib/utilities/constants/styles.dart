@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 class Styles{
   static Color backColor = const Color(0xFFFEF7FF);
+  static Color frontColor = const Color(0xFFA9636A);
   static Color primaryColor = const Color(0xFFB8001F);
   static Color secondaryColor = const Color(0xFF574143);
   static Color tertiaryColor = const Color(0xFFFFFFFF);

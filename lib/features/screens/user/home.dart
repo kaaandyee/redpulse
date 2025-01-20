@@ -1,6 +1,7 @@
 //import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:redpulse/features/screens/login.dart';
+import 'package:redpulse/features/screens/user/reservation.dart';
 import 'package:redpulse/services/auth.dart';
 import 'package:redpulse/services/googleauth.dart';
 //import 'package:redpulse/services/googleauth.dart';
@@ -17,101 +18,69 @@ class UserHome extends StatefulWidget {
 }
 
 class UserHomeState extends State<UserHome> {
-  String firstName = "User"; // Default name until loaded
+  late Future<String> _userFullNameFuture; 
 
   @override
   void initState() {
     super.initState();
-    _loadUserFirstName(); // Load the first name when the widget is initialized
-  }
-
-  Future<void> _loadUserFirstName() async {
-    String name = await AuthMethod().getUserFirstName();
-    setState(() {
-      firstName = name;
-    });
+    _userFullNameFuture = AuthMethod().getUserName(); // Load the first name when the widget is initialized
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Styles.tertiaryColor,
-      body: ListView(
-        children: [
-          Column(
-            children: [
-              Container(
-                height: 150,
-                color: Styles.primaryColor,
+      appBar: PreferredSize(
+            preferredSize: const Size.fromHeight(120),
+            child: AppBar(
+              backgroundColor: Styles.primaryColor,
+              elevation: 0,
+              flexibleSpace: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 50),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Text("RED PULSE", style: Styles.headerStyle1),
-                        Text("Saving lives, One drop at a time.", style: Styles.headerStyle3),
-                      ],
-                    ),
-                  ],
+                child: Align(
+                  alignment: Alignment.bottomLeft,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const SizedBox(height: 20),
+                      Text("RED PULSE", style: Styles.headerStyle1),
+                      Text("Saving lives, One drop at a time.", style: Styles.headerStyle3.copyWith(fontSize: 15)),
+                    ],
+                  ),
                 ),
               ),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 50, vertical: 30),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+            ),
+          ),
+      body: FutureBuilder<String>(
+        future: _userFullNameFuture, // Fetch the full name here
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator()); // Show loading indicator
+          } else if (snapshot.hasError || !snapshot.hasData) {
+            return const Center(child: Text('Error fetching user name.'));
+          } else {
+            final fullName = snapshot.data!; // User's full name
+            return ListView(
+            children: [
+                Column(
                   children: [
-                    Text("Welcome, $firstName!", style: Styles.headerStyle2),
-                  ],
-                ),
-              ),
-              MyButtons(
-                onTap: () async {
-                  await FirebaseServices().googleSignOut();
-                  Navigator.of(context).pushReplacement(
-                    MaterialPageRoute(
-                      builder: (context) => const LoginScreen(),
+                    // Welcome Section
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 50, vertical: 30),
+                      child: Row(
+                        children: [
+                          Text("Welcome, $fullName!", style: Styles.headerStyle2), // Display full name
+                        ],
+                      ),
                     ),
-                  );
-                },
-                text: "Log Out",
+                ],
               ),
             ],
-          ),
-        ],
-      ),
+          );
+          }
+        }
+      )
     );
   }
 }
-      /*body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Text(
-              "Congratulation\nYou have successfully Login",
-              textAlign: TextAlign.center,
-              style: TextStyle(fontSize: 25, fontWeight: FontWeight.bold),
-            ),
-
-            MyButtons(
-                onTap: () async {
-                  await FirebaseServices().googleSignOut();
-                  Navigator.of(context).pushReplacement(
-                    MaterialPageRoute(
-                      builder: (context) => const LoginScreen(),
-                    ),
-                  );
-                },
-                text: "Log Out"),
-            // for google sign in ouser detail
-            // Image.network("${FirebaseAuth.instance.currentUser!.photoURL}"),
-            // Text("${FirebaseAuth.instance.currentUser!.email}"),
-            // Text("${FirebaseAuth.instance.currentUser!.displayName}")
-          ],
-        ),
-      ),
-    );
-  }
-}*/

@@ -6,6 +6,7 @@ class UserAdminModel {
   final String? id;
   String firstName;
   String lastName;
+  String fullName;
   String email;
   String phoneNumber;
   String address;
@@ -21,6 +22,7 @@ class UserAdminModel {
     required this.id,
     required this.firstName,
     required this.lastName,
+    required this.fullName,
     required this.email,
     required this.phoneNumber,
     required this.address,
@@ -32,8 +34,11 @@ class UserAdminModel {
     this.bloodBankId,
   });
 
+  void updateFullName() {
+    fullName = '$firstName $lastName';
+  }
   //Helper Methods
-  String get fullName => '$firstName $lastName';
+  //String get fullName => '$firstName $lastName';
   //CREATE TFORMATTER
   //String get formattedCreated => TFormatter.formatdate(dateCreated);
   //String get formattedUpdated => TFormatter.formatdate(lastLogin);
@@ -47,6 +52,7 @@ class UserAdminModel {
     String? id,
     String? firstName,
     String? lastName,
+    String? fullName,
     String? email,
     String? phoneNumber,
     String? address,
@@ -61,6 +67,7 @@ class UserAdminModel {
       id: id ?? this.id,
       firstName: firstName ?? this.firstName,
       lastName: lastName ?? this.lastName,
+      fullName: fullName ?? '$firstName $lastName',
       email: email ?? this.email,
       phoneNumber: phoneNumber ?? this.phoneNumber,
       address: address ?? this.address,
@@ -77,6 +84,8 @@ class UserAdminModel {
   Map<String, dynamic> toJson() {
     return {
       'id': id,
+      'firstNam' : firstName,
+      'lastName' : lastName,
       'fullName': fullName,
       'email': email,
       'phoneNumber': phoneNumber,
@@ -96,7 +105,7 @@ class UserAdminModel {
       id: documentId,
       firstName: json['firstName'] ?? '',
       lastName: json['lastName'] ?? '', 
-      //fullName: json['fullName'] ?? '',
+      fullName: json['fullName'] ?? '${json['firstName'] ?? ''} ${json['lastName'] ?? ''}',
       email: json['email'] ?? '',
       phoneNumber: json['phoneNumber'] ?? '',
       address: json['address'] ?? '',

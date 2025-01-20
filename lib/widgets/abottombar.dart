@@ -3,6 +3,8 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:redpulse/features/screens/admin/home.dart';
 import 'package:redpulse/features/screens/admin/inventory.dart';
+import 'package:redpulse/features/screens/admin/profile.dart';
+import 'package:redpulse/features/screens/admin/reservation.dart';
 import 'package:redpulse/features/screens/user/home.dart';
 import 'package:redpulse/features/screens/user/search.dart';
 import 'package:redpulse/services/auth.dart';
@@ -101,12 +103,15 @@ class _ABottomBarState extends State<ABottomBar> {
   int _selectedIndex = 0;
 
   // This method dynamically creates the widget options based on isAdminLinkedToBloodBank
+  // Create a list of widgets for each navigation tab
   List<Widget> _getWidgetOptions(String? bloodBankId) {
     return [
-      AdminHome(isAdminLinkedToBloodBank: widget.isAdminLinkedToBloodBank), // Pass value dynamically
-      const Text("Reservation"),
-      Inventory(bloodBankId: bloodBankId ?? "null"), // Pass the bloodBankId to Inventory
-      const Text("Profile"),
+      AdminHome(isAdminLinkedToBloodBank: widget.isAdminLinkedToBloodBank, bloodBankId: '',), // Home screen
+      //const ReservationScreen(),
+      //const Text("Reservation"), // Reservation screen
+      AdminReservationScreen(bloodBankId: bloodBankId ?? "null"),
+      Inventory(bloodBankId: bloodBankId ?? "null"), // Inventory screen
+      const ProfileScreen(), // Profile screen
     ];
   }
 

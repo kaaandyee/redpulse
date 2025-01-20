@@ -21,7 +21,7 @@ bool isValidLongitude(String longitude) {
 }
 
 void registerBloodBank(String bloodBankId) async {
-  await Inventory.initializeBloodTypeInventory(bloodBankId);
+  await InventoryModel.initializeBloodTypeInventory(bloodBankId);
   print('Blood bank inventory initialized.');
 }
 

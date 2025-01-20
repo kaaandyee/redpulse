@@ -1,5 +1,9 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:redpulse/features/screens/user/reservation.dart';
 import 'package:redpulse/features/screens/user/home.dart';
+import 'package:redpulse/features/screens/user/profile.dart';
 import 'package:redpulse/features/screens/user/search.dart';
 import 'package:redpulse/utilities/constants/styles.dart';
 
@@ -11,11 +15,23 @@ class UBottomBar extends StatefulWidget {
 
 class _UBottomBarState extends State<UBottomBar> {
   int _selectedIndex = 0;
+
+  @override
+  void initState() {
+    super.initState();
+  }
+
+
   static final List<Widget>_widgetOptions =<Widget>[
     const UserHome(),
     const SearchScreen(),
-    const Text("Activity"),
-    const Text("Profile")
+    //const ActivityScreen(),
+    //const Text("Search"),
+    //const Text("Activity"),
+    const ReservationScreen(),
+    const ProfileScreen(),
+    //const Text("Profile"),
+    //ProfileScreen(userId: userId ?? "null"),
   ];
 
   void _onItemTapped(int index) {
