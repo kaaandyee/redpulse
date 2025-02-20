@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_moving_background/enums/animation_types.dart';
+import 'package:flutter_moving_background/flutter_moving_background.dart';
 import 'package:redpulse/features/screens/admin/start.dart';
 import 'package:redpulse/features/screens/user/start.dart';
 import 'package:redpulse/services/auth.dart';
@@ -116,6 +118,16 @@ class _SignupScreenState extends State<SignupScreen> {
       backgroundColor: Colors.white,
       resizeToAvoidBottomInset: false,
       body: SafeArea(
+        child: MovingBackground(
+        animationType: AnimationType.translation,
+        backgroundColor: Colors.grey[400],
+        circles: const [
+        MovingCircle(color: Colors.red),
+    MovingCircle(color: Colors.red),
+    MovingCircle(color: Colors.red),
+    MovingCircle(color: Colors.red),
+    MovingCircle(color: Colors.red),
+    ],
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
@@ -236,6 +248,7 @@ class _SignupScreenState extends State<SignupScreen> {
           ],
         ),
       ),
+    ),
     );
   }
 }

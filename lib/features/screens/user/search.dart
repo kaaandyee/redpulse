@@ -108,30 +108,6 @@ class SearchScreenState extends State<SearchScreen> {
     });
   }
 
-  // Create markers for the filtered blood banks
-  /*void _createMarkers() {
-    _markers.clear(); // Clear existing markers
-
-    for (var bloodBank in _filteredBloodBanks) {
-      Marker marker = Marker(
-        markerId: MarkerId(bloodBank['bloodBankId']),
-        position: LatLng(bloodBank['latitude'], bloodBank['longitude']),
-        infoWindow: InfoWindow(
-          title: bloodBank['bloodBankName'], // Display blood bank name in the info window
-          snippet: "Blood Types: ${bloodBank['bloodTypes'].join(', ')}",
-          onTap: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => BloodBankDetailsScreen(bloodBankId: bloodBank['bloodBankId']),
-              ),
-            );
-          },
-        ),
-      );
-      _markers.add(marker);
-    }
-  }*/
 
   void _createMarkers() async {
   setState(() {
@@ -295,18 +271,6 @@ class SearchScreenState extends State<SearchScreen> {
       // Create a LatLng object with the user's current position
       LatLng userLocation = LatLng(position.latitude, position.longitude);
 
-      // Add a marker for the user's location
-      /*setState(() {
-        _markers.add(
-          Marker(
-            markerId: const MarkerId('user_location'),
-            position: userLocation,
-            infoWindow: const InfoWindow(title: 'Your Location'),
-            icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueAzure), // Change the color
-          ),
-        );
-      });*/
-
 
       _googleMapController.animateCamera(
         CameraUpdate.newLatLngZoom(userLocation, 15.0),
@@ -330,6 +294,12 @@ class SearchScreenState extends State<SearchScreen> {
         preferredSize: const Size.fromHeight(120),
         child: AppBar(
           backgroundColor: Styles.primaryColor,
+          shape: const RoundedRectangleBorder(
+            borderRadius: BorderRadius.only(
+              topLeft: Radius.circular(30),
+              topRight: Radius.circular(30),
+            ),
+          ),
           elevation: 0,
           flexibleSpace: Padding(
             padding: const EdgeInsets.all(20),
@@ -390,24 +360,49 @@ class SearchScreenState extends State<SearchScreen> {
                 ),
               ),
 
+// ... Inside the build method's Positioned widget for the button:
               ElevatedButton(
-              style: ElevatedButton.styleFrom(foregroundColor: Styles.tertiaryColor, backgroundColor: Styles.primaryColor, shape: const RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(10),),), padding: const EdgeInsets.all(15),),
-              onPressed: () async {
-                Position position = await _getCurrentLocation();
+                style: ElevatedButton.styleFrom(
+                  foregroundColor: Styles.tertiaryColor,
+                  backgroundColor: Styles.primaryColor,
+                  shape: const RoundedRectangleBorder(
+                    borderRadius: BorderRadius.all(Radius.circular(10)),
+                  ),
+                  padding: const EdgeInsets.all(15),
+                ),
+                onPressed: () async {
+                  try {
+                    Position position = await _getCurrentLocation();
+                    LatLng userLocation = LatLng(position.latitude, position.longitude);
 
-                // Create a CameraPosition using the current location
-                CameraPosition cameraPosition = CameraPosition(
-                  target: LatLng(position.latitude, position.longitude),
-                  zoom: 15.0, // You can adjust the zoom level
-                );
+                    // Remove any existing user location marker
+                    _markers.removeWhere((marker) => marker.markerId == const MarkerId('user_location'));
 
-                // Animate the camera to the new position
-                _googleMapController.animateCamera(
-                  CameraUpdate.newCameraPosition(cameraPosition),
-                );
-              },
-              child: const Icon(Icons.center_focus_strong), // Icon inside the button
-            ),
+                    // Add new user location marker
+                    setState(() {
+                      _markers.add(
+                        Marker(
+                          markerId: const MarkerId('user_location'),
+                          position: userLocation,
+                          icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueAzure),
+                          infoWindow: const InfoWindow(title: 'Your Location'),
+                        ),
+                      );
+                    });
+
+                    // Move camera to user location
+                    _googleMapController.animateCamera(
+                      CameraUpdate.newLatLngZoom(userLocation, 15.0),
+                    );
+                  } catch (e) {
+                    print('Error locating user: $e');
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text('Could not fetch location: $e')),
+                    );
+                  }
+                },
+                child: const Icon(Icons.location_searching),
+              ),
             ],
           ),
         ),

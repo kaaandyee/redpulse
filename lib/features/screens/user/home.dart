@@ -1,86 +1,90 @@
-//import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:redpulse/features/screens/login.dart';
-import 'package:redpulse/features/screens/user/reservation.dart';
-import 'package:redpulse/services/auth.dart';
-import 'package:redpulse/services/googleauth.dart';
-//import 'package:redpulse/services/googleauth.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:redpulse/features/models/users.dart'; // your user model
+import 'package:provider/provider.dart';
+import 'package:redpulse/features/screens/user/sub/userCardsHome.dart';
 import 'package:redpulse/utilities/constants/styles.dart';
-import 'package:redpulse/widgets/button.dart';
-//import 'package:redpulse/widgets/button.dart';
-//import 'login.dart';
 
-class UserHome extends StatefulWidget {
-  const UserHome({super.key});
-
-  @override
-  UserHomeState createState() => UserHomeState();
-}
-
-class UserHomeState extends State<UserHome> {
-  late Future<String> _userFullNameFuture; 
-
-  @override
-  void initState() {
-    super.initState();
-    _userFullNameFuture = AuthMethod().getUserName(); // Load the first name when the widget is initialized
-  }
+class UserHome extends StatelessWidget {
+  const UserHome({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
+    // Read the latest user data from the Provider.
+    final user = Provider.of<UserAdminModel?>(context);
+
     return Scaffold(
-      backgroundColor: Styles.tertiaryColor,
       appBar: PreferredSize(
-            preferredSize: const Size.fromHeight(120),
-            child: AppBar(
-              backgroundColor: Styles.primaryColor,
-              elevation: 0,
-              flexibleSpace: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 50),
-                child: Align(
-                  alignment: Alignment.bottomLeft,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      const SizedBox(height: 20),
-                      Text("RED PULSE", style: Styles.headerStyle1),
-                      Text("Saving lives, One drop at a time.", style: Styles.headerStyle3.copyWith(fontSize: 15)),
-                    ],
+        preferredSize: const Size.fromHeight(120),
+        child: AppBar(
+          backgroundColor: Styles.primaryColor,
+          elevation: 0,
+          shape: const RoundedRectangleBorder(
+            borderRadius: BorderRadius.only(
+              topLeft: Radius.circular(30),
+              topRight: Radius.circular(30),
+            ),
+          ),
+          flexibleSpace: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 50),
+            child: Align(
+              alignment: Alignment.bottomLeft,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const SizedBox(height: 20),
+                  Text("RED PULSE", style: Styles.headerStyle1),
+                  Text(
+                    "Saving lives, One drop at a time.",
+                    style: Styles.headerStyle3.copyWith(fontSize: 15),
                   ),
-                ),
+                ],
               ),
             ),
           ),
-      body: FutureBuilder<String>(
-        future: _userFullNameFuture, // Fetch the full name here
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator()); // Show loading indicator
-          } else if (snapshot.hasError || !snapshot.hasData) {
-            return const Center(child: Text('Error fetching user name.'));
-          } else {
-            final fullName = snapshot.data!; // User's full name
-            return ListView(
-            children: [
-                Column(
-                  children: [
-                    // Welcome Section
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 50, vertical: 30),
-                      child: Row(
-                        children: [
-                          Text("Welcome, $fullName!", style: Styles.headerStyle2), // Display full name
-                        ],
-                      ),
+        ),
+      ),
+      body: user == null
+          ? const Center(child: CircularProgressIndicator())
+          : ListView(
+        children: [
+          // Row containing the profile image and welcome text.
+          Padding(
+            padding:
+            const EdgeInsets.symmetric(horizontal: 50, vertical: 30),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                // Profile Image
+                CircleAvatar(
+                  radius: 30,
+                  backgroundImage: (user.profileImageUrl != null &&
+                      user.profileImageUrl!.isNotEmpty)
+                      ? NetworkImage(user.profileImageUrl!)
+                      : const AssetImage(
+                      'assets/images/default_profile.jpg')
+                  as ImageProvider,
+                ),
+                const SizedBox(width: 15),
+                // Welcome Text
+                Expanded(
+                  child: Text(
+                    "Welcome, ${user.fullName}!",
+                    style: GoogleFonts.robotoMono(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      color: Styles.primaryColor,
                     ),
-                ],
-              ),
-            ],
-          );
-          }
-        }
-      )
+                  ),
+                ),
+              ],
+            ),
+          ),
+          // Other content on the home screen.
+          const userCardsHome(),
+        ],
+      ),
     );
   }
 }

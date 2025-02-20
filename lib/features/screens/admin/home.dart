@@ -1,4 +1,3 @@
-//import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -12,18 +11,6 @@ import 'package:redpulse/utilities/constants/adminmap.dart';
 //import 'package:redpulse/services/googleauth.dart';
 import 'package:redpulse/utilities/constants/styles.dart';
 import 'package:redpulse/widgets/button.dart';
-//import 'package:redpulse/widgets/button.dart';
-//import 'login.dart';
-
-/*class AdminHome extends StatefulWidget {
-  final bool isAdminLinkedToBloodBank;
-  final String bloodBankId; // Add bloodBankId to the constructor
-
-  const AdminHome({super.key, required this.isAdminLinkedToBloodBank, required this.bloodBankId});
-
-  @override
-  AdminHomeState createState() => AdminHomeState();
-}*/
 
 class AdminHome extends StatefulWidget {
   final bool isAdminLinkedToBloodBank;
@@ -39,7 +26,6 @@ class AdminHome extends StatefulWidget {
   AdminHomeState createState() => AdminHomeState();
 }
 
-
 class AdminHomeState extends State<AdminHome> {
   late String _bloodBankId;
   late Future<String> _adminFullNameFuture; // Future to store the user's full name
@@ -51,38 +37,6 @@ class AdminHomeState extends State<AdminHome> {
     _fetchBloodBankId();
      // Fetch the full name
   }
-
-  // Function to fetch admin data (full name and bloodBankId)
-  /*Future<Map<String, String>> _fetchAdminData() async {
-  try {
-    // Get the admin ID from the AuthMethod class
-    String adminId = await AuthMethod().getAdminId();
-
-    // Fetch the corresponding admin document from Firestore to get the full name and bloodBankId
-    DocumentSnapshot adminSnapshot = await FirebaseFirestore.instance
-        .collection('users')
-        .doc(adminId)
-        .get();
-
-    if (adminSnapshot.exists) {
-      var data = adminSnapshot.data() as Map<String, dynamic>;
-      String fullName = data['fullName'] ?? 'Admin'; // Default to 'Admin' if not found
-      String bloodBankId = data['bloodBankId'] ?? ''; // Default to empty string if not found
-
-      setState(() {
-        _bloodBankId = bloodBankId; // Store bloodBankId for later use
-      });
-
-      return {'fullName': fullName, 'bloodBankId': bloodBankId};
-    } else {
-      throw Exception("Admin document not found.");
-    }
-  } catch (e) {
-    print("Error fetching admin data: $e");
-    // Provide a more descriptive error message and a fallback option
-    return {'fullName': 'Error: Unable to fetch name', 'bloodBankId': ''};
-  }
-}*/
 
   // Function to fetch blood bank ID based on admin's user ID
   Future<void> _fetchBloodBankId() async {
@@ -115,11 +69,16 @@ class AdminHomeState extends State<AdminHome> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Styles.tertiaryColor,
       appBar: PreferredSize(
             preferredSize: const Size.fromHeight(120),
             child: AppBar(
               backgroundColor: Styles.primaryColor,
+              shape: const RoundedRectangleBorder(
+                borderRadius: BorderRadius.only(
+                  topLeft: Radius.circular(30),
+                  topRight: Radius.circular(30),
+                ),
+              ),
               elevation: 0,
               flexibleSpace: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 50),
@@ -138,6 +97,7 @@ class AdminHomeState extends State<AdminHome> {
               ),
             ),
           ),
+
       body: FutureBuilder<String>(
         future: _adminFullNameFuture, // Fetch the full name here
         builder: (context, snapshot) {
@@ -148,31 +108,8 @@ class AdminHomeState extends State<AdminHome> {
           } else {
             final fullName = snapshot.data!;
 
-
             return ListView(
               children: [
-                /*Column(
-                  children: [
-                    // Header
-                    Container(
-                      height: 150,
-                      color: Styles.primaryColor,
-                      padding: const EdgeInsets.symmetric(horizontal: 50),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Text("RED PULSE", style: Styles.headerStyle1),
-                              Text("Saving lives, One drop at a time.", style: Styles.headerStyle3.copyWith(fontSize: 15)),
-                            ],
-                          ),
-                        ],
-                      ),
-                    ),*/
-
                     // Welcome Section
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 50, vertical: 30),
@@ -183,42 +120,6 @@ class AdminHomeState extends State<AdminHome> {
                       ),
                     ),
 
-                    // Conditional UI
-                    /*Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 50),
-                      child: widget.isAdminLinkedToBloodBank
-                          ? Text(
-                              "You are already linked to a blood bank.",
-                              style: Styles.headerStyle5.copyWith(color: Styles.primaryColor),
-                            )
-                          : MyButtons(
-                              onTap: () {
-                                Navigator.of(context).push(
-                                  MaterialPageRoute(
-                                    builder: (context) => const RegisterForm(),
-                                  ),
-                                );
-                              },
-                              text: "Register Blood Bank",
-                            ),
-                    ),
-                    MyButtons(
-                      onTap: () {
-                        // Check the blood bank ID before navigating
-                        print('Navigating to MapScreen with bloodBankId: $_bloodBankId');
-                        if (_bloodBankId.isNotEmpty) {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => MapScreen(bloodBankId: _bloodBankId),
-                            ),
-                          );
-                        } else {
-                          print('Error: Invalid bloodBankId.');
-                        }
-                      },
-                      text: "View Blood Bank Location",
-                    ),*/
                     // Link to Register Blood Bank or display message
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 30),
@@ -320,89 +221,3 @@ class AdminHomeState extends State<AdminHome> {
     );
   }
 }
-
-/*class AdminHome extends StatefulWidget {
-  final bool isAdminLinkedToBloodBank;
-
-  const AdminHome({super.key, required this.isAdminLinkedToBloodBank});
-
-  @override
-  AdminHomeState createState() => AdminHomeState();
-}
-
-class AdminHomeState extends State<AdminHome> {
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Styles.tertiaryColor,
-      body: ListView(
-        children: [
-          Column(
-            children: [
-              // Header
-              Container(
-                height: 150,
-                color: Styles.primaryColor,
-                padding: const EdgeInsets.symmetric(horizontal: 50),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Text("RED PULSE", style: Styles.headerStyle1),
-                        Text("Saving lives, One drop at a time.", style: Styles.headerStyle3),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-
-              // Welcome Section
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 50, vertical: 30),
-                child: Row(
-                  children: [
-                    Text("Welcome, Admin!", style: Styles.headerStyle2),
-                  ],
-                ),
-              ),
-
-              // Conditional UI
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 50),
-                child: widget.isAdminLinkedToBloodBank
-                    ? Text(
-                        "You are already linked to a blood bank.",
-                        style: Styles.headerStyle5.copyWith(color: Styles.primaryColor),
-                      )
-                    : MyButtons(
-                        onTap: () {
-                          Navigator.of(context).push(
-                            MaterialPageRoute(
-                              builder: (context) => const RegisterForm(),
-                            ),
-                          );
-                        },
-                        text: "Register Blood Bank",
-                      ),
-              ),
-              MyButtons(
-                onTap: () async {
-                  await FirebaseServices().googleSignOut();
-                  Navigator.of(context).pushReplacement(
-                    MaterialPageRoute(
-                      builder: (context) => const LoginScreen(),
-                    ),
-                  );
-                },
-                text: "Log Out",
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-}*/

@@ -74,33 +74,20 @@ class ReservationScreenState extends State<ReservationScreen> {
     }
   }
 
-  /*Future<void> fetchBloodBankName(String bloodBankId) async {
-    try {
-      final bloodBankDoc = await FirebaseFirestore.instance
-          .collection('bloodbanks')
-          .doc(bloodBankId)
-          .get();
-
-      if (bloodBankDoc.exists) {
-        setState(() {
-          bloodBankName = bloodBankDoc.data()?['bloodBankName'] ?? 'Unknown'; // Fetch the name field
-        });
-      } else {
-        print('Blood bank not found.');
-      }
-    } catch (e) {
-      print('Error fetching blood bank name: $e');
-    }
-  }*/
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Styles.tertiaryColor,
       appBar: PreferredSize(
         preferredSize: const Size.fromHeight(120),
         child: AppBar(
           backgroundColor: Styles.primaryColor,
+          shape: const RoundedRectangleBorder(
+            borderRadius: BorderRadius.only(
+              topLeft: Radius.circular(30),
+              topRight: Radius.circular(30),
+            ),
+          ),
           elevation: 0,
           flexibleSpace: Padding(
             padding: const EdgeInsets.all(20),
