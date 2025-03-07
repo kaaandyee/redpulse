@@ -1,117 +1,90 @@
-//import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:redpulse/features/screens/login.dart';
-import 'package:redpulse/services/auth.dart';
-import 'package:redpulse/services/googleauth.dart';
-//import 'package:redpulse/services/googleauth.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:redpulse/features/models/users.dart'; // your user model
+import 'package:provider/provider.dart';
+import 'package:redpulse/features/screens/user/sub/userCardsHome.dart';
 import 'package:redpulse/utilities/constants/styles.dart';
-import 'package:redpulse/widgets/button.dart';
-//import 'package:redpulse/widgets/button.dart';
-//import 'login.dart';
 
-class UserHome extends StatefulWidget {
-  const UserHome({super.key});
-
-  @override
-  UserHomeState createState() => UserHomeState();
-}
-
-class UserHomeState extends State<UserHome> {
-  String firstName = "User"; // Default name until loaded
-
-  @override
-  void initState() {
-    super.initState();
-    _loadUserFirstName(); // Load the first name when the widget is initialized
-  }
-
-  Future<void> _loadUserFirstName() async {
-    String name = await AuthMethod().getUserFirstName();
-    setState(() {
-      firstName = name;
-    });
-  }
+class UserHome extends StatelessWidget {
+  const UserHome({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
+    // Read the latest user data from the Provider.
+    final user = Provider.of<UserAdminModel?>(context);
+
     return Scaffold(
-      backgroundColor: Styles.tertiaryColor,
-      body: ListView(
-        children: [
-          Column(
-            children: [
-              Container(
-                height: 150,
-                color: Styles.primaryColor,
-                padding: const EdgeInsets.symmetric(horizontal: 50),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Text("RED PULSE", style: Styles.headerStyle1),
-                        Text("Saving lives, One drop at a time.", style: Styles.headerStyle3),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 50, vertical: 30),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text("Welcome, $firstName!", style: Styles.headerStyle2),
-                  ],
-                ),
-              ),
-              MyButtons(
-                onTap: () async {
-                  await FirebaseServices().googleSignOut();
-                  Navigator.of(context).pushReplacement(
-                    MaterialPageRoute(
-                      builder: (context) => const LoginScreen(),
-                    ),
-                  );
-                },
-                text: "Log Out",
-              ),
-            ],
+      appBar: PreferredSize(
+        preferredSize: const Size.fromHeight(120),
+        child: AppBar(
+          backgroundColor: Styles.primaryColor,
+          elevation: 0,
+          shape: const RoundedRectangleBorder(
+            borderRadius: BorderRadius.only(
+              topLeft: Radius.circular(30),
+              topRight: Radius.circular(30),
+            ),
           ),
+          flexibleSpace: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 50),
+            child: Align(
+              alignment: Alignment.bottomLeft,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const SizedBox(height: 20),
+                  Text("RED PULSE", style: Styles.headerStyle1),
+                  Text(
+                    "Saving lives, One drop at a time.",
+                    style: Styles.headerStyle3.copyWith(fontSize: 15),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+      body: user == null
+          ? const Center(child: CircularProgressIndicator())
+          : ListView(
+        children: [
+          // Row containing the profile image and welcome text.
+          Padding(
+            padding:
+            const EdgeInsets.symmetric(horizontal: 50, vertical: 30),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                // Profile Image
+                CircleAvatar(
+                  radius: 30,
+                  backgroundImage: (user.profileImageUrl != null &&
+                      user.profileImageUrl!.isNotEmpty)
+                      ? NetworkImage(user.profileImageUrl!)
+                      : const AssetImage(
+                      'assets/images/default_profile.jpg')
+                  as ImageProvider,
+                ),
+                const SizedBox(width: 15),
+                // Welcome Text
+                Expanded(
+                  child: Text(
+                    "Welcome, ${user.fullName}!",
+                    style: GoogleFonts.robotoMono(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      color: Styles.primaryColor,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          // Other content on the home screen.
+          const userCardsHome(),
         ],
       ),
     );
   }
 }
-      /*body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Text(
-              "Congratulation\nYou have successfully Login",
-              textAlign: TextAlign.center,
-              style: TextStyle(fontSize: 25, fontWeight: FontWeight.bold),
-            ),
-
-            MyButtons(
-                onTap: () async {
-                  await FirebaseServices().googleSignOut();
-                  Navigator.of(context).pushReplacement(
-                    MaterialPageRoute(
-                      builder: (context) => const LoginScreen(),
-                    ),
-                  );
-                },
-                text: "Log Out"),
-            // for google sign in ouser detail
-            // Image.network("${FirebaseAuth.instance.currentUser!.photoURL}"),
-            // Text("${FirebaseAuth.instance.currentUser!.email}"),
-            // Text("${FirebaseAuth.instance.currentUser!.displayName}")
-          ],
-        ),
-      ),
-    );
-  }
-}*/
