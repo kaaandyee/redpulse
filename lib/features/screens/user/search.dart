@@ -15,7 +15,7 @@ class SearchScreen extends StatefulWidget {
 
 class SearchScreenState extends State<SearchScreen> {
   static const _initialCameraPosition = CameraPosition(
-    target: LatLng(10.317870822438445, 123.88928644803421), // Default camera position 10.317870822438445, 123.88928644803421
+    target: LatLng(10.317870822438445, 123.88928644803421), // Default camera position
     zoom: 11.5,
   );
 
@@ -25,24 +25,28 @@ class SearchScreenState extends State<SearchScreen> {
   List<Map<String, dynamic>> _filteredBloodBanks = []; // Stores filtered blood banks based on search input
   final TextEditingController _searchController = TextEditingController();
 
+  // Cache for inventory details: maps bloodBankId to list of available blood types
+  final Map<String, List<String>> _bloodBankInventoryCache = {};
+
+  // Loading indicator state
+  bool _isLoading = false;
+
   @override
   void initState() {
     super.initState();
-    _getCurrentLocation();// Automatically fetch location on screen load
-    _placeUserLocationMarker(); 
-    _fetchBloodBanks(); // Fetch all blood bank locations
+    _isLoading = true;
+    _getCurrentLocation(); // Automatically fetch location on screen load
+    _placeUserLocationMarker();
+    _fetchBloodBanks(); // Fetch all blood bank locations and inventory details
     _searchController.addListener(_filterBloodBanks); // Listen for search field changes
   }
 
-  // Fetch blood banks from Firestore and create markers
-  // Fetch blood banks from Firestore and create markers
+  // Fetch blood banks from Firestore and pre-fetch inventory details for caching
   Future<void> _fetchBloodBanks() async {
     try {
-      QuerySnapshot snapshot = await FirebaseFirestore.instance
-          .collection('bloodbanks') // Adjust collection name if needed
-          .get();
+      QuerySnapshot snapshot =
+      await FirebaseFirestore.instance.collection('bloodbanks').get();
 
-      // Create a list of blood bank data
       List<Map<String, dynamic>> fetchedBloodBanks = [];
       for (var doc in snapshot.docs) {
         var data = doc.data() as Map<String, dynamic>;
@@ -50,24 +54,31 @@ class SearchScreenState extends State<SearchScreen> {
         double longitude = data['longitude'];
         String bloodBankName = data['bloodBankName'] ?? 'Blood Bank';
 
-        // Fetch the blood type from the 'inventories' subcollection
+        // Pre-fetch inventory details and cache available blood types
         QuerySnapshot inventorySnapshot = await FirebaseFirestore.instance
             .collection('bloodbanks')
             .doc(doc.id)
             .collection('inventories')
             .get();
 
-        // Assuming each blood type has its own document in the subcollection
         List<String> bloodTypes = [];
+        List<String> availableBloodTypes = [];
         for (var inventoryDoc in inventorySnapshot.docs) {
-          bloodTypes.add(inventoryDoc.id); // Using document ID as the blood type
+          String bloodType = inventoryDoc.id;
+          bloodTypes.add(bloodType);
+          // Check if the blood type is Available or Low Stock
+          var status = inventoryDoc['status'];
+          if (status == 'Available' || status == 'Low Stock') {
+            availableBloodTypes.add(bloodType);
+          }
         }
+        // Cache available blood types for this blood bank
+        _bloodBankInventoryCache[doc.id] = availableBloodTypes;
 
-        // Add the blood bank data to the list
         fetchedBloodBanks.add({
           'bloodBankId': doc.id,
           'bloodBankName': bloodBankName,
-          'bloodTypes': bloodTypes, // Store list of blood types
+          'bloodTypes': bloodTypes, // Use for filtering by blood type as well
           'latitude': latitude,
           'longitude': longitude,
         });
@@ -76,97 +87,93 @@ class SearchScreenState extends State<SearchScreen> {
       setState(() {
         _bloodBanks = fetchedBloodBanks; // Store the fetched blood banks
         _filteredBloodBanks = fetchedBloodBanks; // Initially show all blood banks
-        _createMarkers(); // Create markers for all fetched blood banks
       });
+
+      // Create markers for all fetched blood banks
+      _createMarkers();
     } catch (e) {
       print("Error fetching blood banks: $e");
+    } finally {
+      setState(() {
+        _isLoading = false; // Data fetching complete, hide loading indicator
+      });
     }
   }
 
-  // Filter the blood banks based on search input
+  // Filter the blood banks based on search input and update markers
   void _filterBloodBanks() {
-    String query = _searchController.text.toLowerCase();
+    String query = _searchController.text.trim().toLowerCase();
+    print("Search Query: $query");
 
     setState(() {
       _filteredBloodBanks = _bloodBanks.where((bloodBank) {
-        return bloodBank['bloodBankName'].toLowerCase().contains(query) ||
-            bloodBank['bloodTypes'].any((bloodType) => bloodType.toLowerCase().contains(query));
+        String name = (bloodBank['bloodBankName'] ?? '').trim().toLowerCase();
+        List<String> availableBloodTypes =
+            _bloodBankInventoryCache[bloodBank['bloodBankId']] ?? [];
+
+        print("Checking: $name");
+
+        // Debugging the matching logic
+        if (name.contains(query)) {
+          print("Matched Name: $name");
+        }
+        if (availableBloodTypes.any((bloodType) =>
+            bloodType.toLowerCase().contains(query))) {
+          print("Matched Blood Type in: $name");
+        }
+
+        bool nameMatches = name.contains(query);
+        bool bloodTypeMatches = availableBloodTypes.any((bloodType) =>
+            bloodType.toLowerCase().contains(query));
+
+        return nameMatches || bloodTypeMatches;
       }).toList();
-
-      _createMarkers(); // Update markers after filtering
-
-      // Zoom to the first blood bank that matches the query
-      if (_filteredBloodBanks.isNotEmpty) {
-        var firstMatch = _filteredBloodBanks.first;
-        _googleMapController.animateCamera(
-          CameraUpdate.newLatLngZoom(
-            LatLng(firstMatch['latitude'], firstMatch['longitude']),
-            14.0, // Zoom level, you can adjust it as needed
-          ),
-        );
-      }
     });
+
+    _createMarkers();
   }
 
 
-  void _createMarkers() async {
-  setState(() {
+
+  // Create markers using pre-fetched inventory details from cache
+  void _createMarkers() {
+    setState(() {
       _markers.clear(); // Clear existing markers
     });
 
     for (var bloodBank in _filteredBloodBanks) {
-      // Get the reference to the 'inventories' sub-collection
-      var inventoryCollection = FirebaseFirestore.instance
-          .collection('bloodbanks')
-          .doc(bloodBank['bloodBankId'])
-          .collection('inventories');
+      // Retrieve available blood types from cache
+      List<String> availableBloodTypes =
+          _bloodBankInventoryCache[bloodBank['bloodBankId']] ?? [];
 
-      // Fetch all the documents in the 'inventories' sub-collection
-      var inventorySnapshot = await inventoryCollection.get();
-
-      // Filter blood types with Available or Low Stock status
-      var availableBloodTypes = inventorySnapshot.docs.where((doc) {
-        var status = doc['status'];
-        return status == 'Available' || status == 'Low Stock';
-      }).toList();
-
-      // Prepare the snippet for the info window
-      String snippet;
-
-      // If there are blood types with Available or Low Stock status
-      if (availableBloodTypes.isNotEmpty) {
-        // List the blood types with Available or Low Stock status
-        snippet = "Blood Types: ${availableBloodTypes.map((doc) => doc.id).join(', ')}";
-        
-        /*"Blood Types: ${availableBloodTypes.map((doc) => "${doc.id} (${doc['status']})").join(', ')}";*/
-
-        
-      } else {
-        snippet = "Out of Stock"; // Default message if no blood types are available
-      }
+      // Prepare snippet for info window based on inventory status
+      String snippet = availableBloodTypes.isNotEmpty
+          ? "Blood Types: ${availableBloodTypes.join(', ')}"
+          : "Out of Stock";
 
       // Debugging: Print the blood bank and its available blood types
-      print('Creating marker for ${bloodBank['bloodBankName']} with snippet: $snippet');
+      print(
+          'Creating marker for ${bloodBank['bloodBankName']} with snippet: $snippet');
 
-      // Create the marker with the snippet
+      // Create the marker
       Marker marker = Marker(
         markerId: MarkerId(bloodBank['bloodBankId']),
         position: LatLng(bloodBank['latitude'], bloodBank['longitude']),
         infoWindow: InfoWindow(
-          title: bloodBank['bloodBankName'], // Display blood bank name in the info window
+          title: bloodBank['bloodBankName'],
           snippet: snippet,
           onTap: () {
             Navigator.push(
               context,
               MaterialPageRoute(
-                builder: (context) => BloodBankDetailsScreen(bloodBankId: bloodBank['bloodBankId']),
+                builder: (context) =>
+                    BloodBankDetailsScreen(bloodBankId: bloodBank['bloodBankId']),
               ),
             );
           },
         ),
       );
-      
-      // Add marker to the map
+
       setState(() {
         _markers.add(marker);
       });
@@ -175,73 +182,68 @@ class SearchScreenState extends State<SearchScreen> {
 
   // Function to calculate distance and find nearest blood bank
   Future<void> _locateNearestBloodBank() async {
-    // Check if location permissions are granted
-    Position position = await _getCurrentLocation();
-    LatLng _userLocation = LatLng(position.latitude, position.longitude);
+    try {
+      Position position = await _getCurrentLocation();
+      LatLng userLocation = LatLng(position.latitude, position.longitude);
 
-    double closestDistance = double.infinity;
-    Map<String, dynamic>? nearestBloodBank;
+      double closestDistance = double.infinity;
+      Map<String, dynamic>? nearestBloodBank;
 
-    // Loop through blood banks to find the closest one
-    for (var bloodBank in _bloodBanks) {
-      double distance = Geolocator.distanceBetween(
-        position.latitude,
-        position.longitude,
-        bloodBank['latitude'],
-        bloodBank['longitude'],
-      );
+      for (var bloodBank in _bloodBanks) {
+        double distance = Geolocator.distanceBetween(
+          position.latitude,
+          position.longitude,
+          bloodBank['latitude'],
+          bloodBank['longitude'],
+        );
 
-      if (distance < closestDistance) {
-        closestDistance = distance;
-        nearestBloodBank = bloodBank;
-      }
-    }
-
-    // If a nearest blood bank is found, update the map
-    if (nearestBloodBank != null) {
-      _googleMapController.animateCamera(
-        CameraUpdate.newLatLngZoom(
-          LatLng(nearestBloodBank['latitude'], nearestBloodBank['longitude']),
-          14.0,
-        ),
-      );
-
-      setState(() {
-        // Ensure nearestBloodBank has valid latitude and longitude values
-        if (nearestBloodBank != null &&
-            nearestBloodBank['latitude'] != null &&
-            nearestBloodBank['longitude'] != null) {
-
-          // Clear any existing markers and add the nearest blood bank marker
-          _markers.clear();
-          _markers.add(Marker(
-            markerId: MarkerId(nearestBloodBank['id']),
-            position: LatLng(
-              nearestBloodBank['latitude'].toDouble(), // Ensure it's a double
-              nearestBloodBank['longitude'].toDouble(), // Ensure it's a double
-            ),
-            infoWindow: InfoWindow(title: nearestBloodBank['name']),
-          ));
-        } else {
-          print("Invalid nearestBloodBank data: Latitude and/or Longitude missing.");
+        if (distance < closestDistance) {
+          closestDistance = distance;
+          nearestBloodBank = bloodBank;
         }
-      });
+      }
 
+      if (nearestBloodBank != null) {
+        _googleMapController.animateCamera(
+          CameraUpdate.newLatLngZoom(
+            LatLng(nearestBloodBank['latitude'], nearestBloodBank['longitude']),
+            14.0,
+          ),
+        );
+
+        setState(() {
+          if (nearestBloodBank != null &&
+              nearestBloodBank['latitude'] != null &&
+              nearestBloodBank['longitude'] != null) {
+            _markers.clear();
+            _markers.add(Marker(
+              markerId: MarkerId(nearestBloodBank['bloodBankId']),
+              position: LatLng(
+                nearestBloodBank['latitude'].toDouble(),
+                nearestBloodBank['longitude'].toDouble(),
+              ),
+              infoWindow: InfoWindow(title: nearestBloodBank['bloodBankName']),
+            ));
+          } else {
+            print("Invalid nearestBloodBank data: Latitude and/or Longitude missing.");
+          }
+        });
+      }
+    } catch (e) {
+      print("Error locating nearest blood bank: $e");
     }
   }
 
-  // Get the user's current location and place a marker
+  // Get the user's current location
   Future<Position> _getCurrentLocation() async {
     bool serviceEnabled;
     LocationPermission permission;
 
-    // Check if location services are enabled
     serviceEnabled = await Geolocator.isLocationServiceEnabled();
     if (!serviceEnabled) {
       throw Exception('Location services are disabled.');
     }
 
-    // Check and request permissions
     permission = await Geolocator.checkPermission();
     if (permission == LocationPermission.denied) {
       permission = await Geolocator.requestPermission();
@@ -254,23 +256,16 @@ class SearchScreenState extends State<SearchScreen> {
       throw Exception('Location permission permanently denied.');
     }
 
-    // Fetch current position
-    Position position = await Geolocator.getCurrentPosition(
+    return await Geolocator.getCurrentPosition(
       desiredAccuracy: LocationAccuracy.high,
     );
-
-    return await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.high);
   }
 
-  // Function to place a marker on the user's location
+  // Place a marker on the user's location
   Future<void> _placeUserLocationMarker() async {
     try {
-      // Get the current location
       Position position = await _getCurrentLocation();
-
-      // Create a LatLng object with the user's current position
       LatLng userLocation = LatLng(position.latitude, position.longitude);
-
 
       _googleMapController.animateCamera(
         CameraUpdate.newLatLngZoom(userLocation, 15.0),
@@ -325,112 +320,151 @@ class SearchScreenState extends State<SearchScreen> {
       ),
       body: Stack(
         children: [
-          // Google Map in the background
+          // Google Map as the background
           GoogleMap(
-            myLocationEnabled: true, // Enable user location only after permissions
+            myLocationEnabled: true,
             myLocationButtonEnabled: false,
             zoomControlsEnabled: true,
-            initialCameraPosition:  _initialCameraPosition,
+            initialCameraPosition: _initialCameraPosition,
             onMapCreated: (controller) => _googleMapController = controller,
             markers: _markers,
           ),
 
+          // Loading indicator overlay when data is being fetched
+          if (_isLoading)
+            const Center(child: CircularProgressIndicator()),
 
-          // Search Bar and FloatingActionButton beside it
-        Positioned(
-          top: 20,
-          left: 10,
-          right: 20,
-          child: Row(
-            children: [
-              // Search Text Field
-              Expanded(
-                child: Container(
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(8),
-                    // Optional Box Shadow if needed
-                  ),
-                  child: TextFieldInput(
-                    icon: Icons.search,
-                    textEditingController: _searchController,
-                    hintText: 'Search blood bank name...',
-                    textInputType: TextInputType.text,
-                    externalPadding: const EdgeInsets.symmetric(horizontal: 10),
-                  ),
-                ),
-              ),
-
-// ... Inside the build method's Positioned widget for the button:
-              ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  foregroundColor: Styles.tertiaryColor,
-                  backgroundColor: Styles.primaryColor,
-                  shape: const RoundedRectangleBorder(
-                    borderRadius: BorderRadius.all(Radius.circular(10)),
-                  ),
-                  padding: const EdgeInsets.all(15),
-                ),
-                onPressed: () async {
-                  try {
-                    Position position = await _getCurrentLocation();
-                    LatLng userLocation = LatLng(position.latitude, position.longitude);
-
-                    // Remove any existing user location marker
-                    _markers.removeWhere((marker) => marker.markerId == const MarkerId('user_location'));
-
-                    // Add new user location marker
-                    setState(() {
-                      _markers.add(
-                        Marker(
-                          markerId: const MarkerId('user_location'),
-                          position: userLocation,
-                          icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueAzure),
-                          infoWindow: const InfoWindow(title: 'Your Location'),
+          // Search bar and location button
+          Positioned(
+            top: 20,
+            left: 10,
+            right: 20,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Row(
+                  children: [
+                    Expanded(
+                      child: TextFieldInput(
+                        icon: Icons.search,
+                        textEditingController: _searchController,
+                        hintText: 'Search blood bank name or blood type...',
+                        textInputType: TextInputType.text,
+                        externalPadding: const EdgeInsets.symmetric(horizontal: 10),
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        foregroundColor: Styles.tertiaryColor,
+                        backgroundColor: Styles.primaryColor,
+                        shape: const RoundedRectangleBorder(
+                          borderRadius: BorderRadius.all(Radius.circular(10)),
                         ),
-                      );
-                    });
+                        padding: const EdgeInsets.all(15),
+                      ),
+                      onPressed: () async {
+                        try {
+                          Position position = await _getCurrentLocation();
+                          LatLng userLocation = LatLng(position.latitude, position.longitude);
 
-                    // Move camera to user location
-                    _googleMapController.animateCamera(
-                      CameraUpdate.newLatLngZoom(userLocation, 15.0),
-                    );
-                  } catch (e) {
-                    print('Error locating user: $e');
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text('Could not fetch location: $e')),
-                    );
-                  }
-                },
-                child: const Icon(Icons.location_searching),
-              ),
-            ],
+                          // Remove existing user location marker if any
+                          _markers.removeWhere(
+                                  (marker) => marker.markerId == const MarkerId('user_location'));
+
+                          setState(() {
+                            _markers.add(
+                              Marker(
+                                markerId: const MarkerId('user_location'),
+                                position: userLocation,
+                                icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueAzure),
+                                infoWindow: const InfoWindow(title: 'Your Location'),
+                              ),
+                            );
+                          });
+
+                          _googleMapController.animateCamera(
+                            CameraUpdate.newLatLngZoom(userLocation, 15.0),
+                          );
+                        } catch (e) {
+                          print('Error locating user: $e');
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text('Could not fetch location: $e')),
+                          );
+                        }
+                      },
+                      child: const Icon(Icons.location_searching),
+                    ),
+                  ],
+                ),
+                // Dropdown list for search results
+                if (_searchController.text.isNotEmpty)
+                  Container(
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(8),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black26,
+                          blurRadius: 4,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
+                    ),
+                    margin: const EdgeInsets.only(top: 10),
+                    constraints: const BoxConstraints(maxHeight: 200),
+                    child: ListView.builder(
+                      shrinkWrap: true,
+                      itemCount: _filteredBloodBanks.length,
+                      itemBuilder: (context, index) {
+                        final bank = _filteredBloodBanks[index];
+                        return ListTile(
+                          title: Text(bank['bloodBankName']),
+                          subtitle: Text(
+                            bank['bloodTypes'].join(', '),
+                            style: const TextStyle(fontSize: 12),
+                          ),
+                          onTap: () {
+                            final LatLng position = LatLng(
+                              bank['latitude'] as double,
+                              bank['longitude'] as double,
+                            );
+                            _googleMapController.animateCamera(
+                              CameraUpdate.newLatLngZoom(position, 14),
+                            );
+                            _searchController.clear();
+                          },
+                        );
+                      },
+                    ),
+                  ),
+              ],
+            ),
           ),
-        ),
 
-        // 'Find Nearest Blood Bank' Button at the bottom
-        Positioned(
-          bottom: 20,
-          left: 20,
-          right: 60,
-          child: ElevatedButton(
-            onPressed: _locateNearestBloodBank,
-            style: ElevatedButton.styleFrom(
-              minimumSize: Size(double.infinity, 50), // Make the button full width
-              backgroundColor: Styles.primaryColor,
-              foregroundColor: Styles.tertiaryColor,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(10),
+          // "Find Nearest Blood Bank" Button at the bottom
+          Positioned(
+            bottom: 20,
+            left: 20,
+            right: 60,
+            child: ElevatedButton(
+              onPressed: _locateNearestBloodBank,
+              style: ElevatedButton.styleFrom(
+                minimumSize: const Size(double.infinity, 50),
+                backgroundColor: Styles.primaryColor,
+                foregroundColor: Styles.tertiaryColor,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
+              ),
+              child: Text(
+                'Find Nearest Blood Bank',
+                style: Styles.headerStyle6.copyWith(color: Styles.tertiaryColor),
               ),
             ),
-            child: Text(
-              'Find Nearest Blood Bank',
-              style: Styles.headerStyle6.copyWith(color: Styles.tertiaryColor),
-            ),
           ),
-
-        ),
-      ],
-    ),
-  );
-}
+        ],
+      ),
+    );
+  }
 }
