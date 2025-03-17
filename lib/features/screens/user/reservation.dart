@@ -7,7 +7,7 @@ import 'package:redpulse/features/screens/user/sub/reservationdetails.dart';
 import 'package:redpulse/utilities/constants/styles.dart';
 
 class ReservationScreen extends StatefulWidget {
-  const ReservationScreen({Key? key}) : super(key: key);
+  const ReservationScreen({super.key});
 
   @override
   ReservationScreenState createState() => ReservationScreenState();
@@ -37,7 +37,7 @@ class ReservationScreenState extends State<ReservationScreen> {
           .snapshots()
           .map((snapshot) {
         return snapshot.docs.map((doc) {
-          return ReservationModel.fromFirestore(doc.id, doc.data() as Map<String, dynamic>);
+          return ReservationModel.fromFirestore(doc.id, doc.data());
         }).toList();
       });
       await _fetchBloodBankName();

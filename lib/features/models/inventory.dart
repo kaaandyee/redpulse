@@ -1,5 +1,4 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:redpulse/features/screens/admin/inventory.dart';
 
 class InventoryModel {
   final String bloodType;

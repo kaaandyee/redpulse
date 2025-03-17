@@ -7,7 +7,7 @@ import 'package:redpulse/features/screens/user/search.dart';
 import 'package:redpulse/utilities/constants/styles.dart';
 
 class UBottomBar extends StatefulWidget {
-  const UBottomBar({Key? key}) : super(key: key);
+  const UBottomBar({super.key});
 
   @override
   State<UBottomBar> createState() => _UBottomBarState();

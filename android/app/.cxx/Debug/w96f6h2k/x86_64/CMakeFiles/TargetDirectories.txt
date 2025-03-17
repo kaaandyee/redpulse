@@ -1,0 +1,2 @@
+C:/src/FlutterProjects/redpulse/android/app/.cxx/Debug/w96f6h2k/x86_64/CMakeFiles/edit_cache.dir
+C:/src/FlutterProjects/redpulse/android/app/.cxx/Debug/w96f6h2k/x86_64/CMakeFiles/rebuild_cache.dir

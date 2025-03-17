@@ -10,7 +10,7 @@ import 'package:redpulse/widgets/statusbadge.dart';
 class BloodBankDetailsScreen extends StatefulWidget {
   final String bloodBankId;
 
-  const BloodBankDetailsScreen({Key? key, required this.bloodBankId}) : super(key: key);
+  const BloodBankDetailsScreen({super.key, required this.bloodBankId});
 
   @override
   BloodBankDetailsScreenState createState() => BloodBankDetailsScreenState();

@@ -1,16 +1,12 @@
-import 'dart:io';
-import 'dart:typed_data';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:image_picker/image_picker.dart';
 
 import 'package:redpulse/features/models/inventory.dart';
 import 'package:redpulse/features/models/bloodbank.dart';
 import 'package:redpulse/features/models/users.dart';
-import 'package:redpulse/features/screens/admin/home.dart';
 import 'package:redpulse/features/screens/admin/start.dart';
 import 'package:redpulse/features/screens/user/start.dart';
 import 'package:redpulse/utilities/constants/enums.dart';
@@ -78,7 +74,7 @@ class AuthMethod {
         // If the user is an Admin and no bloodBankId is provided, set bloodBankId to null
         if (userRole == AppRole.admin) {
           userAdmin = userAdmin.copyWith(
-              bloodBankId: bloodBankId ?? null); // Use null if no bloodBankId
+              bloodBankId: bloodBankId); // Use null if no bloodBankId
         }
 
         // Save user data to Firestore

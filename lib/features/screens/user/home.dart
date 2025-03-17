@@ -6,7 +6,7 @@ import 'package:redpulse/features/screens/user/sub/userCardsHome.dart';
 import 'package:redpulse/utilities/constants/styles.dart';
 
 class UserHome extends StatelessWidget {
-  const UserHome({Key? key}) : super(key: key);
+  const UserHome({super.key});
 
   @override
   Widget build(BuildContext context) {

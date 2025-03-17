@@ -1,5 +1,5 @@
 import 'dart:io';
-import 'dart:typed_data'; // Import this to work with Uint8List.
+// Import this to work with Uint8List.
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
@@ -13,7 +13,7 @@ import 'package:flutter/foundation.dart';
 class UpdateProfileDialog extends StatefulWidget {
   final UserAdminModel user;
 
-  const UpdateProfileDialog({Key? key, required this.user}) : super(key: key);
+  const UpdateProfileDialog({super.key, required this.user});
 
   @override
   _UpdateProfileDialogState createState() => _UpdateProfileDialogState();
@@ -73,12 +73,8 @@ class _UpdateProfileDialogState extends State<UpdateProfileDialog> {
                 format: format,
               );
               quality -= 10;
-            } while (imageBytes != null &&
-                imageBytes.length > 500 * 1024 &&
+            } while (imageBytes!.length > 500 * 1024 &&
                 quality > 10);
-            if (imageBytes == null) {
-              throw Exception("Image compression failed.");
-            }
           } else {
             imageBytes = await file.readAsBytes();
           }

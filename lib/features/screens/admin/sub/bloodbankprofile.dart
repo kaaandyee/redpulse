@@ -4,13 +4,10 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:intl/intl.dart';
 import 'package:redpulse/features/models/bloodbank.dart';
-import 'package:redpulse/features/models/users.dart';
-import 'package:redpulse/features/screens/login.dart';
-import 'package:redpulse/services/auth.dart';
 import 'package:redpulse/utilities/constants/styles.dart';
 
 class BloodBankProfileScreen extends StatefulWidget {
-  const BloodBankProfileScreen({Key? key}) : super(key: key);
+  const BloodBankProfileScreen({super.key});
 
   Future<String?> get adminId async {
     try {
@@ -140,19 +137,19 @@ class _BloodBankProfileScreenState extends State<BloodBankProfileScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text('Blood Bank Name:', style: Styles.headerStyle5.copyWith(fontSize: 18, color: Styles.accentColor)),
-                      Text('${bloodBank.bloodBankName}', style: Styles.headerStyle5.copyWith(fontSize: 20, fontWeight: FontWeight.bold, color: Styles.accentColor)),
+                      Text(bloodBank.bloodBankName, style: Styles.headerStyle5.copyWith(fontSize: 20, fontWeight: FontWeight.bold, color: Styles.accentColor)),
                       SizedBox(height: 15),
 
                       Text('Email:', style: Styles.headerStyle5.copyWith(fontSize: 18, color: Styles.accentColor)),
-                      Text('${bloodBank.email}', style: Styles.headerStyle5.copyWith(fontSize: 20, fontWeight: FontWeight.bold, color: Styles.accentColor)),
+                      Text(bloodBank.email, style: Styles.headerStyle5.copyWith(fontSize: 20, fontWeight: FontWeight.bold, color: Styles.accentColor)),
                       SizedBox(height: 15),
 
                       Text('Address:', style: Styles.headerStyle5.copyWith(fontSize: 18, color: Styles.accentColor)),
-                      Text('${bloodBank.address}', style: Styles.headerStyle5.copyWith(fontSize: 20, fontWeight: FontWeight.bold, color: Styles.accentColor)),
+                      Text(bloodBank.address, style: Styles.headerStyle5.copyWith(fontSize: 20, fontWeight: FontWeight.bold, color: Styles.accentColor)),
                       SizedBox(height: 15),
 
                       Text('Contact Number:', style: Styles.headerStyle5.copyWith(fontSize: 18, color: Styles.accentColor)),
-                      Text('${bloodBank.contactNumber}', style: Styles.headerStyle5.copyWith(fontSize: 20, fontWeight: FontWeight.bold, color: Styles.accentColor)),
+                      Text(bloodBank.contactNumber, style: Styles.headerStyle5.copyWith(fontSize: 20, fontWeight: FontWeight.bold, color: Styles.accentColor)),
                       SizedBox(height: 15),
 
                       Text('Location (Latitude, Longitude):', style: Styles.headerStyle5.copyWith(fontSize: 18, color: Styles.accentColor)),

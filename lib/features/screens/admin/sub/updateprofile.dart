@@ -6,7 +6,7 @@ class UpdateProfileScreen extends StatefulWidget {
   final String bloodBankId;
   final BloodBankModel bloodBank;
 
-  const UpdateProfileScreen({Key? key, required this.bloodBankId, required this.bloodBank}) : super(key: key);
+  const UpdateProfileScreen({super.key, required this.bloodBankId, required this.bloodBank});
 
   @override
   _UpdateProfileScreenState createState() => _UpdateProfileScreenState();

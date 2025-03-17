@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 class Confirmlogout extends StatefulWidget {
-  const Confirmlogout({Key? key}) : super(key: key);
+  const Confirmlogout({super.key});
 
   @override
   State<Confirmlogout> createState() => _ConfirmlogoutState();

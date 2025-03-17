@@ -11,7 +11,7 @@ import 'package:redpulse/widgets/statusbadge.dart';
 class Inventory extends StatefulWidget {
   final String bloodBankId;
 
-  const Inventory({Key? key, required this.bloodBankId}) : super(key: key);
+  const Inventory({super.key, required this.bloodBankId});
 
   @override
   InventoryState createState() => InventoryState();

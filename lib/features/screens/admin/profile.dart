@@ -9,7 +9,7 @@ import '../../../widgets/confirmLogout.dart';
 class ProfileScreen extends StatelessWidget {
   final String? adminId; // Made adminId optional
 
-  const ProfileScreen({Key? key, this.adminId}) : super(key: key);
+  const ProfileScreen({super.key, this.adminId});
 
   @override
   Widget build(BuildContext context) {

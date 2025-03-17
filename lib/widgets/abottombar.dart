@@ -179,7 +179,7 @@ class _ABottomBarState extends State<ABottomBar> {
         // Use the fetched bloodBankId or a default value.
         String? bloodBankId = snapshot.hasData ? snapshot.data : "null";
         // Create the list of widget options based on the bloodBankId.
-        List<Widget> _widgetOptions = _getWidgetOptions(bloodBankId);
+        List<Widget> widgetOptions = _getWidgetOptions(bloodBankId);
 
         return WillPopScope(
           onWillPop: _onWillPop,
@@ -195,7 +195,7 @@ class _ABottomBarState extends State<ABottomBar> {
                       padding: EdgeInsets.only(left: isWide ? 96 : 0),
                       child: IndexedStack(
                         index: _selectedIndex,
-                        children: _widgetOptions,
+                        children: widgetOptions,
                       ),
                     ),
                     // Left navigation bar for wide screens.

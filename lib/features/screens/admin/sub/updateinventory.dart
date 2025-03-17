@@ -1,10 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:redpulse/features/screens/admin/inventory.dart';
-import 'package:redpulse/features/screens/admin/start.dart';
 import 'package:redpulse/services/auth.dart';
 import 'package:redpulse/utilities/constants/styles.dart';
-import 'package:redpulse/widgets/abottombar.dart';
 import 'package:redpulse/widgets/button.dart';
 import 'package:redpulse/widgets/textfield.dart';
 import 'package:redpulse/features/models/inventory.dart';
@@ -12,7 +9,7 @@ import 'package:redpulse/features/models/inventory.dart';
 class UpdateInventory extends StatefulWidget {
   final String bloodBankId;
 
-  const UpdateInventory({Key? key, required this.bloodBankId}) : super(key: key);
+  const UpdateInventory({super.key, required this.bloodBankId});
 
   @override
   UpdateInventoryState createState() => UpdateInventoryState();

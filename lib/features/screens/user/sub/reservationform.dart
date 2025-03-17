@@ -3,13 +3,12 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:redpulse/features/models/inventory.dart';
 import 'package:redpulse/services/auth.dart';
 import 'package:redpulse/utilities/constants/styles.dart';
-import 'package:redpulse/widgets/button.dart';
 
 class ReservationFormScreen extends StatefulWidget {
   final String bloodBankId;
   final List<InventoryModel> inventoryList;
 
-  const ReservationFormScreen({Key? key, required this.bloodBankId, required this.inventoryList}) : super(key: key);
+  const ReservationFormScreen({super.key, required this.bloodBankId, required this.inventoryList});
 
   @override
   _ReservationFormScreenState createState() => _ReservationFormScreenState();

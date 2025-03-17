@@ -4,12 +4,10 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:intl/intl.dart';
 import 'package:redpulse/features/models/users.dart';
-import 'package:redpulse/features/screens/login.dart';
-import 'package:redpulse/services/auth.dart';
 import 'package:redpulse/utilities/constants/styles.dart';
 
 class AdminProfileScreen extends StatefulWidget {
-  const AdminProfileScreen({Key? key}) : super(key: key);
+  const AdminProfileScreen({super.key});
 
   Future<String?> get userId async {
     try {
@@ -130,23 +128,23 @@ class _AdminProfileScreenState extends State<AdminProfileScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text('Full Name:', style: Styles.headerStyle5.copyWith(fontSize: 18, color: Styles.accentColor)),
-                      Text('${user.fullName}', style: Styles.headerStyle5.copyWith(fontSize: 20, fontWeight: FontWeight.bold, color: Styles.accentColor)),
+                      Text(user.fullName, style: Styles.headerStyle5.copyWith(fontSize: 20, fontWeight: FontWeight.bold, color: Styles.accentColor)),
                       SizedBox(height: 15),
 
                       Text('Email:', style: Styles.headerStyle5.copyWith(fontSize: 18, color: Styles.accentColor)),
-                      Text('${user.email}', style: Styles.headerStyle5.copyWith(fontSize: 20, fontWeight: FontWeight.bold, color: Styles.accentColor)),
+                      Text(user.email, style: Styles.headerStyle5.copyWith(fontSize: 20, fontWeight: FontWeight.bold, color: Styles.accentColor)),
                       SizedBox(height: 15),
 
                       Text('Phone Number:', style: Styles.headerStyle5.copyWith(fontSize: 18, color: Styles.accentColor)),
-                      Text('${user.phoneNumber}', style: Styles.headerStyle5.copyWith(fontSize: 20, fontWeight: FontWeight.bold, color: Styles.accentColor)),
+                      Text(user.phoneNumber, style: Styles.headerStyle5.copyWith(fontSize: 20, fontWeight: FontWeight.bold, color: Styles.accentColor)),
                       SizedBox(height: 15),
 
                       Text('Address:', style: Styles.headerStyle5.copyWith(fontSize: 18, color: Styles.accentColor)),
-                      Text('${user.address}', style: Styles.headerStyle5.copyWith(fontSize: 20, fontWeight: FontWeight.bold, color: Styles.accentColor)),
+                      Text(user.address, style: Styles.headerStyle5.copyWith(fontSize: 20, fontWeight: FontWeight.bold, color: Styles.accentColor)),
                       SizedBox(height: 15),
 
                       Text('Role:', style: Styles.headerStyle5.copyWith(fontSize: 18, color: Styles.accentColor)),
-                      Text('${user.role}', style: Styles.headerStyle5.copyWith(fontSize: 20, fontWeight: FontWeight.bold, color: Styles.accentColor)),
+                      Text(user.role, style: Styles.headerStyle5.copyWith(fontSize: 20, fontWeight: FontWeight.bold, color: Styles.accentColor)),
                       SizedBox(height: 15),
 
                       Text('Account Created:', style: Styles.headerStyle5.copyWith(fontSize: 18, color: Styles.accentColor)),

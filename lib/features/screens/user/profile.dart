@@ -7,13 +7,12 @@ import 'package:intl/intl.dart';
 import 'package:redpulse/features/models/users.dart';
 import 'package:redpulse/features/screens/login.dart';
 import 'package:redpulse/features/screens/user/sub/updateprofile.dart';
-import 'package:redpulse/services/auth.dart';
 import 'package:redpulse/utilities/constants/styles.dart';
 
 import '../../../widgets/confirmLogout.dart';
 
 class ProfileScreen extends StatefulWidget {
-  const ProfileScreen({Key? key}) : super(key: key);
+  const ProfileScreen({super.key});
 
   Future<String?> get userId async {
     try {
@@ -171,7 +170,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   Text('Full Name:',
                       style: Styles.headerStyle5.copyWith(
                           fontSize: 18, color: Styles.accentColor)),
-                  Text('${user.fullName}',
+                  Text(user.fullName,
                       style: Styles.headerStyle5.copyWith(
                           fontSize: 20,
                           fontWeight: FontWeight.bold,
@@ -180,7 +179,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   Text('Email:',
                       style: Styles.headerStyle5.copyWith(
                           fontSize: 18, color: Styles.accentColor)),
-                  Text('${user.email}',
+                  Text(user.email,
                       style: Styles.headerStyle5.copyWith(
                           fontSize: 20,
                           fontWeight: FontWeight.bold,
@@ -189,7 +188,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   Text('Phone Number:',
                       style: Styles.headerStyle5.copyWith(
                           fontSize: 18, color: Styles.accentColor)),
-                  Text('${user.phoneNumber}',
+                  Text(user.phoneNumber,
                       style: Styles.headerStyle5.copyWith(
                           fontSize: 20,
                           fontWeight: FontWeight.bold,
@@ -198,7 +197,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   Text('Address:',
                       style: Styles.headerStyle5.copyWith(
                           fontSize: 18, color: Styles.accentColor)),
-                  Text('${user.address}',
+                  Text(user.address,
                       style: Styles.headerStyle5.copyWith(
                           fontSize: 20,
                           fontWeight: FontWeight.bold,
@@ -219,13 +218,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.start,
                     children: [
-                      Text('${user.bloodType}',
+                      Text(user.bloodType,
                           style: Styles.headerStyle5.copyWith(
                               fontSize: 20,
                               fontWeight: FontWeight.bold,
                               color: Styles.accentColor)),
                       const SizedBox(width: 135),
-                      Text('${user.role}',
+                      Text(user.role,
                           style: Styles.headerStyle5.copyWith(
                               fontSize: 20,
                               fontWeight: FontWeight.bold,

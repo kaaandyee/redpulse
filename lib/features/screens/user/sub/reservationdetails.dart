@@ -3,12 +3,11 @@ import 'package:intl/intl.dart';
 import 'package:redpulse/features/models/reservation.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:redpulse/utilities/constants/styles.dart';
-import 'package:redpulse/widgets/button.dart';
 
 class ReservationDetailsScreen extends StatefulWidget {
   final String reservationId;  // Accept reservationId as a parameter
 
-  const ReservationDetailsScreen({Key? key, required this.reservationId}) : super(key: key);
+  const ReservationDetailsScreen({super.key, required this.reservationId});
 
   @override
   _ReservationDetailsScreenState createState() => _ReservationDetailsScreenState();

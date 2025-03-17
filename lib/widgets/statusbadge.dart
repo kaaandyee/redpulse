@@ -4,7 +4,7 @@ import 'package:redpulse/utilities/constants/styles.dart';
 class StatusBadge extends StatelessWidget {
   final String status;
 
-  StatusBadge({required this.status});
+  const StatusBadge({super.key, required this.status});
 
   @override
   Widget build(BuildContext context) {

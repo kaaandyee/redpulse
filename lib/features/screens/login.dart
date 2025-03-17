@@ -1,12 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:redpulse/features/screens/admin/start.dart';
-import 'package:redpulse/features/screens/user/home.dart';
 import 'package:redpulse/features/screens/user/start.dart';
 import 'package:redpulse/services/auth.dart';
 import 'package:redpulse/services/googleauth.dart';
 import 'package:redpulse/services/password.dart';
-import 'package:redpulse/services/phoneauth.dart';
-import 'package:redpulse/utilities/constants/enums.dart';
 import 'package:redpulse/utilities/constants/styles.dart';
 import 'package:redpulse/widgets/button.dart';
 import 'package:redpulse/widgets/snackbar';
@@ -70,27 +66,28 @@ class _LoginScreenState extends State<LoginScreen> {
       body: SafeArea(
         child: MovingBackground(
         animationType: AnimationType.translation,
-         backgroundColor: Colors.grey[400],
+         backgroundColor: const Color.fromARGB(255, 219, 216, 216),
         circles: const [
-    MovingCircle(color: Colors.red),
-    MovingCircle(color: Colors.red),
-    MovingCircle(color: Colors.red),
-    MovingCircle(color: Colors.red),
-    MovingCircle(color: Colors.red),
+    MovingCircle(color: Color.fromARGB(95, 230, 132, 125)),
+    MovingCircle(color: Color.fromARGB(95, 230, 132, 125)),
+    MovingCircle(color: Color.fromARGB(95, 230, 132, 125)),
+    MovingCircle(color: Color.fromARGB(95, 230, 132, 125)),
     ],
         child: SizedBox(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Text("RED PULSE", style: GoogleFonts.electrolize(
-                  fontSize: 50,
-                  fontWeight: FontWeight.bold,
-                  fontStyle: FontStyle.italic,
-                  color: Colors.white)),
+              Image.asset(
+                'assets/images/logoo.png',  // Path to your logo image
+                height: 180,  // Adjust the height of the logo as needed
+                width: 180,
+                // Adjust the width of the logo as needed
+              ),
+              const SizedBox(height: 25),
               Text("LOG IN", style: GoogleFonts.roboto(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white)),
+                  fontSize: 35,
+                  fontWeight: FontWeight.w700,
+                  color: const Color.fromARGB(250, 212, 61, 61))),
               const SizedBox(height: 30),
               TextFieldInput(
                 icon: Icons.person,
@@ -107,7 +104,12 @@ class _LoginScreenState extends State<LoginScreen> {
               ),
               const ForgotPassword(),
               MyButtons(onTap: loginUser, text: "Log In"),
-              const SizedBox(height: 20),
+              const SizedBox(height: 10),
+              Text(
+                      "or",
+                      style: Styles.headerStyle5.copyWith(color: Styles.accentColor),
+                    ),
+              const SizedBox(height: 10),
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 25),
                 child: ElevatedButton(

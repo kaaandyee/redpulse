@@ -1,16 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
-import 'package:flutter/material.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:intl/intl.dart';
 import 'package:redpulse/utilities/constants/styles.dart';
 
 class AdminReservationScreen extends StatefulWidget {
   final String bloodBankId;
 
-  const AdminReservationScreen({Key? key, required this.bloodBankId})
-      : super(key: key);
+  const AdminReservationScreen({super.key, required this.bloodBankId});
 
   @override
   State<AdminReservationScreen> createState() => _AdminReservationScreenState();
@@ -320,13 +317,6 @@ Future<void> _updateReservationStatus(
     String bloodBankId = reservationData?['bloodBankId'];
     String bloodType = reservationData?['bloodType'];
 
-    if (bloodBankId == null || bloodType == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Blood bank ID or blood type not found in reservation.')),
-      );
-      return;
-    }
-
     // Update the reservation status
     await reservationRef.update({'status': newStatus});
 
@@ -351,7 +341,7 @@ Future<void> _updateReservationStatus(
         });
 
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Inventory updated. ${quantity} unit/s added back.')),
+          SnackBar(content: Text('Inventory updated. $quantity unit/s added back.')),
         );
       } else {
         ScaffoldMessenger.of(context).showSnackBar(

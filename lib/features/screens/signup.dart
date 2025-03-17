@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_moving_background/enums/animation_types.dart';
 import 'package:flutter_moving_background/flutter_moving_background.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:redpulse/features/screens/admin/start.dart';
 import 'package:redpulse/features/screens/user/start.dart';
 import 'package:redpulse/services/auth.dart';
@@ -120,22 +121,31 @@ class _SignupScreenState extends State<SignupScreen> {
       body: SafeArea(
         child: MovingBackground(
         animationType: AnimationType.translation,
-        backgroundColor: Colors.grey[400],
+        backgroundColor: const Color.fromARGB(255, 219, 216, 216),
         circles: const [
-        MovingCircle(color: Colors.red),
-    MovingCircle(color: Colors.red),
-    MovingCircle(color: Colors.red),
-    MovingCircle(color: Colors.red),
-    MovingCircle(color: Colors.red),
+    MovingCircle(color: Color.fromARGB(95, 230, 132, 125)),
+    MovingCircle(color: Color.fromARGB(95, 230, 132, 125)),
+    MovingCircle(color: Color.fromARGB(95, 230, 132, 125)),
+    MovingCircle(color: Color.fromARGB(95, 230, 132, 125)),
     ],
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Text("SIGN UP", style: Styles.headerStyle8),
-            const SizedBox(height: 30),
+            Image.asset(
+                'assets/images/logoo.png',  // Path to your logo image
+                height: 120,  // Adjust the height of the logo as needed
+                width: 120,
+                // Adjust the width of the logo as needed
+              ),
+              const SizedBox(height: 15),
+              Text("SIGN UP", style: GoogleFonts.roboto(
+                  fontSize: 30,
+                  fontWeight: FontWeight.w700,
+                  color: const Color.fromARGB(250, 212, 61, 61))),
+              const SizedBox(height: 15),
 
             Padding(
-              padding: const EdgeInsets.only(left: 35),
+              padding: const EdgeInsets.only(left: 25),
               child: Align(
                 alignment: Alignment.centerLeft,
                 child: Text(

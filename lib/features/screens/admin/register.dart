@@ -1,7 +1,4 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:redpulse/features/models/inventory.dart';
-import 'package:redpulse/features/screens/admin/home.dart';
 import 'package:redpulse/features/screens/admin/start.dart';
 import 'package:redpulse/services/auth.dart';
 import 'package:redpulse/services/validation.dart';
