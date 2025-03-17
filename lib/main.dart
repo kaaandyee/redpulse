@@ -14,21 +14,27 @@ GlobalKey<ScaffoldMessengerState>();
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-  );
-  runApp(MultiProvider(
-    providers: [
-      StreamProvider<User?>.value(
-        value: FirebaseAuth.instance.authStateChanges(),
-        initialData: null,
-      ),
-      // Add other providers as needed
-    ],
-    child: const MyApp(),
-  ),
+
+  if (Firebase.apps.isEmpty) {
+    await Firebase.initializeApp(
+      name: "Red Pulse Krishna",
+      options: DefaultFirebaseOptions.currentPlatform,
+    );
+  }
+
+  runApp(
+    MultiProvider(
+      providers: [
+        StreamProvider<User?>.value(
+          value: FirebaseAuth.instance.authStateChanges(),
+          initialData: null,
+        ),
+      ],
+      child: const MyApp(),
+    ),
   );
 }
+
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
