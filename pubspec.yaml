@@ -55,6 +55,7 @@ dependencies:
   firebase_storage: ^12.4.2
   flutter_image_compress: ^2.4.0
   flutterfire_cli: ^0.1.1+2
+  awesome_snackbar_content: ^0.1.1
 
 dev_dependencies:
   flutter_test:
