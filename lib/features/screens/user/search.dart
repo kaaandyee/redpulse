@@ -15,14 +15,16 @@ class SearchScreen extends StatefulWidget {
 
 class SearchScreenState extends State<SearchScreen> {
   static const _initialCameraPosition = CameraPosition(
-    target: LatLng(10.317870822438445, 123.88928644803421), // Default camera position
+    target: LatLng(
+        10.317870822438445, 123.88928644803421), // Default camera position
     zoom: 11.5,
   );
 
   late GoogleMapController _googleMapController;
   final Set<Marker> _markers = {}; // Stores all the blood bank markers
   List<Map<String, dynamic>> _bloodBanks = []; // Stores fetched blood banks
-  List<Map<String, dynamic>> _filteredBloodBanks = []; // Stores filtered blood banks based on search input
+  List<Map<String, dynamic>> _filteredBloodBanks =
+      []; // Stores filtered blood banks based on search input
   final TextEditingController _searchController = TextEditingController();
 
   // Cache for inventory details: maps bloodBankId to list of available blood types
@@ -38,14 +40,15 @@ class SearchScreenState extends State<SearchScreen> {
     _getCurrentLocation(); // Automatically fetch location on screen load
     _placeUserLocationMarker();
     _fetchBloodBanks(); // Fetch all blood bank locations and inventory details
-    _searchController.addListener(_filterBloodBanks); // Listen for search field changes
+    _searchController
+        .addListener(_filterBloodBanks); // Listen for search field changes
   }
 
   // Fetch blood banks from Firestore and pre-fetch inventory details for caching
   Future<void> _fetchBloodBanks() async {
     try {
       QuerySnapshot snapshot =
-      await FirebaseFirestore.instance.collection('bloodbanks').get();
+          await FirebaseFirestore.instance.collection('bloodbanks').get();
 
       List<Map<String, dynamic>> fetchedBloodBanks = [];
       for (var doc in snapshot.docs) {
@@ -86,7 +89,8 @@ class SearchScreenState extends State<SearchScreen> {
 
       setState(() {
         _bloodBanks = fetchedBloodBanks; // Store the fetched blood banks
-        _filteredBloodBanks = fetchedBloodBanks; // Initially show all blood banks
+        _filteredBloodBanks =
+            fetchedBloodBanks; // Initially show all blood banks
       });
 
       // Create markers for all fetched blood banks
@@ -117,14 +121,14 @@ class SearchScreenState extends State<SearchScreen> {
         if (name.contains(query)) {
           print("Matched Name: $name");
         }
-        if (availableBloodTypes.any((bloodType) =>
-            bloodType.toLowerCase().contains(query))) {
+        if (availableBloodTypes
+            .any((bloodType) => bloodType.toLowerCase().contains(query))) {
           print("Matched Blood Type in: $name");
         }
 
         bool nameMatches = name.contains(query);
-        bool bloodTypeMatches = availableBloodTypes.any((bloodType) =>
-            bloodType.toLowerCase().contains(query));
+        bool bloodTypeMatches = availableBloodTypes
+            .any((bloodType) => bloodType.toLowerCase().contains(query));
 
         return nameMatches || bloodTypeMatches;
       }).toList();
@@ -132,8 +136,6 @@ class SearchScreenState extends State<SearchScreen> {
 
     _createMarkers();
   }
-
-
 
   // Create markers using pre-fetched inventory details from cache
   void _createMarkers() {
@@ -166,8 +168,8 @@ class SearchScreenState extends State<SearchScreen> {
             Navigator.push(
               context,
               MaterialPageRoute(
-                builder: (context) =>
-                    BloodBankDetailsScreen(bloodBankId: bloodBank['bloodBankId']),
+                builder: (context) => BloodBankDetailsScreen(
+                    bloodBankId: bloodBank['bloodBankId']),
               ),
             );
           },
@@ -225,7 +227,8 @@ class SearchScreenState extends State<SearchScreen> {
               infoWindow: InfoWindow(title: nearestBloodBank['bloodBankName']),
             ));
           } else {
-            print("Invalid nearestBloodBank data: Latitude and/or Longitude missing.");
+            print(
+                "Invalid nearestBloodBank data: Latitude and/or Longitude missing.");
           }
         });
       }
@@ -331,8 +334,7 @@ class SearchScreenState extends State<SearchScreen> {
           ),
 
           // Loading indicator overlay when data is being fetched
-          if (_isLoading)
-            const Center(child: CircularProgressIndicator()),
+          if (_isLoading) const Center(child: CircularProgressIndicator()),
 
           // Search bar and location button
           Positioned(
@@ -350,7 +352,8 @@ class SearchScreenState extends State<SearchScreen> {
                         textEditingController: _searchController,
                         hintText: 'Search blood bank name or blood type...',
                         textInputType: TextInputType.text,
-                        externalPadding: const EdgeInsets.symmetric(horizontal: 10),
+                        externalPadding:
+                            const EdgeInsets.symmetric(horizontal: 10),
                       ),
                     ),
                     const SizedBox(width: 10),
@@ -366,19 +369,23 @@ class SearchScreenState extends State<SearchScreen> {
                       onPressed: () async {
                         try {
                           Position position = await _getCurrentLocation();
-                          LatLng userLocation = LatLng(position.latitude, position.longitude);
+                          LatLng userLocation =
+                              LatLng(position.latitude, position.longitude);
 
                           // Remove existing user location marker if any
-                          _markers.removeWhere(
-                                  (marker) => marker.markerId == const MarkerId('user_location'));
+                          _markers.removeWhere((marker) =>
+                              marker.markerId ==
+                              const MarkerId('user_location'));
 
                           setState(() {
                             _markers.add(
                               Marker(
                                 markerId: const MarkerId('user_location'),
                                 position: userLocation,
-                                icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueAzure),
-                                infoWindow: const InfoWindow(title: 'Your Location'),
+                                icon: BitmapDescriptor.defaultMarkerWithHue(
+                                    BitmapDescriptor.hueAzure),
+                                infoWindow:
+                                    const InfoWindow(title: 'Your Location'),
                               ),
                             );
                           });
@@ -389,7 +396,8 @@ class SearchScreenState extends State<SearchScreen> {
                         } catch (e) {
                           print('Error locating user: $e');
                           ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(content: Text('Could not fetch location: $e')),
+                            SnackBar(
+                                content: Text('Could not fetch location: $e')),
                           );
                         }
                       },
@@ -403,11 +411,11 @@ class SearchScreenState extends State<SearchScreen> {
                     decoration: BoxDecoration(
                       color: Colors.white,
                       borderRadius: BorderRadius.circular(8),
-                      boxShadow: [
+                      boxShadow: const [
                         BoxShadow(
                           color: Colors.black26,
                           blurRadius: 4,
-                          offset: const Offset(0, 2),
+                          offset: Offset(0, 2),
                         ),
                       ],
                     ),
@@ -459,7 +467,8 @@ class SearchScreenState extends State<SearchScreen> {
               ),
               child: Text(
                 'Find Nearest Blood Bank',
-                style: Styles.headerStyle6.copyWith(color: Styles.tertiaryColor),
+                style:
+                    Styles.headerStyle6.copyWith(color: Styles.tertiaryColor),
               ),
             ),
           ),

@@ -42,29 +42,29 @@ class InventoryState extends State<Inventory> {
       return InventoryModel.fromFirestore(doc.data() as Map<String, dynamic>);
     }).toList();
   }*/
-  
+
   Future<List<InventoryModel>> _loadInventory() async {
-  // Load inventory for the specified blood bank
-  QuerySnapshot snapshot = await FirebaseFirestore.instance
-      .collection('bloodbanks')
-      .doc(widget.bloodBankId)
-      .collection('inventories')
-      .get();
+    // Load inventory for the specified blood bank
+    QuerySnapshot snapshot = await FirebaseFirestore.instance
+        .collection('bloodbanks')
+        .doc(widget.bloodBankId)
+        .collection('inventories')
+        .get();
 
-  // Map each document to an InventoryModel instance with status handling
-  List<InventoryModel> inventoryList = [];
+    // Map each document to an InventoryModel instance with status handling
+    List<InventoryModel> inventoryList = [];
 
-  for (QueryDocumentSnapshot doc in snapshot.docs) {
-    Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
+    for (QueryDocumentSnapshot doc in snapshot.docs) {
+      Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
 
-    // Get inventory model with updated status logic
-    InventoryModel inventory = InventoryModel.fromFirestore(widget.bloodBankId, data);
-    inventoryList.add(inventory);
+      // Get inventory model with updated status logic
+      InventoryModel inventory =
+          InventoryModel.fromFirestore(widget.bloodBankId, data);
+      inventoryList.add(inventory);
+    }
+
+    return inventoryList;
   }
-
-  return inventoryList;
-}
-
 
   @override
   Widget build(BuildContext context) {
@@ -79,8 +79,11 @@ class InventoryState extends State<Inventory> {
         } else if (snapshot.hasError || !snapshot.hasData) {
           return Scaffold(
             backgroundColor: Styles.tertiaryColor,
-            appBar: AppBar(title: const Text('Error'), backgroundColor: Colors.white),
-            body: Center(child: Text(snapshot.error?.toString() ?? "Error loading name")),
+            appBar: AppBar(
+                title: const Text('Error'), backgroundColor: Colors.white),
+            body: Center(
+                child:
+                    Text(snapshot.error?.toString() ?? "Error loading name")),
           );
         }
 
@@ -158,24 +161,30 @@ class InventoryState extends State<Inventory> {
                                 contentPadding: const EdgeInsets.all(16),
                                 title: Text(
                                   'Blood Type: ${inventory.bloodType}',
-                                  style: Styles.headerStyle2.copyWith(fontWeight: FontWeight.bold),
+                                  style: Styles.headerStyle2
+                                      .copyWith(fontWeight: FontWeight.bold),
                                 ),
                                 subtitle: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Text(
                                       'Quantity: ${inventory.quantity}',
-                                      style: Styles.headerStyle5.copyWith(color: Styles.accentColor),
+                                      style: Styles.headerStyle5
+                                          .copyWith(color: Styles.accentColor),
                                     ),
                                     Text(
                                       'Last Updated: ${DateFormat('MM/dd/yyyy').format(inventory.lastUpdated)}',
-                                      style: Styles.headerStyle5.copyWith(color: Styles.accentColor),
+                                      style: Styles.headerStyle5
+                                          .copyWith(color: Styles.accentColor),
                                     ),
                                   ],
                                 ),
-                                trailing: StatusBadge(status: inventory.status), // Use the status from InventoryModel
+                                trailing: StatusBadge(
+                                    status: inventory
+                                        .status), // Use the status from InventoryModel
                               ),
-                              if (index < inventoryList.length - 1) const Divider(),
+                              if (index < inventoryList.length - 1)
+                                const Divider(),
                             ],
                           ),
                         );
@@ -197,7 +206,8 @@ class InventoryState extends State<Inventory> {
                       // If update occurred, refresh inventory
                       if (updated == true) {
                         setState(() {
-                          _inventoryFuture = _loadInventory(); // Reload inventory
+                          _inventoryFuture =
+                              _loadInventory(); // Reload inventory
                         });
                       }
                     },

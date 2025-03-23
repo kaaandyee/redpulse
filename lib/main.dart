@@ -10,7 +10,7 @@ import 'features/screens/wrapper/wrapper.dart';
 import 'firebase_options.dart';
 
 final GlobalKey<ScaffoldMessengerState> scaffoldMessengerKey =
-GlobalKey<ScaffoldMessengerState>();
+    GlobalKey<ScaffoldMessengerState>();
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -43,7 +43,7 @@ class MyApp extends StatelessWidget {
         primarySwatch: Colors.red,
         visualDensity: VisualDensity.adaptivePlatformDensity,
       ),
-      home: const Wrapper(),
+      home: const SplashScreen(),
     );
   }
 }

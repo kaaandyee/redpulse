@@ -1,33 +1,21 @@
 import 'package:flutter/material.dart';
-import 'package:redpulse/utilities/constants/styles.dart';
+import 'package:animated_splash_screen/animated_splash_screen.dart';
+//import 'login.dart'; // Import LoginScreen
+import 'wrapper/wrapper.dart'; // Import Wrapper
 
-class SplashScreen extends StatefulWidget {
-  final Widget? child;
-  const SplashScreen({super.key, this.child});
-
-  @override
-  State<SplashScreen> createState() => _SplashScreenState();
-}
-
-class _SplashScreenState extends State<SplashScreen> {
-  @override
-  void initState() {
-    Future.delayed(
-      const Duration(seconds: 3), (){
-        if(mounted) {
-          Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (context) => widget.child!), (route) => false);
-        }
-    }
-    );
-    super.initState();
-  }
+class SplashScreen extends StatelessWidget {
+  const SplashScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: Center(
-        child: Text("RED PULSE", style: Styles.headerStyle4),
-      )
+    return AnimatedSplashScreen(
+      duration: 2500, // 2.5 seconds
+      splash: 'assets/images/splash_logo.gif',
+      splashIconSize: 2000.0,
+      centered: true,
+      nextScreen: const Wrapper(),
+      splashTransition: SplashTransition.fadeTransition,
+      backgroundColor: Colors.white, // Adjust based on design
     );
   }
 }

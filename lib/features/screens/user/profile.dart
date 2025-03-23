@@ -65,7 +65,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
     if (userId != null) {
       setState(() {
         _userId = userId;
-        _userFuture = _fetchUserProfile(); // Fetch profile once userId is available.
+        _userFuture =
+            _fetchUserProfile(); // Fetch profile once userId is available.
       });
     }
   }
@@ -132,22 +133,25 @@ class _ProfileScreenState extends State<ProfileScreen> {
         ),
       ),
       body: _userId == null
-          ? const Center(child: CircularProgressIndicator()) // Show loading until userId is fetched.
+          ? const Center(
+              child:
+                  CircularProgressIndicator()) // Show loading until userId is fetched.
           : FutureBuilder<UserAdminModel?>(
-        future: _userFuture,
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
-          }
-          if (snapshot.hasError) {
-            return Center(child: Text('Error: ${snapshot.error}'));
-          }
-          if (!snapshot.hasData) {
-            return const Center(child: Text('No user data available'));
-          }
+              future: _userFuture,
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const Center(child: CircularProgressIndicator());
+                }
+                if (snapshot.hasError) {
+                  return Center(child: Text('Error: ${snapshot.error}'));
+                }
+                if (!snapshot.hasData) {
+                  return const Center(child: Text('No user data available'));
+                }
 
-          final user = snapshot.data!;
+                final user = snapshot.data!;
 
+<<<<<<< Updated upstream
           // Wrap the content in SingleChildScrollView to make it scrollable.
           return SingleChildScrollView(
             child: Padding(
@@ -258,63 +262,176 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         Navigator.of(context).pushAndRemoveUntil(
                           MaterialPageRoute(
                             builder: (context) => const LoginScreen(),
+=======
+                // Wrap the content in SingleChildScrollView to make it scrollable.
+                return SingleChildScrollView(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 50, vertical: 10),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Center(
+                          child: CircleAvatar(
+                            radius: 50,
+                            backgroundImage: user.profileImageUrl != null
+                                ? NetworkImage(user.profileImageUrl!)
+                                : const AssetImage(
+                                        'assets/images/default_profile.jpg')
+                                    as ImageProvider,
+>>>>>>> Stashed changes
                           ),
-                              (Route<dynamic> route) => false,
-                        );
-                      }
-                    },
-                    style: ElevatedButton.styleFrom(
-                      minimumSize: const Size(double.infinity, 50),
-                      backgroundColor: Styles.primaryColor,
-                      foregroundColor: Styles.tertiaryColor,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                    ),
-                    child: Text(
-                      'Log Out',
-                      style: Styles.headerStyle6.copyWith(
-                          color: Styles.tertiaryColor),
+                        ),
+                        const SizedBox(height: 20),
+                        Text('Full Name:',
+                            style: Styles.headerStyle5.copyWith(
+                                fontSize: 18, color: Styles.accentColor)),
+                        Text(user.fullName,
+                            style: Styles.headerStyle5.copyWith(
+                                fontSize: 20,
+                                fontWeight: FontWeight.bold,
+                                color: Styles.accentColor)),
+                        const SizedBox(height: 15),
+                        Text('Email:',
+                            style: Styles.headerStyle5.copyWith(
+                                fontSize: 18, color: Styles.accentColor)),
+                        Text(user.email,
+                            style: Styles.headerStyle5.copyWith(
+                                fontSize: 20,
+                                fontWeight: FontWeight.bold,
+                                color: Styles.accentColor)),
+                        const SizedBox(height: 15),
+                        Text('Phone Number:',
+                            style: Styles.headerStyle5.copyWith(
+                                fontSize: 18, color: Styles.accentColor)),
+                        Text(user.phoneNumber,
+                            style: Styles.headerStyle5.copyWith(
+                                fontSize: 20,
+                                fontWeight: FontWeight.bold,
+                                color: Styles.accentColor)),
+                        const SizedBox(height: 15),
+                        Text('Address:',
+                            style: Styles.headerStyle5.copyWith(
+                                fontSize: 18, color: Styles.accentColor)),
+                        Text(user.address,
+                            style: Styles.headerStyle5.copyWith(
+                                fontSize: 20,
+                                fontWeight: FontWeight.bold,
+                                color: Styles.accentColor)),
+                        const SizedBox(height: 15),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.start,
+                          children: [
+                            Text('Blood Type:',
+                                style: Styles.headerStyle5.copyWith(
+                                    fontSize: 18, color: Styles.accentColor)),
+                            const SizedBox(width: 62),
+                            Text('Role:',
+                                style: Styles.headerStyle5.copyWith(
+                                    fontSize: 18, color: Styles.accentColor)),
+                          ],
+                        ),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.start,
+                          children: [
+                            Text(user.bloodType,
+                                style: Styles.headerStyle5.copyWith(
+                                    fontSize: 20,
+                                    fontWeight: FontWeight.bold,
+                                    color: Styles.accentColor)),
+                            const SizedBox(width: 135),
+                            Text(user.role,
+                                style: Styles.headerStyle5.copyWith(
+                                    fontSize: 20,
+                                    fontWeight: FontWeight.bold,
+                                    color: Styles.accentColor)),
+                          ],
+                        ),
+                        const SizedBox(height: 15),
+                        Text('Account Created:',
+                            style: Styles.headerStyle5.copyWith(
+                                fontSize: 18, color: Styles.accentColor)),
+                        Text(
+                          DateFormat('MM/dd/yyyy').format(user.dateCreated),
+                          style: Styles.headerStyle5.copyWith(
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
+                              color: Styles.accentColor),
+                        ),
+                        const SizedBox(height: 30),
+                        // Logout Button
+                        ElevatedButton(
+                          onPressed: () async {
+                            // Show the confirmation dialog and await the result.
+                            final shouldLogout = await showDialog<bool>(
+                              context: context,
+                              builder: (context) => const Confirmlogout(),
+                            );
+
+                            // If the user confirms the logout, sign out and navigate to LoginScreen.
+                            if (shouldLogout == true) {
+                              await FirebaseAuth.instance.signOut();
+                              Navigator.of(context).pushAndRemoveUntil(
+                                MaterialPageRoute(
+                                  builder: (context) => const LoginScreen(),
+                                ),
+                                (Route<dynamic> route) => false,
+                              );
+                            }
+                          },
+                          style: ElevatedButton.styleFrom(
+                            minimumSize: const Size(double.infinity, 50),
+                            backgroundColor: Styles.primaryColor,
+                            foregroundColor: Styles.tertiaryColor,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                          ),
+                          child: Text(
+                            'Log Out',
+                            style: Styles.headerStyle6
+                                .copyWith(color: Styles.tertiaryColor),
+                          ),
+                        ),
+                        const SizedBox(height: 30),
+                        // Edit Profile Button
+                        ElevatedButton(
+                          onPressed: () async {
+                            final user = await _userFuture;
+                            if (user != null) {
+                              bool? updated = await showDialog<bool>(
+                                context: context,
+                                builder: (context) =>
+                                    UpdateProfileDialog(user: user),
+                              );
+                              if (updated == true) {
+                                setState(() {
+                                  _userFuture =
+                                      _fetchUserProfile(); // Refresh profile data
+                                });
+                              }
+                            }
+                          },
+                          style: ElevatedButton.styleFrom(
+                            minimumSize: const Size(double.infinity, 50),
+                            backgroundColor: Styles.primaryColor,
+                            foregroundColor: Styles.tertiaryColor,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                          ),
+                          child: Text(
+                            'Update Profile',
+                            style: Styles.headerStyle6
+                                .copyWith(color: Styles.tertiaryColor),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
-                  const SizedBox(height: 30),
-                  // Edit Profile Button
-                  ElevatedButton(
-                    onPressed: () async {
-                      final user = await _userFuture;
-                      if (user != null) {
-                        bool? updated = await showDialog<bool>(
-                          context: context,
-                          builder: (context) =>
-                              UpdateProfileDialog(user: user),
-                        );
-                        if (updated == true) {
-                          setState(() {
-                            _userFuture = _fetchUserProfile(); // Refresh profile data
-                          });
-                        }
-                      }
-                    },
-                    style: ElevatedButton.styleFrom(
-                      minimumSize: const Size(double.infinity, 50),
-                      backgroundColor: Styles.primaryColor,
-                      foregroundColor: Styles.tertiaryColor,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                    ),
-                    child: Text(
-                      'Update Profile',
-                      style: Styles.headerStyle6.copyWith(
-                          color: Styles.tertiaryColor),
-                    ),
-                  ),
-                ],
-              ),
+                );
+              },
             ),
-          );
-        },
-      ),
     );
   }
 }

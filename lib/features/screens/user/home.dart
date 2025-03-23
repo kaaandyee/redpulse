@@ -48,43 +48,43 @@ class UserHome extends StatelessWidget {
       body: user == null
           ? const Center(child: CircularProgressIndicator())
           : ListView(
-        children: [
-          // Row containing the profile image and welcome text.
-          Padding(
-            padding:
-            const EdgeInsets.symmetric(horizontal: 50, vertical: 30),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                // Profile Image
-                CircleAvatar(
-                  radius: 30,
-                  backgroundImage: (user.profileImageUrl != null &&
-                      user.profileImageUrl!.isNotEmpty)
-                      ? NetworkImage(user.profileImageUrl!)
-                      : const AssetImage(
-                      'assets/images/default_profile.jpg')
-                  as ImageProvider,
-                ),
-                const SizedBox(width: 15),
-                // Welcome Text
-                Expanded(
-                  child: Text(
-                    "Welcome, ${user.fullName}!",
-                    style: GoogleFonts.robotoMono(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                      color: Styles.primaryColor,
-                    ),
+                // Row containing the profile image and welcome text.
+                Padding(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 50, vertical: 30),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      // Profile Image
+                      CircleAvatar(
+                        radius: 30,
+                        backgroundImage: (user.profileImageUrl != null &&
+                                user.profileImageUrl!.isNotEmpty)
+                            ? NetworkImage(user.profileImageUrl!)
+                            : const AssetImage(
+                                    'assets/images/default_profile.jpg')
+                                as ImageProvider,
+                      ),
+                      const SizedBox(width: 15),
+                      // Welcome Text
+                      Expanded(
+                        child: Text(
+                          "Welcome, ${user.fullName}!",
+                          style: GoogleFonts.robotoMono(
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                            color: Styles.primaryColor,
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
+                // Other content on the home screen.
+                const userCardsHome(),
               ],
             ),
-          ),
-          // Other content on the home screen.
-          const userCardsHome(),
-        ],
-      ),
     );
   }
 }

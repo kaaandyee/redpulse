@@ -7,8 +7,6 @@ import 'package:redpulse/widgets/button.dart';
 import 'package:redpulse/widgets/snackbar';
 import 'package:redpulse/widgets/textfield.dart';
 
-
-
 class RegisterForm extends StatefulWidget {
   const RegisterForm({super.key});
 
@@ -37,91 +35,92 @@ class RegisterFormState extends State<RegisterForm> {
   }
 
   Future<void> registerBloodBank() async {
-  setState(() {
-    isLoading = true;
-  });
-
-  String bloodBankName = bloodBankNameController.text;
-  String email = emailController.text;
-  String address = addressController.text;
-  String contactNumber = contactNumberController.text;
-  String latitude = latitudeController.text;
-  String longitude = longitudeController.text;
-
-  // Validate input fields
-  if (bloodBankName.isEmpty ||
-      email.isEmpty ||
-      address.isEmpty ||
-      contactNumber.isEmpty ||
-      latitude.isEmpty ||
-      longitude.isEmpty) {
     setState(() {
-      isLoading = false;
+      isLoading = true;
     });
-    showSnackBar(context, "Please fill in all fields.");
-    return;
-  }
 
-  if (!isValidEmail(email)) {
-    setState(() {
-      isLoading = false;
-    });
-    showSnackBar(context, "Please enter a valid email address.");
-    return;
-  }
+    String bloodBankName = bloodBankNameController.text;
+    String email = emailController.text;
+    String address = addressController.text;
+    String contactNumber = contactNumberController.text;
+    String latitude = latitudeController.text;
+    String longitude = longitudeController.text;
 
-  if (!isValidPhoneNumber(contactNumber)) {
-    setState(() {
-      isLoading = false;
-    });
-    showSnackBar(context, "Please enter a valid contact number.");
-    return;
-  }
-
-  if (!isValidLatitude(latitude) || !isValidLongitude(longitude)) {
-    setState(() {
-      isLoading = false;
-    });
-    showSnackBar(context, "Invalid coordinates. Please check latitude and longitude.");
-    return;
-  }
-
-  try {
-    // Call the updated registerBloodBank method
-    String res = await AuthMethod().registerBloodBank(
-      bloodBankName: bloodBankName,
-      email: email,
-      address: address,
-      contactNumber: contactNumber,
-      latitude: double.parse(latitude),
-      longitude: double.parse(longitude),
-    );
-
-    if (res == "Blood bank successfully registered.") {
+    // Validate input fields
+    if (bloodBankName.isEmpty ||
+        email.isEmpty ||
+        address.isEmpty ||
+        contactNumber.isEmpty ||
+        latitude.isEmpty ||
+        longitude.isEmpty) {
       setState(() {
         isLoading = false;
       });
-
-      // Navigate to Admin Home or Dashboard
-      Navigator.of(context).pushReplacement(
-        MaterialPageRoute(
-          builder: (context) => AdminStart(isAdminLinkedToBloodBank: true),
-        ),
-      );
-    } else {
-      setState(() {
-        isLoading = false;
-      });
-      showSnackBar(context, res);
+      showSnackBar(context, "Please fill in all fields.");
+      return;
     }
-  } catch (error) {
-    setState(() {
-      isLoading = false;
-    });
-    showSnackBar(context, "Failed to register blood bank. Please try again.");
-  }
-}
 
+    if (!isValidEmail(email)) {
+      setState(() {
+        isLoading = false;
+      });
+      showSnackBar(context, "Please enter a valid email address.");
+      return;
+    }
+
+    if (!isValidPhoneNumber(contactNumber)) {
+      setState(() {
+        isLoading = false;
+      });
+      showSnackBar(context, "Please enter a valid contact number.");
+      return;
+    }
+
+    if (!isValidLatitude(latitude) || !isValidLongitude(longitude)) {
+      setState(() {
+        isLoading = false;
+      });
+      showSnackBar(
+          context, "Invalid coordinates. Please check latitude and longitude.");
+      return;
+    }
+
+    try {
+      // Call the updated registerBloodBank method
+      String res = await AuthMethod().registerBloodBank(
+        bloodBankName: bloodBankName,
+        email: email,
+        address: address,
+        contactNumber: contactNumber,
+        latitude: double.parse(latitude),
+        longitude: double.parse(longitude),
+      );
+
+      if (res == "Blood bank successfully registered.") {
+        setState(() {
+          isLoading = false;
+        });
+
+        // Navigate to Admin Home or Dashboard
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(
+            builder: (context) =>
+                const AdminStart(isAdminLinkedToBloodBank: true),
+          ),
+        );
+      } else {
+        setState(() {
+          isLoading = false;
+        });
+        showSnackBar(context, res);
+      }
+    } catch (error) {
+      setState(() {
+        isLoading = false;
+      });
+      showSnackBar(context, "Failed to register blood bank. Please try again.");
+    }
+  }
 
   @override
   Widget build(BuildContext context) {

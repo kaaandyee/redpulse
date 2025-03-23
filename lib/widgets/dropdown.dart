@@ -18,8 +18,9 @@ class Dropdown<T> extends StatefulWidget {
     required this.onChanged,
     required this.hintText,
     required this.label,
-    this.externalPadding = const EdgeInsets.only(top: 10, bottom: 10, left: 20, right: 20), // Default padding
-    this.height = 50, // Default height
+    this.externalPadding = const EdgeInsets.only(
+        top: 10, bottom: 10, left: 20, right: 20), // Default padding
+    this.height = 45, // Default height
     this.width = double.infinity, // Default width takes the full space
   });
 
@@ -33,30 +34,34 @@ class DropdownState<T> extends State<Dropdown<T>> {
     return Padding(
       padding: widget.externalPadding, // Using the externalPadding property
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start, // Align the label to the left
-        
+        crossAxisAlignment:
+            CrossAxisAlignment.start, // Align the label to the left
+
         children: [
           // Label for the dropdown
-          Padding(padding: const EdgeInsets.only(left: 15),
-          // Move the label a bit to the right
-            child: Text(
-              widget.label,
-              style: Styles.headerStyle6.copyWith(color: Styles.accentColor) // Style the label
-            ),
+          Padding(
+            padding: const EdgeInsets.only(left: 5),
+            // Move the label a bit to the right
+            child: Text(widget.label,
+                style: Styles.headerStyle6.copyWith(
+                    color: Styles.accentColor, fontSize: 15) // Style the label
+                ),
           ),
-          
+
           const SizedBox(height: 5), // Space between label and dropdown
-          
+
           // Container to control the size of the dropdown
           Container(
             width: widget.width, // Set width based on the widget property
             height: widget.height, // Set height for dropdown container
             decoration: BoxDecoration(
-              color: const Color.fromARGB(255, 238, 238, 238), // Background color
+              color:
+                  const Color.fromARGB(255, 238, 238, 238), // Background color
               borderRadius: BorderRadius.circular(10), // Rounded corners
             ),
             child: Padding(
-              padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 15), // Content padding
+              padding: const EdgeInsets.symmetric(
+                  vertical: 10, horizontal: 15), // Content padding
               child: DropdownButton<T>(
                 value: widget.selectedValue,
                 items: widget.enumValues.map((T value) {
@@ -65,7 +70,8 @@ class DropdownState<T> extends State<Dropdown<T>> {
                     value: value,
                     child: Text(
                       label,
-                      style: Styles.headerStyle5.copyWith(color: Styles.accentColor), // Enum to string
+                      style: Styles.headerStyle5.copyWith(
+                          color: Styles.accentColor), // Enum to string
                     ),
                   );
                 }).toList(),
@@ -74,13 +80,17 @@ class DropdownState<T> extends State<Dropdown<T>> {
                     widget.onChanged(newValue);
                   }
                 },
-                hint: Text(widget.hintText, style: Styles.headerStyle5.copyWith(color: Styles.accentColor)),
+                hint: Text(widget.hintText,
+                    style: Styles.headerStyle5
+                        .copyWith(color: Styles.accentColor)),
                 isExpanded: true, // Makes dropdown full width
                 icon: const Icon(Icons.arrow_drop_down),
                 iconSize: 30,
                 dropdownColor: Colors.white,
                 elevation: 3,
-                style: Styles.headerStyle5.copyWith(color: Styles.accentColor), // Apply same style for selected value
+                style: Styles.headerStyle5.copyWith(
+                    color: Styles
+                        .accentColor), // Apply same style for selected value
               ),
             ),
           ),

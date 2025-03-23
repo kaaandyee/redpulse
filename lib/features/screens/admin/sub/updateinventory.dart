@@ -17,7 +17,8 @@ class UpdateInventory extends StatefulWidget {
 
 class UpdateInventoryState extends State<UpdateInventory> {
   late Future<List<InventoryModel>> _inventoryFuture;
-  final Map<String, TextEditingController> _quantityControllers = {}; // Store controllers for each blood type
+  final Map<String, TextEditingController> _quantityControllers =
+      {}; // Store controllers for each blood type
   late Future<String> _bloodBankNameFuture;
 
   final AuthMethod _authMethod = AuthMethod(); // Instance of AuthMethod
@@ -26,7 +27,8 @@ class UpdateInventoryState extends State<UpdateInventory> {
   void initState() {
     super.initState();
     _inventoryFuture = _loadInventory();
-    _bloodBankNameFuture = _authMethod.fetchBloodBankName(widget.bloodBankId); // Fetch blood bank name
+    _bloodBankNameFuture = _authMethod
+        .fetchBloodBankName(widget.bloodBankId); // Fetch blood bank name
   }
 
   // Function to load the inventory from Firestore
@@ -43,27 +45,27 @@ class UpdateInventoryState extends State<UpdateInventory> {
   }*/
 
   Future<List<InventoryModel>> _loadInventory() async {
-  // Load inventory for the specified blood bank
-  QuerySnapshot snapshot = await FirebaseFirestore.instance
-      .collection('bloodbanks')
-      .doc(widget.bloodBankId)
-      .collection('inventories')
-      .get();
+    // Load inventory for the specified blood bank
+    QuerySnapshot snapshot = await FirebaseFirestore.instance
+        .collection('bloodbanks')
+        .doc(widget.bloodBankId)
+        .collection('inventories')
+        .get();
 
-  // Map each document to an InventoryModel instance with status handling
-  List<InventoryModel> inventoryList = [];
+    // Map each document to an InventoryModel instance with status handling
+    List<InventoryModel> inventoryList = [];
 
-  for (QueryDocumentSnapshot doc in snapshot.docs) {
-    Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
+    for (QueryDocumentSnapshot doc in snapshot.docs) {
+      Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
 
-    // Get inventory model with updated status logic
-    InventoryModel inventory = InventoryModel.fromFirestore(widget.bloodBankId, data);
-    inventoryList.add(inventory);
+      // Get inventory model with updated status logic
+      InventoryModel inventory =
+          InventoryModel.fromFirestore(widget.bloodBankId, data);
+      inventoryList.add(inventory);
+    }
+
+    return inventoryList;
   }
-
-  return inventoryList;
-}
-
 
   @override
   Widget build(BuildContext context) {
@@ -71,9 +73,11 @@ class UpdateInventoryState extends State<UpdateInventory> {
       future: _bloodBankNameFuture, // Fetch blood bank name
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Scaffold(body: Center(child: CircularProgressIndicator()));
+          return const Scaffold(
+              body: Center(child: CircularProgressIndicator()));
         } else if (snapshot.hasError || !snapshot.hasData) {
-          return Scaffold(body: Center(child: Text('Error: ${snapshot.error}')));
+          return Scaffold(
+              body: Center(child: Text('Error: ${snapshot.error}')));
         }
 
         final bloodBankName = snapshot.data!;
@@ -82,9 +86,11 @@ class UpdateInventoryState extends State<UpdateInventory> {
           future: _inventoryFuture,
           builder: (context, snapshot) {
             if (snapshot.connectionState == ConnectionState.waiting) {
-              return const Scaffold(body: Center(child: CircularProgressIndicator()));
+              return const Scaffold(
+                  body: Center(child: CircularProgressIndicator()));
             } else if (snapshot.hasError || !snapshot.hasData) {
-              return Scaffold(body: Center(child: Text('Error: ${snapshot.error}')));
+              return Scaffold(
+                  body: Center(child: Text('Error: ${snapshot.error}')));
             }
 
             final inventoryList = snapshot.data!;
@@ -92,7 +98,8 @@ class UpdateInventoryState extends State<UpdateInventory> {
             // Initialize controllers for each blood type
             for (var inventory in inventoryList) {
               if (!_quantityControllers.containsKey(inventory.bloodType)) {
-                _quantityControllers[inventory.bloodType] = TextEditingController();
+                _quantityControllers[inventory.bloodType] =
+                    TextEditingController();
               }
             }
 
@@ -100,8 +107,19 @@ class UpdateInventoryState extends State<UpdateInventory> {
               backgroundColor: Colors.white,
               appBar: AppBar(
                 backgroundColor: Styles.primaryColor,
-                leading: IconButton(icon: const Icon(Icons.arrow_back_ios_new_outlined, size: 20, color: Colors.white), onPressed: () {Navigator.pop(context);},),
-                title: Text('Update Inventory', style: Styles.headerStyle2.copyWith(fontSize: 18, fontWeight: FontWeight.bold, color: Styles.tertiaryColor,)),
+                leading: IconButton(
+                  icon: const Icon(Icons.arrow_back_ios_new_outlined,
+                      size: 20, color: Colors.white),
+                  onPressed: () {
+                    Navigator.pop(context);
+                  },
+                ),
+                title: Text('Update Inventory',
+                    style: Styles.headerStyle2.copyWith(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: Styles.tertiaryColor,
+                    )),
                 centerTitle: true,
               ),
               body: Padding(
@@ -115,7 +133,8 @@ class UpdateInventoryState extends State<UpdateInventory> {
                           final inventory = inventoryList[index];
 
                           // Get the controller for the current blood type
-                          final controller = _quantityControllers[inventory.bloodType]!;
+                          final controller =
+                              _quantityControllers[inventory.bloodType]!;
 
                           return Padding(
                             padding: const EdgeInsets.symmetric(vertical: 8.0),
@@ -123,10 +142,13 @@ class UpdateInventoryState extends State<UpdateInventory> {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Padding(
-                                  padding: const EdgeInsets.symmetric(horizontal: 16.0), // Horizontal padding only
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal:
+                                          16.0), // Horizontal padding only
                                   child: Text(
                                     'Blood Type: ${inventory.bloodType}',
-                                    style: Styles.headerStyle2.copyWith(fontWeight: FontWeight.bold),
+                                    style: Styles.headerStyle2
+                                        .copyWith(fontWeight: FontWeight.bold),
                                   ),
                                 ),
                                 TextFieldInput(
@@ -141,21 +163,24 @@ class UpdateInventoryState extends State<UpdateInventory> {
                         },
                       ),
                     ),
-                    
                     MyButtons(
                       onTap: () async {
                         bool updated = false;
                         // Iterate over all the blood types and update them if necessary
                         for (var inventory in inventoryList) {
-                          final controller = _quantityControllers[inventory.bloodType];
+                          final controller =
+                              _quantityControllers[inventory.bloodType];
                           final newQuantity = int.tryParse(controller!.text);
                           if (newQuantity != null) {
                             // Fetch the Inventory instance for the blood type
-                            final inventoryInstance = await InventoryModel.getInventory(widget.bloodBankId, inventory.bloodType);
-                            
+                            final inventoryInstance =
+                                await InventoryModel.getInventory(
+                                    widget.bloodBankId, inventory.bloodType);
+
                             if (inventoryInstance != null) {
                               // Update the inventory quantity
-                              await inventoryInstance.updateInventoryQuantity(newQuantity);
+                              await inventoryInstance
+                                  .updateInventoryQuantity(newQuantity);
                               updated = true;
                             }
                           }
@@ -164,7 +189,9 @@ class UpdateInventoryState extends State<UpdateInventory> {
                         if (updated) {
                           // Show success message
                           ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text('Inventory Updated Successfully!')),
+                            const SnackBar(
+                                content:
+                                    Text('Inventory Updated Successfully!')),
                           );
 
                           // Navigate back to the previous screen with 'true' to indicate success

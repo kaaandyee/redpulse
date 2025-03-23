@@ -29,7 +29,7 @@ class ReservationScreenState extends State<ReservationScreen> {
     final user = FirebaseAuth.instance.currentUser;
     if (user != null) {
       setState(() {
-        userId = user.uid;  // Set the current user's UID
+        userId = user.uid; // Set the current user's UID
       });
       _reservationsStream = FirebaseFirestore.instance
           .collection('reservations')
@@ -61,10 +61,14 @@ class ReservationScreenState extends State<ReservationScreen> {
         final bloodBankId = reservationData['bloodBankId'];
 
         if (bloodBankId.isNotEmpty) {
-          final bloodBankDoc = await FirebaseFirestore.instance.collection('bloodbanks').doc(bloodBankId).get();
+          final bloodBankDoc = await FirebaseFirestore.instance
+              .collection('bloodbanks')
+              .doc(bloodBankId)
+              .get();
           if (bloodBankDoc.exists) {
             setState(() {
-              bloodBankName = bloodBankDoc.data()?['bloodBankName'] ?? 'Blood Bank'; // Default if name not found
+              bloodBankName = bloodBankDoc.data()?['bloodBankName'] ??
+                  'Blood Bank'; // Default if name not found
             });
           }
         }
@@ -73,7 +77,6 @@ class ReservationScreenState extends State<ReservationScreen> {
       print('Error fetching blood bank name: $e');
     }
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -112,7 +115,9 @@ class ReservationScreenState extends State<ReservationScreen> {
         ),
       ),
       body: userId.isEmpty
-          ? const Center(child: CircularProgressIndicator())  // Show loading if userId is not fetched yet
+          ? const Center(
+              child:
+                  CircularProgressIndicator()) // Show loading if userId is not fetched yet
           : StreamBuilder<List<ReservationModel>>(
               stream: _reservationsStream,
               builder: (context, snapshot) {
@@ -142,29 +147,37 @@ class ReservationScreenState extends State<ReservationScreen> {
                     } else if (reservation.status == 'Reserved') {
                       tileColor = Styles.primaryColor; // Approved status color
                     } else if (reservation.status == 'Cancelled') {
-                      tileColor = Styles.complementColor; // Cancelled status color
+                      tileColor =
+                          Styles.complementColor; // Cancelled status color
                     } else {
-                      tileColor = Styles.tertiaryColor;  // Default color if no status matches
+                      tileColor = Styles
+                          .tertiaryColor; // Default color if no status matches
                     }
 
                     return Card(
-                      margin: const EdgeInsets.symmetric(vertical: 10, horizontal: 20),
+                      margin: const EdgeInsets.symmetric(
+                          vertical: 10, horizontal: 20),
                       child: ListTile(
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(10),
                         ),
                         contentPadding: const EdgeInsets.all(20),
-                        tileColor: tileColor, // Use the dynamically set tile color
+                        tileColor:
+                            tileColor, // Use the dynamically set tile color
                         title: Text(
-                          bloodBankName.isNotEmpty ? bloodBankName: 'Loading...',  // Blood bank name as title
-                          style: Styles.headerStyle2.copyWith(fontSize: 18,
+                          bloodBankName.isNotEmpty
+                              ? bloodBankName
+                              : 'Loading...', // Blood bank name as title
+                          style: Styles.headerStyle2.copyWith(
+                            fontSize: 18,
                             fontWeight: FontWeight.bold,
                             color: Styles.tertiaryColor,
                           ),
                         ),
                         subtitle: Text(
                           '____________________________________________\nBlood Type: ${reservation.bloodType}\nQuantity: ${reservation.quantity}\nStatus: ${reservation.status}\nValid Until: ${DateFormat('MM/dd/yyyy').format(reservation.validUntil)}',
-                          style: Styles.headerStyle5.copyWith(color: Styles.tertiaryColor),
+                          style: Styles.headerStyle5
+                              .copyWith(color: Styles.tertiaryColor),
                         ),
                         onTap: () {
                           // Pass reservationId to the ReservationDetailsScreen
@@ -172,7 +185,8 @@ class ReservationScreenState extends State<ReservationScreen> {
                             context,
                             MaterialPageRoute(
                               builder: (context) => ReservationDetailsScreen(
-                                reservationId: reservation.reservationId, // Pass the reservationId
+                                reservationId: reservation
+                                    .reservationId, // Pass the reservationId
                               ),
                             ),
                           );

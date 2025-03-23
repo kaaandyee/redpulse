@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:redpulse/utilities/constants/styles.dart';
 import 'package:redpulse/widgets/abottombar.dart';
 
-
 class AdminStart extends StatelessWidget {
   final bool isAdminLinkedToBloodBank;
 
@@ -18,5 +17,3 @@ class AdminStart extends StatelessWidget {
     );
   }
 }
-
-

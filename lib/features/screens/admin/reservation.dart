@@ -90,10 +90,10 @@ class _AdminReservationScreenState extends State<AdminReservationScreen> {
                   Text(
                     "Reservation",
                     style: Styles.headerStyle2.copyWith(
-                      fontSize: 22,
-                      fontWeight: FontWeight.bold, color: Styles.tertiaryColor
-                    ),
-                  ),     
+                        fontSize: 22,
+                        fontWeight: FontWeight.bold,
+                        color: Styles.tertiaryColor),
+                  ),
                 ],
               ),
             ),
@@ -122,8 +122,9 @@ class _AdminReservationScreenState extends State<AdminReservationScreen> {
             itemBuilder: (context, index) {
               final reservation = reservations[index];
               String status = reservation['status'];
-              int quantity = reservation['quantity']; // Get the quantity from reservation data
-    String reservationId = reservation['id'];
+              int quantity = reservation[
+                  'quantity']; // Get the quantity from reservation data
+              String reservationId = reservation['id'];
               // Determine tile color based on status
               Color tileColor;
               if (status == 'Pending') {
@@ -137,11 +138,12 @@ class _AdminReservationScreenState extends State<AdminReservationScreen> {
               }
 
               return Card(
-                margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                margin:
+                    const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
                 child: ListTile(
                   shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10),
-                        ),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
                   contentPadding: const EdgeInsets.all(20),
                   tileColor: tileColor,
                   title: Text(
@@ -166,22 +168,19 @@ class _AdminReservationScreenState extends State<AdminReservationScreen> {
                     ],
                   ),*/
 
-                  Text(
-                    '___________________________________\nBlood Type: ${reservation['bloodType']}\nQuantity: ${reservation['quantity']}\nStatus: ${reservation['status']}\nMedical Reason: ${reservation['medicalReason']}\nReserved At: ${reservation['reservationDate'] != null 
-                    ? DateFormat('MM/dd/yyyy').format(reservation['reservationDate']!.toDate()) 
-                    : 'N/A'}\nValid Until: ${reservation['validUntil'] != null ? DateFormat('MM/dd/yyyy').format(reservation['validUntil']!.toDate()) : 'N/A'}',
-                                      style: Styles.headerStyle5.copyWith(
-                                        color: Styles.tertiaryColor,
+                      Text(
+                    '___________________________________\nBlood Type: ${reservation['bloodType']}\nQuantity: ${reservation['quantity']}\nStatus: ${reservation['status']}\nMedical Reason: ${reservation['medicalReason']}\nReserved At: ${reservation['reservationDate'] != null ? DateFormat('MM/dd/yyyy').format(reservation['reservationDate']!.toDate()) : 'N/A'}\nValid Until: ${reservation['validUntil'] != null ? DateFormat('MM/dd/yyyy').format(reservation['validUntil']!.toDate()) : 'N/A'}',
+                    style: Styles.headerStyle5.copyWith(
+                      color: Styles.tertiaryColor,
                     ),
                   ),
                   trailing: IconButton(
-                  icon: const Icon(Icons.more_vert),
-                  onPressed: () {
-                    _showReservationOptions(
-                      context, reservation['id'], reservation['status'], reservation
-                    );
-                  },
-                ),
+                    icon: const Icon(Icons.more_vert),
+                    onPressed: () {
+                      _showReservationOptions(context, reservation['id'],
+                          reservation['status'], reservation);
+                    },
+                  ),
                 ),
               );
             },
@@ -233,49 +232,52 @@ class _AdminReservationScreenState extends State<AdminReservationScreen> {
     );
   }*/
   // Function to show reservation options
-void _showReservationOptions(
-    BuildContext context, String reservationId, String status, Map<String, dynamic> reservation) {
-  showModalBottomSheet(
-    context: context,
-    builder: (BuildContext context) {
-      return Wrap(
-        children: [
-          if (status == 'Pending') // Option to approve reservation
-            ListTile(
-              leading: const Icon(Icons.check),
-              title: const Text('Approve Reservation'),
-              onTap: () async {
-                int quantity = reservation['quantity']; // Get the quantity of blood reserved
-                await _updateReservationStatus(reservationId, 'Reserved', quantity);
-                Navigator.pop(context);
-              },
-            ),
-          if (status == 'Reserved') ...[
-            ListTile(
-              leading: const Icon(Icons.check_circle),
-              title: const Text('Mark as Completed'),
-              onTap: () async {
-                await _updateReservationStatus(reservationId, 'Completed', 0); // No inventory update needed
-                Navigator.pop(context);
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.cancel),
-              title: const Text('Cancel Reservation'),
-              onTap: () async {
-                int quantity = reservation['quantity']; // Get the quantity of blood reserved
-                await _updateReservationStatus(reservationId, 'Cancelled', quantity);
-                Navigator.pop(context);
-              },
-            ),
+  void _showReservationOptions(BuildContext context, String reservationId,
+      String status, Map<String, dynamic> reservation) {
+    showModalBottomSheet(
+      context: context,
+      builder: (BuildContext context) {
+        return Wrap(
+          children: [
+            if (status == 'Pending') // Option to approve reservation
+              ListTile(
+                leading: const Icon(Icons.check),
+                title: const Text('Approve Reservation'),
+                onTap: () async {
+                  int quantity = reservation[
+                      'quantity']; // Get the quantity of blood reserved
+                  await _updateReservationStatus(
+                      reservationId, 'Reserved', quantity);
+                  Navigator.pop(context);
+                },
+              ),
+            if (status == 'Reserved') ...[
+              ListTile(
+                leading: const Icon(Icons.check_circle),
+                title: const Text('Mark as Completed'),
+                onTap: () async {
+                  await _updateReservationStatus(reservationId, 'Completed',
+                      0); // No inventory update needed
+                  Navigator.pop(context);
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.cancel),
+                title: const Text('Cancel Reservation'),
+                onTap: () async {
+                  int quantity = reservation[
+                      'quantity']; // Get the quantity of blood reserved
+                  await _updateReservationStatus(
+                      reservationId, 'Cancelled', quantity);
+                  Navigator.pop(context);
+                },
+              ),
+            ],
           ],
-        ],
-      );
-    },
-  );
-}
-
-
+        );
+      },
+    );
+  }
 
   // Function to update reservation status and Firestore
   /*Future<void> _updateReservationStatus(
@@ -297,6 +299,7 @@ void _showReservationOptions(
   }*/
 
   // Function to update reservation status and Firestore
+<<<<<<< Updated upstream
 Future<void> _updateReservationStatus(
     String reservationId, String newStatus, int quantity) async {
   try {
@@ -339,28 +342,91 @@ Future<void> _updateReservationStatus(
         await inventoryRef.update({
           'quantity': currentStock + quantity,
         });
+=======
+  Future<void> _updateReservationStatus(
+      String reservationId, String newStatus, int quantity) async {
+    try {
+      // Fetch the reservation document to get the bloodBankId and bloodType
+      final reservationRef = FirebaseFirestore.instance
+          .collection('reservations')
+          .doc(reservationId);
+>>>>>>> Stashed changes
 
+      final reservationSnapshot = await reservationRef.get();
+      if (!reservationSnapshot.exists) {
         ScaffoldMessenger.of(context).showSnackBar(
+<<<<<<< Updated upstream
           SnackBar(content: Text('Inventory updated. $quantity unit/s added back.')),
         );
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Inventory not found for this blood bank and blood type.')),
+=======
+          const SnackBar(content: Text('Reservation not found.')),
+>>>>>>> Stashed changes
         );
+        return;
       }
+
+      var reservationData = reservationSnapshot.data();
+      String bloodBankId = reservationData?['bloodBankId'];
+      String bloodType = reservationData?['bloodType'];
+
+      if (bloodType == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+              content: Text(
+                  'Blood bank ID or blood type not found in reservation.')),
+        );
+        return;
+      }
+
+      // Update the reservation status
+      await reservationRef.update({'status': newStatus});
+
+      // Check if status is 'Cancelled' and update inventory
+      if (newStatus == 'Cancelled') {
+        // Access the inventory subcollection of the blood bank
+        final inventoryRef = FirebaseFirestore.instance
+            .collection('bloodbanks') // Access the bloodBanks collection
+            .doc(bloodBankId) // Get the specific blood bank document
+            .collection('inventories') // Access the inventories subcollection
+            .doc(bloodType); // Use the bloodType as the document ID
+
+        // Fetch current inventory data
+        final inventorySnapshot = await inventoryRef.get();
+        if (inventorySnapshot.exists) {
+          var inventoryData = inventorySnapshot.data();
+          int currentStock = inventoryData?['quantity'] ?? 0;
+
+          // Update the inventory by adding the cancelled reservation's quantity
+          await inventoryRef.update({
+            'quantity': currentStock + quantity,
+          });
+
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+                content:
+                    Text('Inventory updated. $quantity unit/s added back.')),
+          );
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+                content: Text(
+                    'Inventory not found for this blood bank and blood type.')),
+          );
+        }
+      }
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Reservation status updated to $newStatus')),
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error updating status: $e')),
+      );
     }
-
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Reservation status updated to $newStatus')),
-    );
-  } catch (e) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Error updating status: $e')),
-    );
   }
-}
-
-
 
 /*class AdminReservationScreen extends StatefulWidget {
   final String bloodBankId;
