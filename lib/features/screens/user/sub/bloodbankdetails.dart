@@ -10,7 +10,7 @@ import 'package:redpulse/widgets/statusbadge.dart';
 class BloodBankDetailsScreen extends StatefulWidget {
   final String bloodBankId;
 
-  const BloodBankDetailsScreen({Key? key, required this.bloodBankId}) : super(key: key);
+  const BloodBankDetailsScreen({super.key, required this.bloodBankId});
 
   @override
   BloodBankDetailsScreenState createState() => BloodBankDetailsScreenState();
@@ -43,7 +43,8 @@ class BloodBankDetailsScreenState extends State<BloodBankDetailsScreen> {
       return InventoryModel(
         bloodType: data['bloodType'] as String? ?? 'Unknown',
         quantity: data['quantity'] as int? ?? 0,
-        lastUpdated: (data['lastUpdated'] as Timestamp?)?.toDate() ?? DateTime.now(),
+        lastUpdated:
+            (data['lastUpdated'] as Timestamp?)?.toDate() ?? DateTime.now(),
         status: data['status'] as String? ?? 'Unknown',
         bloodBankId: widget.bloodBankId,
       );
@@ -53,7 +54,8 @@ class BloodBankDetailsScreenState extends State<BloodBankDetailsScreen> {
   }
 
   // Navigate to the reservation screen
-  Future<void> _navigateToReservationScreen(List<InventoryModel> inventoryList) async {
+  Future<void> _navigateToReservationScreen(
+      List<InventoryModel> inventoryList) async {
     bool? reserved = await Navigator.push(
       context,
       MaterialPageRoute(
@@ -66,7 +68,8 @@ class BloodBankDetailsScreenState extends State<BloodBankDetailsScreen> {
 
     if (reserved == true) {
       setState(() {
-        _inventoryFuture = _loadInventory(); // Reload inventory after reservation
+        _inventoryFuture =
+            _loadInventory(); // Reload inventory after reservation
       });
     }
   }
@@ -84,8 +87,11 @@ class BloodBankDetailsScreenState extends State<BloodBankDetailsScreen> {
         } else if (snapshot.hasError || !snapshot.hasData) {
           return Scaffold(
             backgroundColor: Styles.tertiaryColor,
-            appBar: AppBar(title: const Text('Error'), backgroundColor: Colors.white),
-            body: Center(child: Text(snapshot.error?.toString() ?? "Error loading name")),
+            appBar: AppBar(
+                title: const Text('Error'), backgroundColor: Colors.white),
+            body: Center(
+                child:
+                    Text(snapshot.error?.toString() ?? "Error loading name")),
           );
         }
 
@@ -95,8 +101,19 @@ class BloodBankDetailsScreenState extends State<BloodBankDetailsScreen> {
           backgroundColor: Styles.tertiaryColor,
           appBar: AppBar(
             backgroundColor: Styles.primaryColor,
-            leading: IconButton(icon: const Icon(Icons.arrow_back_ios_new_outlined, size: 20, color: Colors.white), onPressed: () {Navigator.pop(context);},),
-            title: Text(bloodBankName, style: Styles.headerStyle2.copyWith(fontSize: 18, fontWeight: FontWeight.bold, color: Styles.tertiaryColor,)),
+            leading: IconButton(
+              icon: const Icon(Icons.arrow_back_ios_new_outlined,
+                  size: 20, color: Colors.white),
+              onPressed: () {
+                Navigator.pop(context);
+              },
+            ),
+            title: Text(bloodBankName,
+                style: Styles.headerStyle2.copyWith(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: Styles.tertiaryColor,
+                )),
             centerTitle: true,
           ),
           body: FutureBuilder<List<InventoryModel>>(
@@ -129,20 +146,27 @@ class BloodBankDetailsScreenState extends State<BloodBankDetailsScreen> {
                                 contentPadding: const EdgeInsets.all(16),
                                 title: Text(
                                   'Blood Type: ${inventory.bloodType}',
-                                  style: Styles.headerStyle2.copyWith(fontSize: 18, fontWeight: FontWeight.bold),
+                                  style: Styles.headerStyle2.copyWith(
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.bold),
                                 ),
                                 subtitle: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Text(
                                       'Quantity: ${inventory.quantity}',
-                                      style: Styles.headerStyle5.copyWith(fontSize: 16, color: Styles.accentColor),
+                                      style: Styles.headerStyle5.copyWith(
+                                          fontSize: 16,
+                                          color: Styles.accentColor),
                                     ),
                                   ],
                                 ),
-                                trailing: StatusBadge(status: inventory.status), // Use the status from InventoryModel
+                                trailing: StatusBadge(
+                                    status: inventory
+                                        .status), // Use the status from InventoryModel
                               ),
-                              if (index < inventoryList.length - 1) const Divider(),
+                              if (index < inventoryList.length - 1)
+                                const Divider(),
                             ],
                           ),
                         );
@@ -151,7 +175,8 @@ class BloodBankDetailsScreenState extends State<BloodBankDetailsScreen> {
                   ),
                   MyButtons(
                     onTap: () {
-                      _navigateToReservationScreen(inventoryList); // Pass the inventoryList here
+                      _navigateToReservationScreen(
+                          inventoryList); // Pass the inventoryList here
                     },
                     text: "Reservation",
                   ),

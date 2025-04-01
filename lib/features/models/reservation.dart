@@ -41,13 +41,19 @@ class ReservationModel {
     );
   }*/
 
-  factory ReservationModel.fromFirestore(String reservationId, Map<String, dynamic> data) {
+  factory ReservationModel.fromFirestore(
+      String reservationId, Map<String, dynamic> data) {
     // Safe handling for possible null string values
-    String userId = data['userId'] as String? ?? ''; // Default to an empty string if null
-    String bloodBankId = data['bloodBankId'] as String? ?? ''; // Default to an empty string if null
-    String bloodType = data['bloodType'] as String? ?? ''; // Default to an empty string if null
-    String status = data['status'] as String? ?? ''; // Default to an empty string if null
-    String medicalReason = data['medicalReason'] as String? ?? ''; // Default to an empty string if null
+    String userId =
+        data['userId'] as String? ?? ''; // Default to an empty string if null
+    String bloodBankId = data['bloodBankId'] as String? ??
+        ''; // Default to an empty string if null
+    String bloodType = data['bloodType'] as String? ??
+        ''; // Default to an empty string if null
+    String status =
+        data['status'] as String? ?? ''; // Default to an empty string if null
+    String medicalReason = data['medicalReason'] as String? ??
+        ''; // Default to an empty string if null
 
     // Safe handling for possible null Timestamp values
     Timestamp? reservedAtTimestamp = data['reservedAt'] as Timestamp?;
@@ -62,13 +68,14 @@ class ReservationModel {
       quantity: data['quantity'] as int,
       status: status,
       medicalReason: medicalReason, // Include the medicalReason field
-      reservedAt: reservedAtTimestamp?.toDate() ?? DateTime.now(), // Default to now if null
-      updatedAt: updatedAtTimestamp?.toDate() ?? DateTime.now(),   // Default to now if null
-      validUntil: validUntilTimestamp?.toDate() ?? DateTime.now(), // Default to now if null
+      reservedAt: reservedAtTimestamp?.toDate() ??
+          DateTime.now(), // Default to now if null
+      updatedAt: updatedAtTimestamp?.toDate() ??
+          DateTime.now(), // Default to now if null
+      validUntil: validUntilTimestamp?.toDate() ??
+          DateTime.now(), // Default to now if null
     );
   }
-
-
 
   // Convert ReservationModel to Firestore-compatible map
   Map<String, dynamic> toMap() {
@@ -94,11 +101,13 @@ class ReservationModel {
     required String status, // 'Reserved' or 'Cancelled'
     required String medicalReason, // The medical reason behind the reservation
   }) async {
-    final reservationId = FirebaseFirestore.instance.collection('reservations').doc().id;
+    final reservationId =
+        FirebaseFirestore.instance.collection('reservations').doc().id;
 
     final reservedAt = DateTime.now();
     final updatedAt = DateTime.now();
-    final validUntil = reservedAt.add(Duration(days: 7)); // Set the validity to one week after reservedAt
+    final validUntil = reservedAt.add(const Duration(
+        days: 7)); // Set the validity to one week after reservedAt
 
     final newReservation = ReservationModel(
       reservationId: reservationId,

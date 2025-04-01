@@ -5,11 +5,7 @@ import 'package:provider/provider.dart';
 import '../../../widgets/abottombar.dart';
 import '../../../widgets/ubottombar.dart';
 import '../../models/users.dart';
-import '../admin/home.dart';
-import '../admin/start.dart';
 import '../login.dart';
-import '../user/home.dart';
-import '../user/start.dart';
 
 
 class Wrapper extends StatelessWidget {

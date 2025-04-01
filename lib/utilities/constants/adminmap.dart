@@ -25,11 +25,11 @@ class AdminMapScreenState extends State<AdminMapScreen> {
   @override
   void initState() {
     super.initState();
-    _bloodBankLocation = LatLng(10.31672, 123.89071); // Default location
+    _bloodBankLocation = const LatLng(10.31672, 123.89071); // Default location
     _bloodBankMarker = Marker(
-      markerId: MarkerId('bloodBankMarker'),
+      markerId: const MarkerId('bloodBankMarker'),
       position: _bloodBankLocation,
-      infoWindow: InfoWindow(title: 'Blood Bank Location'),
+      infoWindow: const InfoWindow(title: 'Blood Bank Location'),
     );
     _fetchBloodBankLocation(); // Fetch the location and name of the blood bank
   }
@@ -47,13 +47,14 @@ class AdminMapScreenState extends State<AdminMapScreen> {
         var data = snapshot.data() as Map<String, dynamic>;
         double latitude = data['latitude'];
         double longitude = data['longitude'];
-        String bloodBankName = data['bloodBankName'] ?? 'Blood Bank'; // Default name if not available
+        String bloodBankName = data['bloodBankName'] ??
+            'Blood Bank'; // Default name if not available
 
         // Update the blood bank's location and name
         setState(() {
           _bloodBankLocation = LatLng(latitude, longitude);
           _bloodBankMarker = Marker(
-            markerId: MarkerId('bloodBankMarker'),
+            markerId: const MarkerId('bloodBankMarker'),
             position: _bloodBankLocation,
             infoWindow: InfoWindow(title: bloodBankName), // Set the name here
           );
@@ -80,11 +81,22 @@ class AdminMapScreenState extends State<AdminMapScreen> {
     return Scaffold(
       backgroundColor: Styles.tertiaryColor,
       appBar: AppBar(
-                backgroundColor: Styles.primaryColor,
-                leading: IconButton(icon: const Icon(Icons.arrow_back_ios_new_outlined, size: 20, color: Colors.white), onPressed: () {Navigator.pop(context);},),
-                title: Text('Blood Bank Location', style: Styles.headerStyle2.copyWith(fontSize: 18, fontWeight: FontWeight.bold, color: Styles.tertiaryColor,)),
-                centerTitle: true,
-              ),
+        backgroundColor: Styles.primaryColor,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_ios_new_outlined,
+              size: 20, color: Colors.white),
+          onPressed: () {
+            Navigator.pop(context);
+          },
+        ),
+        title: Text('Blood Bank Location',
+            style: Styles.headerStyle2.copyWith(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+              color: Styles.tertiaryColor,
+            )),
+        centerTitle: true,
+      ),
       body: GoogleMap(
         myLocationButtonEnabled: false,
         zoomControlsEnabled: true,

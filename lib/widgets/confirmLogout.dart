@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 class Confirmlogout extends StatefulWidget {
-  const Confirmlogout({Key? key}) : super(key: key);
+  const Confirmlogout({super.key});
 
   @override
   State<Confirmlogout> createState() => _ConfirmlogoutState();
@@ -15,11 +15,13 @@ class _ConfirmlogoutState extends State<Confirmlogout> {
       content: const Text("Are you sure you want to logout?"),
       actions: [
         TextButton(
-          onPressed: () => Navigator.of(context).pop(false), // Return false when canceled
+          onPressed: () =>
+              Navigator.of(context).pop(false), // Return false when canceled
           child: const Text("Cancel"),
         ),
         ElevatedButton(
-          onPressed: () => Navigator.of(context).pop(true), // Return true when confirmed
+          onPressed: () =>
+              Navigator.of(context).pop(true), // Return true when confirmed
           child: const Text("Logout"),
         ),
       ],

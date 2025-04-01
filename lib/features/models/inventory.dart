@@ -1,5 +1,4 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:redpulse/features/screens/admin/inventory.dart';
 
 class InventoryModel {
   final String bloodType;
@@ -17,7 +16,8 @@ class InventoryModel {
   });
 
   // Factory method to convert Firestore document to an InventoryModel object
-  factory InventoryModel.fromFirestore(String bloodBankId, Map<String, dynamic> data) {
+  factory InventoryModel.fromFirestore(
+      String bloodBankId, Map<String, dynamic> data) {
     // Safely retrieve and handle nullable Firestore fields
     int quantity = (data['quantity'] as int?) ?? 0;
     String bloodType = (data['bloodType'] as String?) ?? 'Unknown';
@@ -35,7 +35,8 @@ class InventoryModel {
     }
 
     // Update status in Firestore only if necessary
-    _updateStatusIfNecessary(bloodBankId, bloodType, status, data['status'] as String?);
+    _updateStatusIfNecessary(
+        bloodBankId, bloodType, status, data['status'] as String?);
 
     return InventoryModel(
       bloodType: bloodType,
@@ -47,8 +48,8 @@ class InventoryModel {
   }
 
   // Update status in Firestore only if it has changed
-  static Future<void> _updateStatusIfNecessary(
-      String bloodBankId, String bloodType, String newStatus, String? currentStatus) async {
+  static Future<void> _updateStatusIfNecessary(String bloodBankId,
+      String bloodType, String newStatus, String? currentStatus) async {
     if (currentStatus != newStatus) {
       DocumentReference docRef = FirebaseFirestore.instance
           .collection('bloodbanks')
@@ -76,7 +77,16 @@ class InventoryModel {
 
   // Initialize inventory for all blood types
   static Future<void> initializeBloodTypeInventory(String bloodBankId) async {
-    List<String> bloodTypes = ['A+', 'A-', 'B+', 'B-', 'O+', 'O-', 'AB+', 'AB-'];
+    List<String> bloodTypes = [
+      'A+',
+      'A-',
+      'B+',
+      'B-',
+      'O+',
+      'O-',
+      'AB+',
+      'AB-'
+    ];
 
     for (String bloodType in bloodTypes) {
       DocumentReference docRef = FirebaseFirestore.instance
@@ -101,7 +111,8 @@ class InventoryModel {
   }
 
   // Fetch an inventory item from Firestore
-  static Future<InventoryModel?> getInventory(String bloodBankId, String bloodType) async {
+  static Future<InventoryModel?> getInventory(
+      String bloodBankId, String bloodType) async {
     try {
       DocumentSnapshot doc = await FirebaseFirestore.instance
           .collection('bloodbanks')
@@ -111,7 +122,8 @@ class InventoryModel {
           .get();
 
       if (doc.exists) {
-        return InventoryModel.fromFirestore(bloodBankId, doc.data() as Map<String, dynamic>);
+        return InventoryModel.fromFirestore(
+            bloodBankId, doc.data() as Map<String, dynamic>);
       } else {
         return null;
       }
@@ -145,8 +157,6 @@ class InventoryModel {
       'lastupdated': FieldValue.serverTimestamp(),
     });
   }
-
-  
 }
 
 

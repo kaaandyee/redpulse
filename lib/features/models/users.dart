@@ -1,5 +1,4 @@
 import 'dart:core';
-import 'package:cloud_firestore/cloud_firestore.dart';
 
 class UserAdminModel {
   final String? id;
@@ -95,12 +94,14 @@ class UserAdminModel {
   }
 
   // Create User Model from JSON (from Firebase)
-  factory UserAdminModel.fromJson(Map<String, dynamic> json, String documentId) {
+  factory UserAdminModel.fromJson(
+      Map<String, dynamic> json, String documentId) {
     return UserAdminModel(
       id: documentId,
       firstName: json['firstName'] ?? '',
       lastName: json['lastName'] ?? '',
-      fullName: json['fullName'] ?? '${json['firstName'] ?? ''} ${json['lastName'] ?? ''}',
+      fullName: json['fullName'] ??
+          '${json['firstName'] ?? ''} ${json['lastName'] ?? ''}',
       email: json['email'] ?? '',
       phoneNumber: json['phoneNumber'] ?? '',
       address: json['address'] ?? '',
@@ -108,7 +109,8 @@ class UserAdminModel {
       password: json['password'] ?? '',
       role: json['role'] ?? 'User',
       dateCreated: DateTime.parse(json['dateCreated']),
-      lastLogin: json['lastLogin'] != null ? DateTime.parse(json['lastLogin']) : null,
+      lastLogin:
+          json['lastLogin'] != null ? DateTime.parse(json['lastLogin']) : null,
       bloodBankId: json['bloodBankId'],
       profileImageUrl: json['profileImageUrl'],
     );

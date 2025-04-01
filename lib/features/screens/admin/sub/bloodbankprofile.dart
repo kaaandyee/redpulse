@@ -4,13 +4,10 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:intl/intl.dart';
 import 'package:redpulse/features/models/bloodbank.dart';
-import 'package:redpulse/features/models/users.dart';
-import 'package:redpulse/features/screens/login.dart';
-import 'package:redpulse/services/auth.dart';
 import 'package:redpulse/utilities/constants/styles.dart';
 
 class BloodBankProfileScreen extends StatefulWidget {
-  const BloodBankProfileScreen({Key? key}) : super(key: key);
+  const BloodBankProfileScreen({super.key});
 
   Future<String?> get adminId async {
     try {
@@ -63,7 +60,8 @@ class _BloodBankProfileScreenState extends State<BloodBankProfileScreen> {
     if (adminId != null) {
       setState(() {
         _adminId = adminId;
-        _bloodBankFuture = _fetchBloodBankProfile(); // Fetch profile once adminId is available
+        _bloodBankFuture =
+            _fetchBloodBankProfile(); // Fetch profile once adminId is available
       });
     }
   }
@@ -112,13 +110,26 @@ class _BloodBankProfileScreenState extends State<BloodBankProfileScreen> {
     return Scaffold(
       backgroundColor: Styles.tertiaryColor,
       appBar: AppBar(
-            backgroundColor: Styles.primaryColor,
-            leading: IconButton(icon: const Icon(Icons.arrow_back_ios_new_outlined, size: 20, color: Colors.white), onPressed: () {Navigator.pop(context);},),
-            title: Text("Blood Bank Account", style: Styles.headerStyle2.copyWith(fontSize: 18, fontWeight: FontWeight.bold, color: Styles.tertiaryColor,)),
-            centerTitle: true,
-          ),
+        backgroundColor: Styles.primaryColor,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_ios_new_outlined,
+              size: 20, color: Colors.white),
+          onPressed: () {
+            Navigator.pop(context);
+          },
+        ),
+        title: Text("Blood Bank Account",
+            style: Styles.headerStyle2.copyWith(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+              color: Styles.tertiaryColor,
+            )),
+        centerTitle: true,
+      ),
       body: _adminId == null
-          ? const Center(child: CircularProgressIndicator()) // Show loading until adminId is fetched
+          ? const Center(
+              child:
+                  CircularProgressIndicator()) // Show loading until adminId is fetched
           : FutureBuilder<BloodBankModel?>(
               future: _bloodBankFuture,
               builder: (context, snapshot) {
@@ -129,42 +140,100 @@ class _BloodBankProfileScreenState extends State<BloodBankProfileScreen> {
                   return Center(child: Text('Error: ${snapshot.error}'));
                 }
                 if (!snapshot.hasData) {
-                  return const Center(child: Text('No blood bank data available'));
+                  return const Center(
+                      child: Text('No blood bank data available'));
                 }
 
                 final bloodBank = snapshot.data!;
 
                 return Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 50, vertical: 10),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 50, vertical: 10),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
+<<<<<<< Updated upstream
                       Text('Blood Bank Name:', style: Styles.headerStyle5.copyWith(fontSize: 18, color: Styles.accentColor)),
-                      Text('${bloodBank.bloodBankName}', style: Styles.headerStyle5.copyWith(fontSize: 20, fontWeight: FontWeight.bold, color: Styles.accentColor)),
+                      Text(bloodBank.bloodBankName, style: Styles.headerStyle5.copyWith(fontSize: 20, fontWeight: FontWeight.bold, color: Styles.accentColor)),
                       SizedBox(height: 15),
 
                       Text('Email:', style: Styles.headerStyle5.copyWith(fontSize: 18, color: Styles.accentColor)),
-                      Text('${bloodBank.email}', style: Styles.headerStyle5.copyWith(fontSize: 20, fontWeight: FontWeight.bold, color: Styles.accentColor)),
+                      Text(bloodBank.email, style: Styles.headerStyle5.copyWith(fontSize: 20, fontWeight: FontWeight.bold, color: Styles.accentColor)),
                       SizedBox(height: 15),
 
                       Text('Address:', style: Styles.headerStyle5.copyWith(fontSize: 18, color: Styles.accentColor)),
-                      Text('${bloodBank.address}', style: Styles.headerStyle5.copyWith(fontSize: 20, fontWeight: FontWeight.bold, color: Styles.accentColor)),
+                      Text(bloodBank.address, style: Styles.headerStyle5.copyWith(fontSize: 20, fontWeight: FontWeight.bold, color: Styles.accentColor)),
                       SizedBox(height: 15),
 
                       Text('Contact Number:', style: Styles.headerStyle5.copyWith(fontSize: 18, color: Styles.accentColor)),
-                      Text('${bloodBank.contactNumber}', style: Styles.headerStyle5.copyWith(fontSize: 20, fontWeight: FontWeight.bold, color: Styles.accentColor)),
+                      Text(bloodBank.contactNumber, style: Styles.headerStyle5.copyWith(fontSize: 20, fontWeight: FontWeight.bold, color: Styles.accentColor)),
                       SizedBox(height: 15),
 
                       Text('Location (Latitude, Longitude):', style: Styles.headerStyle5.copyWith(fontSize: 18, color: Styles.accentColor)),
                       Text('(${bloodBank.latitude}, ${bloodBank.longitude})', style: Styles.headerStyle5.copyWith(fontSize: 20, fontWeight: FontWeight.bold, color: Styles.accentColor)),
                       SizedBox(height: 15),
+=======
+                      Text('Blood Bank Name:',
+                          style: Styles.headerStyle5.copyWith(
+                              fontSize: 18, color: Styles.accentColor)),
+                      Text(bloodBank.bloodBankName,
+                          style: Styles.headerStyle5.copyWith(
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
+                              color: Styles.accentColor)),
+                      const SizedBox(height: 15),
+                      Text('Email:',
+                          style: Styles.headerStyle5.copyWith(
+                              fontSize: 18, color: Styles.accentColor)),
+                      Text(bloodBank.email,
+                          style: Styles.headerStyle5.copyWith(
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
+                              color: Styles.accentColor)),
+                      const SizedBox(height: 15),
+                      Text('Address:',
+                          style: Styles.headerStyle5.copyWith(
+                              fontSize: 18, color: Styles.accentColor)),
+                      Text(bloodBank.address,
+                          style: Styles.headerStyle5.copyWith(
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
+                              color: Styles.accentColor)),
+                      const SizedBox(height: 15),
+                      Text('Contact Number:',
+                          style: Styles.headerStyle5.copyWith(
+                              fontSize: 18, color: Styles.accentColor)),
+                      Text(bloodBank.contactNumber,
+                          style: Styles.headerStyle5.copyWith(
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
+                              color: Styles.accentColor)),
+                      const SizedBox(height: 15),
+                      Text('Location (Latitude, Longitude):',
+                          style: Styles.headerStyle5.copyWith(
+                              fontSize: 18, color: Styles.accentColor)),
+                      Text('(${bloodBank.latitude}, ${bloodBank.longitude})',
+                          style: Styles.headerStyle5.copyWith(
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
+                              color: Styles.accentColor)),
+                      const SizedBox(height: 15),
+>>>>>>> Stashed changes
 
                       /*Text('Inventory ID:', style: Styles.headerStyle5.copyWith(fontSize: 18, color: Styles.accentColor)),
                       Text('${bloodBank.inventoryId ?? 'Not available'}', style: Styles.headerStyle5.copyWith(fontSize: 20, fontWeight: FontWeight.bold, color: Styles.accentColor)),
                       SizedBox(height: 15),*/
-                      Text('Account Created:', style: Styles.headerStyle5.copyWith(fontSize: 18, color: Styles.accentColor)),
-                      Text(DateFormat('MM/dd/yyyy').format(bloodBank.dateCreated), style: Styles.headerStyle5.copyWith(fontSize: 20, fontWeight: FontWeight.bold, color: Styles.accentColor)),
-                      SizedBox(height: 30),
+                      Text('Account Created:',
+                          style: Styles.headerStyle5.copyWith(
+                              fontSize: 18, color: Styles.accentColor)),
+                      Text(
+                          DateFormat('MM/dd/yyyy')
+                              .format(bloodBank.dateCreated),
+                          style: Styles.headerStyle5.copyWith(
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
+                              color: Styles.accentColor)),
+                      const SizedBox(height: 30),
                     ],
                   ),
                 );

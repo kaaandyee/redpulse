@@ -6,7 +6,12 @@ class UpdateProfileScreen extends StatefulWidget {
   final String bloodBankId;
   final BloodBankModel bloodBank;
 
-  const UpdateProfileScreen({Key? key, required this.bloodBankId, required this.bloodBank}) : super(key: key);
+<<<<<<< Updated upstream
+  const UpdateProfileScreen({super.key, required this.bloodBankId, required this.bloodBank});
+=======
+  const UpdateProfileScreen(
+      {super.key, required this.bloodBankId, required this.bloodBank});
+>>>>>>> Stashed changes
 
   @override
   _UpdateProfileScreenState createState() => _UpdateProfileScreenState();
@@ -23,12 +28,16 @@ class _UpdateProfileScreenState extends State<UpdateProfileScreen> {
   @override
   void initState() {
     super.initState();
-    _bloodBankNameController = TextEditingController(text: widget.bloodBank.bloodBankName);
+    _bloodBankNameController =
+        TextEditingController(text: widget.bloodBank.bloodBankName);
     _emailController = TextEditingController(text: widget.bloodBank.email);
     _addressController = TextEditingController(text: widget.bloodBank.address);
-    _contactNumberController = TextEditingController(text: widget.bloodBank.contactNumber);
-    _latitudeController = TextEditingController(text: widget.bloodBank.latitude.toString());
-    _longitudeController = TextEditingController(text: widget.bloodBank.longitude.toString());
+    _contactNumberController =
+        TextEditingController(text: widget.bloodBank.contactNumber);
+    _latitudeController =
+        TextEditingController(text: widget.bloodBank.latitude.toString());
+    _longitudeController =
+        TextEditingController(text: widget.bloodBank.longitude.toString());
   }
 
   @override
@@ -54,7 +63,8 @@ class _UpdateProfileScreenState extends State<UpdateProfileScreen> {
     );
 
     // Assuming FirestoreService.updateBloodBankInfo updates the Firestore data
-    await FirestoreService.updateBloodBankInfo(widget.bloodBankId, updatedBloodBank);
+    await FirestoreService.updateBloodBankInfo(
+        widget.bloodBankId, updatedBloodBank);
 
     // Return updated BloodBankModel
     Navigator.pop(context, updatedBloodBank);

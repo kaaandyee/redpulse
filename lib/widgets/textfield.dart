@@ -8,7 +8,7 @@ class TextFieldInput extends StatelessWidget {
   final IconData? icon;
   final TextInputType textInputType;
   final EdgeInsets? externalPadding;
-  //final EdgeInsetsGeometry contentPadding;
+  final bool isFilled; // ✅ New parameter to control fill behavior
 
   const TextFieldInput({
     super.key,
@@ -18,44 +18,54 @@ class TextFieldInput extends StatelessWidget {
     this.icon,
     required this.textInputType,
     this.externalPadding,
+    this.isFilled = true, // ✅ Default to true (changeable when used)
   });
 
   @override
   Widget build(BuildContext context) {
     // Default padding
-    const defaultPadding = EdgeInsets.only(top: 10, bottom: 10, left: 20, right: 20);
-    
+    const defaultPadding = EdgeInsets.symmetric(
+        horizontal: 20, vertical: 3); // Reduced vertical padding
+
     // Merge default padding with external padding
-    final mergedPadding = EdgeInsets.only(
-      top: externalPadding?.top ?? defaultPadding.top,
-      bottom: externalPadding?.bottom ?? defaultPadding.bottom,
-      left: externalPadding?.left ?? defaultPadding.left,
-      right: externalPadding?.right ?? defaultPadding.right,
-    );
+    final mergedPadding = externalPadding ?? defaultPadding;
 
     return Padding(
       padding: mergedPadding,
-      child: TextField(
-        style: Styles.headerStyle5.copyWith(color: Styles.accentColor),
-        controller: textEditingController,
-        decoration: InputDecoration(
-          prefixIcon: Icon(icon, color: Colors.black54),
-          hintText: hintText,
-          hintStyle: Styles.headerStyle5,
-          enabledBorder: OutlineInputBorder(
-            borderSide: BorderSide.none,
-            borderRadius: BorderRadius.circular(10),
+      child: SizedBox(
+        height: 45, // ✅ Controls the height of the input field
+        child: TextField(
+          style: Styles.headerStyle5.copyWith(
+              color: Styles.accentColor, fontSize: 14), // Smaller font
+          controller: textEditingController,
+          decoration: InputDecoration(
+            prefixIcon: icon != null
+                ? Icon(icon, color: Colors.black54, size: 20) // ✅ Smaller icon
+                : null,
+            hintText: hintText,
+            hintStyle: Styles.headerStyle5
+                .copyWith(fontSize: 16), // ✅ Smaller font size
+            filled: isFilled, // ✅ Controlled by the new parameter
+            fillColor: isFilled
+                ? Colors.grey[200]
+                : Colors.transparent, // ✅ Background color toggled
+            enabledBorder: OutlineInputBorder(
+              borderSide: isFilled
+                  ? BorderSide.none
+                  : const BorderSide(
+                      color: Colors.grey), // ✅ Adjust border when not filled
+              borderRadius: BorderRadius.circular(8),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderSide: const BorderSide(color: Colors.grey),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            contentPadding: const EdgeInsets.symmetric(
+                vertical: 5, horizontal: 10), // ✅ Reduced inner spacing
           ),
-          border: InputBorder.none,
-          focusedBorder: OutlineInputBorder(
-            borderSide: const BorderSide(color: Colors.grey),
-            borderRadius: BorderRadius.circular(10),
-          ),
-          filled: true,
-          fillColor: const Color.fromARGB(255, 238, 238, 238),
+          keyboardType: textInputType,
+          obscureText: isPass,
         ),
-        keyboardType: textInputType,
-        obscureText: isPass,
       ),
     );
   }

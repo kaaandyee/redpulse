@@ -4,12 +4,10 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:intl/intl.dart';
 import 'package:redpulse/features/models/users.dart';
-import 'package:redpulse/features/screens/login.dart';
-import 'package:redpulse/services/auth.dart';
 import 'package:redpulse/utilities/constants/styles.dart';
 
 class AdminProfileScreen extends StatefulWidget {
-  const AdminProfileScreen({Key? key}) : super(key: key);
+  const AdminProfileScreen({super.key});
 
   Future<String?> get userId async {
     try {
@@ -62,7 +60,8 @@ class _AdminProfileScreenState extends State<AdminProfileScreen> {
     if (userId != null) {
       setState(() {
         _userId = userId;
-        _userFuture = _fetchAdminProfile(); // Fetch profile once userId is available
+        _userFuture =
+            _fetchAdminProfile(); // Fetch profile once userId is available
       });
     }
   }
@@ -102,14 +101,28 @@ class _AdminProfileScreenState extends State<AdminProfileScreen> {
     return Scaffold(
       backgroundColor: Styles.tertiaryColor,
       appBar: AppBar(
-            backgroundColor: Styles.primaryColor,
-            leading: IconButton(icon: const Icon(Icons.arrow_back_ios_new_outlined, size: 20, color: Colors.white), onPressed: () {Navigator.pop(context);},),
-            title: Text("My Account", style: Styles.headerStyle2.copyWith(fontSize: 18, fontWeight: FontWeight.bold, color: Styles.tertiaryColor,)),
-            centerTitle: true,
-          ),
+        backgroundColor: Styles.primaryColor,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_ios_new_outlined,
+              size: 20, color: Colors.white),
+          onPressed: () {
+            Navigator.pop(context);
+          },
+        ),
+        title: Text("My Account",
+            style: Styles.headerStyle2.copyWith(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+              color: Styles.tertiaryColor,
+            )),
+        centerTitle: true,
+      ),
       body: _userId == null
-          ? const Center(child: CircularProgressIndicator()) // Show loading until userId is fetched
-          : FutureBuilder<UserAdminModel?>(  // Use FutureBuilder to display user data
+          ? const Center(
+              child:
+                  CircularProgressIndicator()) // Show loading until userId is fetched
+          : FutureBuilder<UserAdminModel?>(
+              // Use FutureBuilder to display user data
               future: _userFuture,
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
@@ -125,34 +138,92 @@ class _AdminProfileScreenState extends State<AdminProfileScreen> {
                 final user = snapshot.data!;
 
                 return Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 50, vertical: 10),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 50, vertical: 10),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
+<<<<<<< Updated upstream
                       Text('Full Name:', style: Styles.headerStyle5.copyWith(fontSize: 18, color: Styles.accentColor)),
-                      Text('${user.fullName}', style: Styles.headerStyle5.copyWith(fontSize: 20, fontWeight: FontWeight.bold, color: Styles.accentColor)),
+                      Text(user.fullName, style: Styles.headerStyle5.copyWith(fontSize: 20, fontWeight: FontWeight.bold, color: Styles.accentColor)),
                       SizedBox(height: 15),
 
                       Text('Email:', style: Styles.headerStyle5.copyWith(fontSize: 18, color: Styles.accentColor)),
-                      Text('${user.email}', style: Styles.headerStyle5.copyWith(fontSize: 20, fontWeight: FontWeight.bold, color: Styles.accentColor)),
+                      Text(user.email, style: Styles.headerStyle5.copyWith(fontSize: 20, fontWeight: FontWeight.bold, color: Styles.accentColor)),
                       SizedBox(height: 15),
 
                       Text('Phone Number:', style: Styles.headerStyle5.copyWith(fontSize: 18, color: Styles.accentColor)),
-                      Text('${user.phoneNumber}', style: Styles.headerStyle5.copyWith(fontSize: 20, fontWeight: FontWeight.bold, color: Styles.accentColor)),
+                      Text(user.phoneNumber, style: Styles.headerStyle5.copyWith(fontSize: 20, fontWeight: FontWeight.bold, color: Styles.accentColor)),
                       SizedBox(height: 15),
 
                       Text('Address:', style: Styles.headerStyle5.copyWith(fontSize: 18, color: Styles.accentColor)),
-                      Text('${user.address}', style: Styles.headerStyle5.copyWith(fontSize: 20, fontWeight: FontWeight.bold, color: Styles.accentColor)),
+                      Text(user.address, style: Styles.headerStyle5.copyWith(fontSize: 20, fontWeight: FontWeight.bold, color: Styles.accentColor)),
                       SizedBox(height: 15),
 
                       Text('Role:', style: Styles.headerStyle5.copyWith(fontSize: 18, color: Styles.accentColor)),
-                      Text('${user.role}', style: Styles.headerStyle5.copyWith(fontSize: 20, fontWeight: FontWeight.bold, color: Styles.accentColor)),
+                      Text(user.role, style: Styles.headerStyle5.copyWith(fontSize: 20, fontWeight: FontWeight.bold, color: Styles.accentColor)),
                       SizedBox(height: 15),
 
                       Text('Account Created:', style: Styles.headerStyle5.copyWith(fontSize: 18, color: Styles.accentColor)),
                       Text(DateFormat('MM/dd/yyyy').format(user.dateCreated), style: Styles.headerStyle5.copyWith(fontSize: 20, fontWeight: FontWeight.bold, color: Styles.accentColor)),
                       SizedBox(height: 30),
 
+=======
+                      Text('Full Name:',
+                          style: Styles.headerStyle5.copyWith(
+                              fontSize: 18, color: Styles.accentColor)),
+                      Text(user.fullName,
+                          style: Styles.headerStyle5.copyWith(
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
+                              color: Styles.accentColor)),
+                      const SizedBox(height: 15),
+                      Text('Email:',
+                          style: Styles.headerStyle5.copyWith(
+                              fontSize: 18, color: Styles.accentColor)),
+                      Text(user.email,
+                          style: Styles.headerStyle5.copyWith(
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
+                              color: Styles.accentColor)),
+                      const SizedBox(height: 15),
+                      Text('Phone Number:',
+                          style: Styles.headerStyle5.copyWith(
+                              fontSize: 18, color: Styles.accentColor)),
+                      Text(user.phoneNumber,
+                          style: Styles.headerStyle5.copyWith(
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
+                              color: Styles.accentColor)),
+                      const SizedBox(height: 15),
+                      Text('Address:',
+                          style: Styles.headerStyle5.copyWith(
+                              fontSize: 18, color: Styles.accentColor)),
+                      Text(user.address,
+                          style: Styles.headerStyle5.copyWith(
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
+                              color: Styles.accentColor)),
+                      const SizedBox(height: 15),
+                      Text('Role:',
+                          style: Styles.headerStyle5.copyWith(
+                              fontSize: 18, color: Styles.accentColor)),
+                      Text(user.role,
+                          style: Styles.headerStyle5.copyWith(
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
+                              color: Styles.accentColor)),
+                      const SizedBox(height: 15),
+                      Text('Account Created:',
+                          style: Styles.headerStyle5.copyWith(
+                              fontSize: 18, color: Styles.accentColor)),
+                      Text(DateFormat('MM/dd/yyyy').format(user.dateCreated),
+                          style: Styles.headerStyle5.copyWith(
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
+                              color: Styles.accentColor)),
+                      const SizedBox(height: 30),
+>>>>>>> Stashed changes
                     ],
                   ),
                 );

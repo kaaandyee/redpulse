@@ -4,7 +4,7 @@ import 'package:redpulse/utilities/constants/styles.dart';
 class StatusBadge extends StatelessWidget {
   final String status;
 
-  StatusBadge({required this.status});
+  const StatusBadge({super.key, required this.status});
 
   @override
   Widget build(BuildContext context) {
@@ -33,7 +33,8 @@ class StatusBadge extends StatelessWidget {
       ),
       child: Text(
         statusText,
-        style: Styles.headerStyle5.copyWith(fontSize: 12, color: Styles.tertiaryColor),
+        style: Styles.headerStyle5
+            .copyWith(fontSize: 12, color: Styles.tertiaryColor),
       ),
     );
   }
