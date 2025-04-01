@@ -6,12 +6,11 @@ class UpdateProfileScreen extends StatefulWidget {
   final String bloodBankId;
   final BloodBankModel bloodBank;
 
-<<<<<<< Updated upstream
-  const UpdateProfileScreen({super.key, required this.bloodBankId, required this.bloodBank});
-=======
-  const UpdateProfileScreen(
-      {super.key, required this.bloodBankId, required this.bloodBank});
->>>>>>> Stashed changes
+  const UpdateProfileScreen({
+    super.key,
+    required this.bloodBankId,
+    required this.bloodBank,
+  });
 
   @override
   _UpdateProfileScreenState createState() => _UpdateProfileScreenState();
@@ -52,22 +51,57 @@ class _UpdateProfileScreenState extends State<UpdateProfileScreen> {
   }
 
   Future<void> _updateProfile() async {
-    // Create a new BloodBankModel with updated data
-    final updatedBloodBank = widget.bloodBank.copyWith(
-      bloodBankName: _bloodBankNameController.text,
-      email: _emailController.text,
-      address: _addressController.text,
-      contactNumber: _contactNumberController.text,
-      latitude: double.parse(_latitudeController.text),
-      longitude: double.parse(_longitudeController.text),
+    // Validate latitude and longitude fields
+    if (_latitudeController.text.isEmpty || _longitudeController.text.isEmpty) {
+      _showErrorDialog('Latitude and Longitude cannot be empty');
+      return;
+    }
+
+    double? latitude = double.tryParse(_latitudeController.text);
+    double? longitude = double.tryParse(_longitudeController.text);
+
+    if (latitude == null || longitude == null) {
+      _showErrorDialog('Please enter valid latitude and longitude');
+      return;
+    }
+
+    try {
+      // Create a new BloodBankModel with updated data
+      final updatedBloodBank = widget.bloodBank.copyWith(
+        bloodBankName: _bloodBankNameController.text,
+        email: _emailController.text,
+        address: _addressController.text,
+        contactNumber: _contactNumberController.text,
+        latitude: latitude,
+        longitude: longitude,
+      );
+
+      // Assuming FirestoreService.updateBloodBankInfo updates the Firestore data
+      await FirestoreService.updateBloodBankInfo(
+          widget.bloodBankId, updatedBloodBank);
+
+      // Return updated BloodBankModel
+      Navigator.pop(context, updatedBloodBank);
+    } catch (e) {
+      // Handle any errors during update
+      _showErrorDialog('Error updating profile: $e');
+    }
+  }
+
+  void _showErrorDialog(String message) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Error'),
+        content: Text(message),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('OK'),
+          ),
+        ],
+      ),
     );
-
-    // Assuming FirestoreService.updateBloodBankInfo updates the Firestore data
-    await FirestoreService.updateBloodBankInfo(
-        widget.bloodBankId, updatedBloodBank);
-
-    // Return updated BloodBankModel
-    Navigator.pop(context, updatedBloodBank);
   }
 
   @override

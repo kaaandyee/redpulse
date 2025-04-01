@@ -17,7 +17,6 @@ void main() async {
 
   if (Firebase.apps.isEmpty) {
     await Firebase.initializeApp(
-      name: "Red Pulse Krishna",
       options: DefaultFirebaseOptions.currentPlatform,
     );
   }

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_moving_background/enums/animation_types.dart';
 import 'package:flutter_moving_background/flutter_moving_background.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:redpulse/features/screens/admin/start.dart';
 import 'package:redpulse/features/screens/user/start.dart';
 import 'package:redpulse/services/auth.dart';
@@ -9,8 +10,8 @@ import 'package:redpulse/utilities/constants/enums.dart';
 import 'package:redpulse/utilities/constants/styles.dart';
 import 'package:redpulse/widgets/button.dart';
 import 'package:redpulse/widgets/dropdown.dart';
-import 'package:redpulse/widgets/snackbar';
 import 'package:redpulse/widgets/textfield.dart';
+import 'package:redpulse/widgets/snackbar';
 import 'login.dart';
 
 class SignupScreen extends StatefulWidget {
@@ -100,7 +101,8 @@ class _SignupScreenState extends State<SignupScreen> {
       Navigator.of(context).pushReplacement(
         MaterialPageRoute(
           builder: (context) => selectedRole == AppRole.admin
-              ? const AdminStart(isAdminLinkedToBloodBank: false) // Modify this as needed
+              ? const AdminStart(
+              isAdminLinkedToBloodBank: false) // Modify this as needed
               : const UserStart(), // For regular users
         ),
       );
@@ -115,140 +117,147 @@ class _SignupScreenState extends State<SignupScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
-      resizeToAvoidBottomInset: false,
       body: SafeArea(
         child: MovingBackground(
-        animationType: AnimationType.translation,
-        backgroundColor: Colors.grey[400],
-        circles: const [
-        MovingCircle(color: Colors.red),
-    MovingCircle(color: Colors.red),
-    MovingCircle(color: Colors.red),
-    MovingCircle(color: Colors.red),
-    MovingCircle(color: Colors.red),
-    ],
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Text("SIGN UP", style: Styles.headerStyle8),
-            const SizedBox(height: 30),
+          animationType: AnimationType.translation,
+          backgroundColor: const Color.fromARGB(255, 219, 216, 216),
+          circles: const [
+            MovingCircle(color: Color.fromARGB(95, 230, 132, 125)),
+            MovingCircle(color: Color.fromARGB(95, 230, 132, 125)),
+            MovingCircle(color: Color.fromARGB(95, 230, 132, 125)),
+            MovingCircle(color: Color.fromARGB(95, 230, 132, 125)),
+          ],
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Image.asset(
+                'assets/images/logoo.png',  // Path to your logo image
+                height: 120,  // Adjust the height of the logo as needed
+                width: 120,
+                // Adjust the width of the logo as needed
+              ),
+              const SizedBox(height: 15),
+              Text("SIGN UP", style: GoogleFonts.roboto(
+                  fontSize: 30,
+                  fontWeight: FontWeight.w700,
+                  color: const Color.fromARGB(250, 212, 61, 61))),
+              const SizedBox(height: 15),
 
-            Padding(
-              padding: const EdgeInsets.only(left: 35),
-              child: Align(
-                alignment: Alignment.centerLeft,
-                child: Text(
-                  'Basic Information',
-                  style: Styles.headerStyle6.copyWith(color: Styles.accentColor),
+              Padding(
+                padding: const EdgeInsets.only(left: 25),
+                child: Align(
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    'Basic Information',
+                    style: Styles.headerStyle6.copyWith(color: Styles.accentColor),
+                  ),
                 ),
               ),
-            ),
-            const SizedBox(height: 5),
-            Row(
-              children: [
-                Expanded(
-                  child: TextFieldInput(
-                    icon: Icons.person,
-                    textEditingController: firstNameController,
-                    hintText: 'First Name',
-                    textInputType: TextInputType.text,
-                    externalPadding: const EdgeInsets.only(left: 20, right: 5, top: 0, bottom: 10),
+              const SizedBox(height: 5),
+              Row(
+                children: [
+                  Expanded(
+                    child: TextFieldInput(
+                      icon: Icons.person,
+                      textEditingController: firstNameController,
+                      hintText: 'First Name',
+                      textInputType: TextInputType.text,
+                      externalPadding: const EdgeInsets.only(left: 20, right: 5, top: 0, bottom: 10),
+                    ),
                   ),
-                ),
-                Expanded(
-                  child: TextFieldInput(
-                    icon: Icons.person,
-                    textEditingController: lastNameController,
-                    hintText: 'Last Name',
-                    textInputType: TextInputType.text,
-                    externalPadding: const EdgeInsets.only(left: 5, right: 20, top: 0, bottom: 10),
+                  Expanded(
+                    child: TextFieldInput(
+                      icon: Icons.person,
+                      textEditingController: lastNameController,
+                      hintText: 'Last Name',
+                      textInputType: TextInputType.text,
+                      externalPadding: const EdgeInsets.only(left: 5, right: 20, top: 0, bottom: 10),
+                    ),
                   ),
-                ),
-              ],
-            ),
-            TextFieldInput(
-                icon: Icons.phone,
-                textEditingController: phoneNumberController,
-                hintText: 'Phone Number',
-                textInputType: TextInputType.text),
-            TextFieldInput(
-                icon: Icons.home,
-                textEditingController: addressController,
-                hintText: 'Home Address',
-                textInputType: TextInputType.text),
-            TextFieldInput(
-                icon: Icons.email,
-                textEditingController: emailController,
-                hintText: 'Email',
+                ],
+              ),
+              TextFieldInput(
+                  icon: Icons.phone,
+                  textEditingController: phoneNumberController,
+                  hintText: 'Phone Number',
+                  textInputType: TextInputType.text),
+              TextFieldInput(
+                  icon: Icons.home,
+                  textEditingController: addressController,
+                  hintText: 'Home Address',
+                  textInputType: TextInputType.text),
+              TextFieldInput(
+                  icon: Icons.email,
+                  textEditingController: emailController,
+                  hintText: 'Email',
+                  textInputType: TextInputType.text,
+                  externalPadding: const EdgeInsets.only(left: 20, right: 20, top: 10, bottom: 10)),
+              TextFieldInput(
+                icon: Icons.lock,
+                textEditingController: passwordController,
+                hintText: 'Password',
                 textInputType: TextInputType.text,
-                externalPadding: const EdgeInsets.only(left: 20, right: 20, top: 10, bottom: 10)),
-            TextFieldInput(
-              icon: Icons.lock,
-              textEditingController: passwordController,
-              hintText: 'Password',
-              textInputType: TextInputType.text,
-              isPass: true,
-            ),
+                isPass: true,
+              ),
 
-            // Role and Blood Type selection
-            Row(
-              children: [
-                Expanded(
-                  child: Dropdown<AppRole>(
-                    label: "Role",
-                    externalPadding: const EdgeInsets.only(top: 10, bottom: 10, left: 20, right: 5),
-                    enumValues: AppRole.values,
-                    selectedValue: selectedRole,
-                    hintText: 'Select Role',
-                    onChanged: (AppRole role) {
-                      setState(() {
-                        selectedRole = role;
-                      });
+              // Role and Blood Type selection
+              Row(
+                children: [
+                  Expanded(
+                    child: Dropdown<AppRole>(
+                      label: "Role",
+                      externalPadding: const EdgeInsets.only(top: 10, bottom: 10, left: 20, right: 5),
+                      enumValues: AppRole.values,
+                      selectedValue: selectedRole,
+                      hintText: 'Select Role',
+                      onChanged: (AppRole role) {
+                        setState(() {
+                          selectedRole = role;
+                        });
+                      },
+                    ),
+                  ),
+                  Expanded(
+                    child: Dropdown<BloodType>(
+                      label: "Blood Type",
+                      externalPadding: const EdgeInsets.only(top: 10, bottom: 10, left: 5, right: 20),
+                      enumValues: BloodType.values,
+                      selectedValue: selectedBType,
+                      hintText: 'Select Blood Type',
+                      onChanged: (BloodType type) {
+                        setState(() {
+                          selectedBType = type;
+                        });
+                      },
+                    ),
+                  ),
+                ],
+              ),
+              MyButtons(onTap: signupUser, text: "Sign Up"),
+              const SizedBox(height: 5),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text("Already have an account?", style: Styles.headerStyle5.copyWith(color: Styles.accentColor)),
+                  GestureDetector(
+                    onTap: () {
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (context) => const LoginScreen(),
+                        ),
+                      );
                     },
+                    child: Text(
+                      " Log In",
+                      style: Styles.headerStyle5.copyWith(color: Colors.blue),
+                    ),
                   ),
-                ),
-                Expanded(
-                  child: Dropdown<BloodType>(
-                    label: "Blood Type",
-                    externalPadding: const EdgeInsets.only(top: 10, bottom: 10, left: 5, right: 20),
-                    enumValues: BloodType.values,
-                    selectedValue: selectedBType,
-                    hintText: 'Select Blood Type',
-                    onChanged: (BloodType type) {
-                      setState(() {
-                        selectedBType = type;
-                      });
-                    },
-                  ),
-                ),
-              ],
-            ),
-            MyButtons(onTap: signupUser, text: "Sign Up"),
-            const SizedBox(height: 5),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text("Already have an account?", style: Styles.headerStyle5.copyWith(color: Styles.accentColor)),
-                GestureDetector(
-                  onTap: () {
-                    Navigator.of(context).push(
-                      MaterialPageRoute(
-                        builder: (context) => const LoginScreen(),
-                      ),
-                    );
-                  },
-                  child: Text(
-                    " Log In",
-                    style: Styles.headerStyle5.copyWith(color: Colors.blue),
-                  ),
-                )
-              ],
-            )
-          ],
+                ],
+              ),
+            ],
+          ),
         ),
       ),
-    ),
     );
   }
 }

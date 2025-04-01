@@ -143,7 +143,6 @@ class _AdminProfileScreenState extends State<AdminProfileScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-<<<<<<< Updated upstream
                       Text('Full Name:', style: Styles.headerStyle5.copyWith(fontSize: 18, color: Styles.accentColor)),
                       Text(user.fullName, style: Styles.headerStyle5.copyWith(fontSize: 20, fontWeight: FontWeight.bold, color: Styles.accentColor)),
                       SizedBox(height: 15),
@@ -168,7 +167,6 @@ class _AdminProfileScreenState extends State<AdminProfileScreen> {
                       Text(DateFormat('MM/dd/yyyy').format(user.dateCreated), style: Styles.headerStyle5.copyWith(fontSize: 20, fontWeight: FontWeight.bold, color: Styles.accentColor)),
                       SizedBox(height: 30),
 
-=======
                       Text('Full Name:',
                           style: Styles.headerStyle5.copyWith(
                               fontSize: 18, color: Styles.accentColor)),
@@ -223,7 +221,6 @@ class _AdminProfileScreenState extends State<AdminProfileScreen> {
                               fontWeight: FontWeight.bold,
                               color: Styles.accentColor)),
                       const SizedBox(height: 30),
->>>>>>> Stashed changes
                     ],
                   ),
                 );
