@@ -58,6 +58,8 @@ dependencies:
   animated_splash_screen: ^1.3.0
   video_player: ^2.9.3
   flutter_launcher_icons: ^0.11.0
+  go_router: ^14.8.1
+
 
 flutter_launcher_icons:
   android: "launcher_icon"

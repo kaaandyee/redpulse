@@ -4,19 +4,22 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:redpulse/features/screens/login.dart';
 import 'package:redpulse/features/screens/splash.dart';
+import 'package:redpulse/AppRouter.dart';
 import 'package:redpulse/utilities/constants/styles.dart';
 
 import 'features/screens/wrapper/wrapper.dart';
 import 'firebase_options.dart';
 
 final GlobalKey<ScaffoldMessengerState> scaffoldMessengerKey =
-    GlobalKey<ScaffoldMessengerState>();
+GlobalKey<ScaffoldMessengerState>();
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
+  // Initialize Firebase
   if (Firebase.apps.isEmpty) {
     await Firebase.initializeApp(
+      name: "sddsds",
       options: DefaultFirebaseOptions.currentPlatform,
     );
   }
@@ -34,7 +37,6 @@ void main() async {
   );
 }
 
-
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
@@ -48,7 +50,7 @@ class MyApp extends StatelessWidget {
         primarySwatch: Colors.red,
         visualDensity: VisualDensity.adaptivePlatformDensity,
       ),
-      home: const SplashScreen(),
+      home: const SplashScreen(), // Make SplashScreen the first screen to appear
     );
   }
 }
