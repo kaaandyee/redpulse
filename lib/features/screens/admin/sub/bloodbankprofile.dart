@@ -152,7 +152,6 @@ class _BloodBankProfileScreenState extends State<BloodBankProfileScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-<<<<<<< Updated upstream
                       Text('Blood Bank Name:', style: Styles.headerStyle5.copyWith(fontSize: 18, color: Styles.accentColor)),
                       Text(bloodBank.bloodBankName, style: Styles.headerStyle5.copyWith(fontSize: 20, fontWeight: FontWeight.bold, color: Styles.accentColor)),
                       SizedBox(height: 15),
@@ -172,7 +171,6 @@ class _BloodBankProfileScreenState extends State<BloodBankProfileScreen> {
                       Text('Location (Latitude, Longitude):', style: Styles.headerStyle5.copyWith(fontSize: 18, color: Styles.accentColor)),
                       Text('(${bloodBank.latitude}, ${bloodBank.longitude})', style: Styles.headerStyle5.copyWith(fontSize: 20, fontWeight: FontWeight.bold, color: Styles.accentColor)),
                       SizedBox(height: 15),
-=======
                       Text('Blood Bank Name:',
                           style: Styles.headerStyle5.copyWith(
                               fontSize: 18, color: Styles.accentColor)),
@@ -218,7 +216,6 @@ class _BloodBankProfileScreenState extends State<BloodBankProfileScreen> {
                               fontWeight: FontWeight.bold,
                               color: Styles.accentColor)),
                       const SizedBox(height: 15),
->>>>>>> Stashed changes
 
                       /*Text('Inventory ID:', style: Styles.headerStyle5.copyWith(fontSize: 18, color: Styles.accentColor)),
                       Text('${bloodBank.inventoryId ?? 'Not available'}', style: Styles.headerStyle5.copyWith(fontSize: 20, fontWeight: FontWeight.bold, color: Styles.accentColor)),

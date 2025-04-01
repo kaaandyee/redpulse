@@ -39,7 +39,7 @@ class _UpdateProfileDialogState extends State<UpdateProfileDialog> {
 
   Future<void> _pickImage() async {
     final pickedFile =
-        await ImagePicker().pickImage(source: ImageSource.gallery);
+    await ImagePicker().pickImage(source: ImageSource.gallery);
     if (pickedFile != null) {
       if (!mounted) return;
       setState(() {
@@ -60,7 +60,7 @@ class _UpdateProfileDialogState extends State<UpdateProfileDialog> {
           final String ext = path.extension(pickedFile.path).toLowerCase();
           final bool isJpg = ext == '.jpg' || ext == '.jpeg';
           final CompressFormat format =
-              isJpg ? CompressFormat.jpeg : CompressFormat.png;
+          isJpg ? CompressFormat.jpeg : CompressFormat.png;
           final String extToUse = isJpg ? 'jpg' : 'png';
           bool needCompress = fileSize > 500 * 1024 || !isJpg;
           List<int>? imageBytes;
@@ -74,12 +74,7 @@ class _UpdateProfileDialogState extends State<UpdateProfileDialog> {
                 format: format,
               );
               quality -= 10;
-<<<<<<< Updated upstream
-            } while (imageBytes!.length > 500 * 1024 &&
-                quality > 10);
-=======
             } while (imageBytes!.length > 500 * 1024 && quality > 10);
->>>>>>> Stashed changes
           } else {
             imageBytes = await file.readAsBytes();
           }
@@ -90,9 +85,9 @@ class _UpdateProfileDialogState extends State<UpdateProfileDialog> {
         final String extToUse = kIsWeb
             ? path.extension(pickedFile.name).replaceFirst('.', '')
             : (path.extension(pickedFile.path).toLowerCase() == '.jpg' ||
-                    path.extension(pickedFile.path).toLowerCase() == '.jpeg'
-                ? 'jpg'
-                : 'png');
+            path.extension(pickedFile.path).toLowerCase() == '.jpeg'
+            ? 'jpg'
+            : 'png');
         final Reference storageRef = FirebaseStorage.instance
             .ref()
             .child('profile_images/${widget.user.id}.$extToUse');
@@ -177,11 +172,11 @@ class _UpdateProfileDialogState extends State<UpdateProfileDialog> {
                     CircleAvatar(
                       radius: 50,
                       backgroundImage: _profileImageUrl != null &&
-                              _profileImageUrl!.isNotEmpty
+                          _profileImageUrl!.isNotEmpty
                           ? NetworkImage(_profileImageUrl!)
                           : null,
                       child: (_profileImageUrl == null ||
-                              _profileImageUrl!.isEmpty)
+                          _profileImageUrl!.isEmpty)
                           ? const Icon(Icons.person, size: 40)
                           : null,
                     ),
@@ -196,7 +191,7 @@ class _UpdateProfileDialogState extends State<UpdateProfileDialog> {
                         child: const Center(
                           child: CircularProgressIndicator(
                             valueColor:
-                                AlwaysStoppedAnimation<Color>(Colors.white),
+                            AlwaysStoppedAnimation<Color>(Colors.white),
                           ),
                         ),
                       ),
@@ -213,7 +208,7 @@ class _UpdateProfileDialogState extends State<UpdateProfileDialog> {
                 decoration: const InputDecoration(labelText: 'First Name'),
                 onSaved: (value) => _firstName = value!,
                 validator: (value) =>
-                    value == null || value.isEmpty ? 'Enter first name' : null,
+                value == null || value.isEmpty ? 'Enter first name' : null,
               ),
               // Last Name Field.
               TextFormField(
@@ -221,7 +216,7 @@ class _UpdateProfileDialogState extends State<UpdateProfileDialog> {
                 decoration: const InputDecoration(labelText: 'Last Name'),
                 onSaved: (value) => _lastName = value!,
                 validator: (value) =>
-                    value == null || value.isEmpty ? 'Enter last name' : null,
+                value == null || value.isEmpty ? 'Enter last name' : null,
               ),
               // Phone Number Field.
               TextFormField(
@@ -238,7 +233,7 @@ class _UpdateProfileDialogState extends State<UpdateProfileDialog> {
                 decoration: const InputDecoration(labelText: 'Address'),
                 onSaved: (value) => _address = value!,
                 validator: (value) =>
-                    value == null || value.isEmpty ? 'Enter address' : null,
+                value == null || value.isEmpty ? 'Enter address' : null,
               ),
             ],
           ),

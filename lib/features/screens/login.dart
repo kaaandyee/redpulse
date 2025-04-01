@@ -64,61 +64,6 @@ class _LoginScreenState extends State<LoginScreen> {
     return Scaffold(
       body: SafeArea(
         child: MovingBackground(
-<<<<<<< Updated upstream
-        animationType: AnimationType.translation,
-         backgroundColor: const Color.fromARGB(255, 219, 216, 216),
-        circles: const [
-    MovingCircle(color: Color.fromARGB(95, 230, 132, 125)),
-    MovingCircle(color: Color.fromARGB(95, 230, 132, 125)),
-    MovingCircle(color: Color.fromARGB(95, 230, 132, 125)),
-    MovingCircle(color: Color.fromARGB(95, 230, 132, 125)),
-    ],
-        child: SizedBox(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Image.asset(
-                'assets/images/logoo.png',  // Path to your logo image
-                height: 180,  // Adjust the height of the logo as needed
-                width: 180,
-                // Adjust the width of the logo as needed
-              ),
-              const SizedBox(height: 25),
-              Text("LOG IN", style: GoogleFonts.roboto(
-                  fontSize: 35,
-                  fontWeight: FontWeight.w700,
-                  color: const Color.fromARGB(250, 212, 61, 61))),
-              const SizedBox(height: 30),
-              TextFieldInput(
-                icon: Icons.person,
-                textEditingController: emailController,
-                hintText: 'Email',
-                textInputType: TextInputType.emailAddress,
-              ),
-              TextFieldInput(
-                icon: Icons.lock,
-                textEditingController: passwordController,
-                hintText: 'Password',
-                textInputType: TextInputType.text,
-                isPass: true,
-              ),
-              const ForgotPassword(),
-              MyButtons(onTap: loginUser, text: "Log In"),
-              const SizedBox(height: 10),
-              Text(
-                      "or",
-                      style: Styles.headerStyle5.copyWith(color: Styles.accentColor),
-                    ),
-              const SizedBox(height: 10),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 25),
-                child: ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.red[700],
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-=======
           animationType: AnimationType.translation,
           backgroundColor: const Color.fromARGB(255, 219, 216, 216),
           circles: const [
@@ -135,7 +80,6 @@ class _LoginScreenState extends State<LoginScreen> {
                 child: Padding(
                   padding: EdgeInsets.only(
                     bottom: MediaQuery.of(context).viewInsets.bottom,
->>>>>>> Stashed changes
                   ),
                   child: ConstrainedBox(
                     constraints: BoxConstraints(
@@ -233,7 +177,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                         height: 20,
                                         errorBuilder:
                                             (context, error, stackTrace) =>
-                                                const Icon(
+                                        const Icon(
                                           Icons
                                               .error, // Fallback icon if image fails
                                           color: Colors.white,
@@ -268,7 +212,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                     Navigator.of(context).push(
                                       MaterialPageRoute(
                                         builder: (context) =>
-                                            const SignupScreen(),
+                                        const SignupScreen(),
                                       ),
                                     );
                                   },
@@ -285,7 +229,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           ),
                           const SizedBox(
                               height:
-                                  20), // Extra padding to prevent bottom overflow
+                              20), // Extra padding to prevent bottom overflow
                         ],
                       ),
                     ),
