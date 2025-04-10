@@ -6,7 +6,7 @@ import 'package:redpulse/features/screens/login.dart';
 import 'package:redpulse/features/screens/splash.dart';
 import 'package:redpulse/AppRouter.dart';
 import 'package:redpulse/utilities/constants/styles.dart';
-
+import 'package:flutter/foundation.dart' as foundation; // For platform checking
 import 'features/screens/wrapper/wrapper.dart';
 import 'firebase_options.dart';
 
@@ -18,10 +18,18 @@ void main() async {
 
   // Initialize Firebase
   if (Firebase.apps.isEmpty) {
-    await Firebase.initializeApp(
-      name: "sddsds",
-      options: DefaultFirebaseOptions.currentPlatform,
-    );
+    if (foundation.kIsWeb) {
+      // Firebase initialization for web (no name required)
+      await Firebase.initializeApp(
+        options: DefaultFirebaseOptions.currentPlatform,
+      );
+    } else {
+      // Firebase initialization for non-web (e.g., Android, iOS) with name
+      await Firebase.initializeApp(
+        name: "RedPulse",
+        options: DefaultFirebaseOptions.currentPlatform,
+      );
+    }
   }
 
   runApp(

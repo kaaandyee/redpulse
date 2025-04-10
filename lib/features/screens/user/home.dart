@@ -1,16 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:redpulse/features/models/users.dart'; // your user model
+import 'package:redpulse/features/models/users.dart';
 import 'package:provider/provider.dart';
 import 'package:redpulse/features/screens/user/sub/userCardsHome.dart';
 import 'package:redpulse/utilities/constants/styles.dart';
+import 'package:redpulse/features/screens/user/sub/bloodCompatibility.dart';
 
 class UserHome extends StatelessWidget {
   const UserHome({super.key});
 
   @override
   Widget build(BuildContext context) {
-    // Read the latest user data from the Provider.
     final user = Provider.of<UserAdminModel?>(context);
 
     return Scaffold(
@@ -48,43 +48,43 @@ class UserHome extends StatelessWidget {
       body: user == null
           ? const Center(child: CircularProgressIndicator())
           : ListView(
+        children: [
+          Padding(
+            padding:
+            const EdgeInsets.symmetric(horizontal: 50, vertical: 30),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                // Row containing the profile image and welcome text.
-                Padding(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 50, vertical: 30),
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      // Profile Image
-                      CircleAvatar(
-                        radius: 30,
-                        backgroundImage: (user.profileImageUrl != null &&
-                                user.profileImageUrl!.isNotEmpty)
-                            ? NetworkImage(user.profileImageUrl!)
-                            : const AssetImage(
-                                    'assets/images/default_profile.jpg')
-                                as ImageProvider,
-                      ),
-                      const SizedBox(width: 15),
-                      // Welcome Text
-                      Expanded(
-                        child: Text(
-                          "Welcome, ${user.fullName}!",
-                          style: GoogleFonts.robotoMono(
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold,
-                            color: Styles.primaryColor,
-                          ),
-                        ),
-                      ),
-                    ],
+                CircleAvatar(
+                  radius: 30,
+                  backgroundImage: (user.profileImageUrl != null &&
+                      user.profileImageUrl!.isNotEmpty)
+                      ? NetworkImage(user.profileImageUrl!)
+                      : const AssetImage(
+                      'assets/images/default_profile.jpg')
+                  as ImageProvider,
+                ),
+                const SizedBox(width: 15),
+                Expanded(
+                  child: Text(
+                    "Welcome, ${user.fullName}!",
+                    style: GoogleFonts.robotoMono(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      color: Styles.primaryColor,
+                    ),
                   ),
                 ),
-                // Other content on the home screen.
-                const userCardsHome(),
               ],
             ),
+          ),
+          const BloodCompatibilityCard(),
+          const HeroMode(
+            enabled: true,
+            child: userCardsHome(),
+          ),
+        ],
+      ),
     );
   }
 }
