@@ -20,7 +20,9 @@ void main() async {
   if (Firebase.apps.isEmpty) {
     if (foundation.kIsWeb) {
       // Firebase initialization for web (no name required)
-      await Firebase.initializeApp();
+      await Firebase.initializeApp(
+        options: DefaultFirebaseOptions.currentPlatform,
+      );
     } else {
       // Firebase initialization for non-web (e.g., Android, iOS) with name
       await Firebase.initializeApp(
