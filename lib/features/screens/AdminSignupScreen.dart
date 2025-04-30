@@ -4,32 +4,28 @@ import 'package:flutter_moving_background/flutter_moving_background.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:redpulse/features/screens/admin/register.dart';
 import 'package:redpulse/features/screens/admin/start.dart';
-import 'package:redpulse/features/screens/user/start.dart';
 import 'package:redpulse/services/auth.dart';
 import 'package:redpulse/services/validation.dart';
 import 'package:redpulse/utilities/constants/enums.dart';
 import 'package:redpulse/utilities/constants/styles.dart';
 import 'package:redpulse/widgets/button.dart';
-import 'package:redpulse/widgets/dropdown.dart';
 import 'package:redpulse/widgets/textfield.dart';
-import 'AdminSignupScreen.dart';
 import 'login.dart';
 
-class SignupScreen extends StatefulWidget {
-  const SignupScreen({super.key});
+class AdminSignupScreen extends StatefulWidget {
+  const AdminSignupScreen({super.key});
 
   @override
-  State<SignupScreen> createState() => _SignupScreenState();
+  State<AdminSignupScreen> createState() => _AdminSignupScreenState();
 }
 
-class _SignupScreenState extends State<SignupScreen> {
+class _AdminSignupScreenState extends State<AdminSignupScreen> {
   final TextEditingController firstNameController = TextEditingController();
   final TextEditingController lastNameController = TextEditingController();
   final TextEditingController emailController = TextEditingController();
   final TextEditingController phoneNumberController = TextEditingController();
   final TextEditingController addressController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
-  BloodType selectedBType = BloodType.oNegative;  // Default blood type
   bool isLoading = false;
 
   @override
@@ -43,20 +39,20 @@ class _SignupScreenState extends State<SignupScreen> {
     addressController.dispose();
   }
 
-  void signupUser() async {
+  void signupAdmin() async {
     setState(() {
       isLoading = true;
     });
 
     // Get values from the controllers
-    String email = emailController.text;
-    String phoneNumber = phoneNumberController.text;
-    String password = passwordController.text;
-    String address = addressController.text;
-    String firstName = firstNameController.text;
-    String lastName = lastNameController.text;
+    String email = emailController.text.trim();
+    String phoneNumber = phoneNumberController.text.trim();
+    String password = passwordController.text.trim();
+    String address = addressController.text.trim();
+    String firstName = firstNameController.text.trim();
+    String lastName = lastNameController.text.trim();
 
-    // Show popup dialog instead of snackbar
+    // Show popup dialog
     void showPopup(String message) {
       if (!mounted) return;
       setState(() {
@@ -95,41 +91,46 @@ class _SignupScreenState extends State<SignupScreen> {
       return;
     }
 
-    // Signup user using AuthMethod with user data
-    String res = await AuthMethod().signupUser(
-      email: email,
-      phoneNumber: phoneNumber,
-      password: password,
-      address: address,
-      firstName: firstName,
-      lastName: lastName,
-      userRole: AppRole.user, // Always set to user for this screen
-      bloodType: selectedBType,
-      bloodBankId: null, // No blood bank ID for regular users
-    );
-
-    if (!mounted) return;
-
-    if (res == "success") {
-      setState(() {
-        isLoading = false;
-      });
-      Navigator.of(context).pushReplacement(
-        MaterialPageRoute(
-          builder: (context) => const UserStart(),
-        ),
-      );
-    } else {
-      showPopup(res);  // Show error message in popup instead of snackbar
+    // Password validation
+    if (password.length < 6) {
+      showPopup("Password must be at least 6 characters long.");
+      return;
     }
-  }
 
-  void navigateToAdminSignup() {
-    Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (context) => const AdminSignupScreen(),
-      ),
-    );
+    try {
+      // Signup admin using AuthMethod
+      String res = await AuthMethod().signupUser(
+        email: email,
+        phoneNumber: phoneNumber,
+        password: password,
+        address: address,
+        firstName: firstName,
+        lastName: lastName,
+        userRole: AppRole.admin,
+        bloodType: BloodType.oNegative, // Default value, not relevant for admin
+        bloodBankId: null, // Will be set after blood bank registration
+      );
+
+      if (!mounted) return;
+
+      if (res == "success") {
+        setState(() {
+          isLoading = false;
+        });
+
+        // Proceed to blood bank registration
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(
+            builder: (context) => const RegisterForm(),
+          ),
+        );
+      } else {
+        showPopup(res);
+      }
+    } catch (e) {
+      // Catch any unexpected errors
+      showPopup("An error occurred: ${e.toString()}");
+    }
   }
 
   @override
@@ -149,17 +150,29 @@ class _SignupScreenState extends State<SignupScreen> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                const SizedBox(height: 30),
+                const SizedBox(height: 20),
                 Image.asset(
-                  'assets/images/logoo.png',  // Path to your logo image
-                  height: 120,  // Adjust the height of the logo as needed
-                  width: 120,   // Adjust the width of the logo as needed
+                  'assets/images/logoo.png',
+                  height: 120,
+                  width: 120,
                 ),
                 const SizedBox(height: 15),
-                Text("USER SIGN UP", style: GoogleFonts.roboto(
-                    fontSize: 30,
-                    fontWeight: FontWeight.w700,
-                    color: const Color.fromARGB(250, 212, 61, 61))),
+                Text("BLOOD BANK ADMINISTRATOR",
+                    style: GoogleFonts.roboto(
+                        fontSize: 24,
+                        fontWeight: FontWeight.w700,
+                        color: const Color.fromARGB(250, 212, 61, 61)
+                    )
+                ),
+                const SizedBox(height: 10),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 25),
+                  child: Text(
+                    "Step 1: Create your administrator account",
+                    style: Styles.headerStyle5.copyWith(color: Colors.black87),
+                    textAlign: TextAlign.center,
+                  ),
+                ),
                 const SizedBox(height: 15),
 
                 Padding(
@@ -167,7 +180,7 @@ class _SignupScreenState extends State<SignupScreen> {
                   child: Align(
                     alignment: Alignment.centerLeft,
                     child: Text(
-                      'Basic Information',
+                      'Administrator Information',
                       style: Styles.headerStyle6.copyWith(color: Styles.accentColor),
                     ),
                   ),
@@ -199,7 +212,7 @@ class _SignupScreenState extends State<SignupScreen> {
                     icon: Icons.phone,
                     textEditingController: phoneNumberController,
                     hintText: 'Phone Number',
-                    textInputType: TextInputType.text),
+                    textInputType: TextInputType.phone),
                 TextFieldInput(
                     icon: Icons.home,
                     textEditingController: addressController,
@@ -209,7 +222,7 @@ class _SignupScreenState extends State<SignupScreen> {
                     icon: Icons.email,
                     textEditingController: emailController,
                     hintText: 'Email',
-                    textInputType: TextInputType.text,
+                    textInputType: TextInputType.emailAddress,
                     externalPadding: const EdgeInsets.only(left: 20, right: 20, top: 10, bottom: 10)),
                 TextFieldInput(
                   icon: Icons.lock,
@@ -219,42 +232,29 @@ class _SignupScreenState extends State<SignupScreen> {
                   isPass: true,
                 ),
 
-                // Blood Type selection
-                Dropdown<BloodType>(
-                  label: "Blood Type",
-                  externalPadding: const EdgeInsets.only(top: 10, bottom: 10, left: 20, right: 20),
-                  enumValues: BloodType.values,
-                  selectedValue: selectedBType,
-                  hintText: 'Select Blood Type',
-                  onChanged: (BloodType type) {
-                    setState(() {
-                      selectedBType = type;
-                    });
-                  },
+                const SizedBox(height: 10),
+
+                // Divider with text
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  child: Row(
+                    children: [
+                      Expanded(child: Divider(color: Styles.accentColor.withOpacity(0.5))),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 10),
+                        child: Text("After signup, you'll register your blood bank",
+                            style: TextStyle(color: Styles.accentColor, fontSize: 12)
+                        ),
+                      ),
+                      Expanded(child: Divider(color: Styles.accentColor.withOpacity(0.5))),
+                    ],
+                  ),
                 ),
 
-                MyButtons(onTap: signupUser, text: "Sign Up"),
                 const SizedBox(height: 15),
-
-                // Admin signup option
-                Text("Are you registering as an Admin?", style: Styles.headerStyle5.copyWith(color: Styles.accentColor)),
-                const SizedBox(height: 5),
-                SizedBox(
-                  width: MediaQuery.of(context).size.width * 0.6,
-                  child: ElevatedButton(
-                    onPressed: navigateToAdminSignup,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.blue,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      padding: const EdgeInsets.symmetric(vertical: 12),
-                    ),
-                    child: Text(
-                      "Admin Sign Up",
-                      style: Styles.headerStyle5.copyWith(color: Colors.white),
-                    ),
-                  ),
+                MyButtons(
+                    onTap: signupAdmin,
+                    text: isLoading ? "Creating Account..." : "Continue to Blood Bank Registration"
                 ),
                 const SizedBox(height: 15),
 

@@ -7,7 +7,6 @@ import 'package:intl/intl.dart';
 import 'package:redpulse/features/models/users.dart';
 import 'package:redpulse/features/screens/login.dart';
 import 'package:redpulse/features/screens/user/sub/updateprofile.dart';
-import 'package:redpulse/services/auth.dart';
 import 'package:redpulse/utilities/constants/styles.dart';
 
 import '../../../widgets/confirmLogout.dart';
@@ -152,8 +151,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           // Wrap the content in SingleChildScrollView to make it scrollable.
           return SingleChildScrollView(
             child: Padding(
-              padding:
-              const EdgeInsets.symmetric(horizontal: 50, vertical: 10),
+              padding: const EdgeInsets.symmetric(horizontal: 50, vertical: 10),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -162,58 +160,42 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       radius: 50,
                       backgroundImage: user.profileImageUrl != null
                           ? NetworkImage(user.profileImageUrl!)
-                          : const AssetImage(
-                          'assets/images/default_profile.jpg')
-                      as ImageProvider,
+                          : const AssetImage('assets/images/default_profile.jpg') as ImageProvider,
                     ),
                   ),
                   const SizedBox(height: 20),
                   Text('Full Name:',
-                      style: Styles.headerStyle5.copyWith(
-                          fontSize: 18, color: Styles.accentColor)),
+                      style: Styles.headerStyle5.copyWith(fontSize: 18, color: Styles.accentColor)),
                   Text('${user.fullName}',
                       style: Styles.headerStyle5.copyWith(
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                          color: Styles.accentColor)),
+                          fontSize: 20, fontWeight: FontWeight.bold, color: Styles.accentColor)),
                   const SizedBox(height: 15),
                   Text('Email:',
-                      style: Styles.headerStyle5.copyWith(
-                          fontSize: 18, color: Styles.accentColor)),
+                      style: Styles.headerStyle5.copyWith(fontSize: 18, color: Styles.accentColor)),
                   Text('${user.email}',
                       style: Styles.headerStyle5.copyWith(
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                          color: Styles.accentColor)),
+                          fontSize: 20, fontWeight: FontWeight.bold, color: Styles.accentColor)),
                   const SizedBox(height: 15),
                   Text('Phone Number:',
-                      style: Styles.headerStyle5.copyWith(
-                          fontSize: 18, color: Styles.accentColor)),
+                      style: Styles.headerStyle5.copyWith(fontSize: 18, color: Styles.accentColor)),
                   Text('${user.phoneNumber}',
                       style: Styles.headerStyle5.copyWith(
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                          color: Styles.accentColor)),
+                          fontSize: 20, fontWeight: FontWeight.bold, color: Styles.accentColor)),
                   const SizedBox(height: 15),
                   Text('Address:',
-                      style: Styles.headerStyle5.copyWith(
-                          fontSize: 18, color: Styles.accentColor)),
+                      style: Styles.headerStyle5.copyWith(fontSize: 18, color: Styles.accentColor)),
                   Text('${user.address}',
                       style: Styles.headerStyle5.copyWith(
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                          color: Styles.accentColor)),
+                          fontSize: 20, fontWeight: FontWeight.bold, color: Styles.accentColor)),
                   const SizedBox(height: 15),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.start,
                     children: [
                       Text('Blood Type:',
-                          style: Styles.headerStyle5.copyWith(
-                              fontSize: 18, color: Styles.accentColor)),
+                          style: Styles.headerStyle5.copyWith(fontSize: 18, color: Styles.accentColor)),
                       const SizedBox(width: 62),
                       Text('Role:',
-                          style: Styles.headerStyle5.copyWith(
-                              fontSize: 18, color: Styles.accentColor)),
+                          style: Styles.headerStyle5.copyWith(fontSize: 18, color: Styles.accentColor)),
                     ],
                   ),
                   Row(
@@ -221,47 +203,65 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     children: [
                       Text('${user.bloodType}',
                           style: Styles.headerStyle5.copyWith(
-                              fontSize: 20,
-                              fontWeight: FontWeight.bold,
-                              color: Styles.accentColor)),
+                              fontSize: 20, fontWeight: FontWeight.bold, color: Styles.accentColor)),
                       const SizedBox(width: 135),
                       Text('${user.role}',
                           style: Styles.headerStyle5.copyWith(
-                              fontSize: 20,
-                              fontWeight: FontWeight.bold,
-                              color: Styles.accentColor)),
+                              fontSize: 20, fontWeight: FontWeight.bold, color: Styles.accentColor)),
                     ],
                   ),
                   const SizedBox(height: 15),
                   Text('Account Created:',
-                      style: Styles.headerStyle5.copyWith(
-                          fontSize: 18, color: Styles.accentColor)),
+                      style: Styles.headerStyle5.copyWith(fontSize: 18, color: Styles.accentColor)),
                   Text(
                     DateFormat('MM/dd/yyyy').format(user.dateCreated),
                     style: Styles.headerStyle5.copyWith(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                        color: Styles.accentColor),
+                        fontSize: 20, fontWeight: FontWeight.bold, color: Styles.accentColor),
                   ),
                   const SizedBox(height: 30),
                   // Logout Button
                   ElevatedButton(
                     onPressed: () async {
-                      // Show the confirmation dialog and await the result.
+                      // Show the confirmation dialog
                       final shouldLogout = await showDialog<bool>(
                         context: context,
                         builder: (context) => const Confirmlogout(),
                       );
 
-                      // If the user confirms the logout, sign out and navigate to LoginScreen.
+                      // If confirmed, perform complete logout
                       if (shouldLogout == true) {
-                        await FirebaseAuth.instance.signOut();
-                        Navigator.of(context).pushAndRemoveUntil(
-                          MaterialPageRoute(
-                            builder: (context) => const LoginScreen(),
-                          ),
-                              (Route<dynamic> route) => false,
-                        );
+                        try {
+                          // Show loading indicator
+                          showDialog(
+                            context: context,
+                            barrierDismissible: false,
+                            builder: (context) => const Center(
+                              child: CircularProgressIndicator(),
+                            ),
+                          );
+
+                          // Clear all authentication data
+                          final auth = FirebaseAuth.instance;
+                          await auth.signOut();
+
+                          // Remove all routes and navigate to login
+                          if (mounted) {
+                            Navigator.of(context).pushAndRemoveUntil(
+                              MaterialPageRoute(
+                                builder: (context) => const LoginScreen(),
+                              ),
+                                  (route) => false, // This removes all previous routes
+                            );
+                          }
+                        } catch (e) {
+                          // Handle any errors during logout
+                          if (mounted) {
+                            Navigator.pop(context); // Remove loading dialog
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(content: Text('Error signing out: $e')),
+                            );
+                          }
+                        }
                       }
                     },
                     style: ElevatedButton.styleFrom(
@@ -274,8 +274,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     ),
                     child: Text(
                       'Log Out',
-                      style: Styles.headerStyle6.copyWith(
-                          color: Styles.tertiaryColor),
+                      style: Styles.headerStyle6.copyWith(color: Styles.tertiaryColor),
                     ),
                   ),
                   const SizedBox(height: 30),
@@ -286,8 +285,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       if (user != null) {
                         bool? updated = await showDialog<bool>(
                           context: context,
-                          builder: (context) =>
-                              UpdateProfileDialog(user: user),
+                          builder: (context) => UpdateProfileDialog(user: user),
                         );
                         if (updated == true) {
                           setState(() {
@@ -306,8 +304,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     ),
                     child: Text(
                       'Update Profile',
-                      style: Styles.headerStyle6.copyWith(
-                          color: Styles.tertiaryColor),
+                      style: Styles.headerStyle6.copyWith(color: Styles.tertiaryColor),
                     ),
                   ),
                 ],
