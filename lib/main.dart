@@ -51,7 +51,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Red Pulse',
+      title: 'RedPulse',
       scaffoldMessengerKey: scaffoldMessengerKey, // Register the key here
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
