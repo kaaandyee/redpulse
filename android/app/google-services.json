@@ -1,13 +1,13 @@
 {
   "project_info": {
-    "project_number": "19963752533",
-    "project_id": "lkfd-redpulse",
-    "storage_bucket": "lkfd-redpulse.firebasestorage.app"
+    "project_number": "134772036993",
+    "project_id": "redpulse-4cb99",
+    "storage_bucket": "redpulse-4cb99.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:19963752533:android:d523de44685caa2ce364dc",
+        "mobilesdk_app_id": "1:134772036993:android:4a2bb96e4af5d77f16c480",
         "android_client_info": {
           "package_name": "com.example.redpulse"
         }
@@ -15,7 +15,7 @@
       "oauth_client": [],
       "api_key": [
         {
-          "current_key": "AIzaSyAAPXheOHlyB-_hLn23PgyeVKU449mEpWU"
+          "current_key": "AIzaSyBSIfd9R0-327Hr0wFU4pHrspmywiHJxQ4"
         }
       ],
       "services": {

@@ -1,10 +1,13 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:redpulse/features/screens/user/sub/bloodbankdetails.dart';
 import 'package:redpulse/utilities/constants/styles.dart';
-import 'package:redpulse/widgets/textfield.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:flutter_moving_background/flutter_moving_background.dart';
+import 'package:flutter_moving_background/enums/animation_types.dart';
+import 'package:animate_do/animate_do.dart';
 
 class SearchScreen extends StatefulWidget {
   const SearchScreen({super.key});
@@ -15,40 +18,37 @@ class SearchScreen extends StatefulWidget {
 
 class SearchScreenState extends State<SearchScreen> {
   static const _initialCameraPosition = CameraPosition(
-    target: LatLng(
-        10.317870822438445, 123.88928644803421), // Default camera position
+    target: LatLng(10.317870822438445, 123.88928644803421),
     zoom: 11.5,
   );
 
   late GoogleMapController _googleMapController;
-  final Set<Marker> _markers = {}; // Stores all the blood bank markers
-  List<Map<String, dynamic>> _bloodBanks = []; // Stores fetched blood banks
-  List<Map<String, dynamic>> _filteredBloodBanks =
-      []; // Stores filtered blood banks based on search input
+  final Set<Marker> _markers = {};
+  List<Map<String, dynamic>> _bloodBanks = [];
+  List<Map<String, dynamic>> _filteredBloodBanks = [];
   final TextEditingController _searchController = TextEditingController();
 
-  // Cache for inventory details: maps bloodBankId to list of available blood types
+  // Cache for inventory details
   final Map<String, List<String>> _bloodBankInventoryCache = {};
 
-  // Loading indicator state
   bool _isLoading = false;
+  bool _isSearching = false;
+  bool _isMapInitialized = false;
 
   @override
   void initState() {
     super.initState();
     _isLoading = true;
-    _getCurrentLocation(); // Automatically fetch location on screen load
-    _placeUserLocationMarker();
-    _fetchBloodBanks(); // Fetch all blood bank locations and inventory details
-    _searchController
-        .addListener(_filterBloodBanks); // Listen for search field changes
+    _fetchBloodBanks();
+    _searchController.addListener(_filterBloodBanks);
   }
 
-  // Fetch blood banks from Firestore and pre-fetch inventory details for caching
   Future<void> _fetchBloodBanks() async {
     try {
+      setState(() => _isLoading = true);
+
       QuerySnapshot snapshot =
-          await FirebaseFirestore.instance.collection('bloodbanks').get();
+      await FirebaseFirestore.instance.collection('bloodbanks').get();
 
       List<Map<String, dynamic>> fetchedBloodBanks = [];
       for (var doc in snapshot.docs) {
@@ -81,50 +81,45 @@ class SearchScreenState extends State<SearchScreen> {
         fetchedBloodBanks.add({
           'bloodBankId': doc.id,
           'bloodBankName': bloodBankName,
-          'bloodTypes': bloodTypes, // Use for filtering by blood type as well
+          'bloodTypes': bloodTypes,
           'latitude': latitude,
           'longitude': longitude,
         });
       }
 
       setState(() {
-        _bloodBanks = fetchedBloodBanks; // Store the fetched blood banks
-        _filteredBloodBanks =
-            fetchedBloodBanks; // Initially show all blood banks
+        _bloodBanks = fetchedBloodBanks;
+        _filteredBloodBanks = fetchedBloodBanks;
       });
 
       // Create markers for all fetched blood banks
       _createMarkers();
+
+      if (_isMapInitialized) {
+        _placeUserLocationMarker();
+      }
     } catch (e) {
       print("Error fetching blood banks: $e");
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Error loading blood banks: $e'),
+          backgroundColor: Colors.red,
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
     } finally {
-      setState(() {
-        _isLoading = false; // Data fetching complete, hide loading indicator
-      });
+      setState(() => _isLoading = false);
     }
   }
 
-  // Filter the blood banks based on search input and update markers
   void _filterBloodBanks() {
     String query = _searchController.text.trim().toLowerCase();
-    print("Search Query: $query");
-
     setState(() {
+      _isSearching = query.isNotEmpty;
       _filteredBloodBanks = _bloodBanks.where((bloodBank) {
         String name = (bloodBank['bloodBankName'] ?? '').trim().toLowerCase();
         List<String> availableBloodTypes =
             _bloodBankInventoryCache[bloodBank['bloodBankId']] ?? [];
-
-        print("Checking: $name");
-
-        // Debugging the matching logic
-        if (name.contains(query)) {
-          print("Matched Name: $name");
-        }
-        if (availableBloodTypes
-            .any((bloodType) => bloodType.toLowerCase().contains(query))) {
-          print("Matched Blood Type in: $name");
-        }
 
         bool nameMatches = name.contains(query);
         bool bloodTypeMatches = availableBloodTypes
@@ -137,30 +132,32 @@ class SearchScreenState extends State<SearchScreen> {
     _createMarkers();
   }
 
-  // Create markers using pre-fetched inventory details from cache
   void _createMarkers() {
     setState(() {
-      _markers.clear(); // Clear existing markers
+      _markers.clear();
+
+      // Keep user location marker if it exists
+      final userMarker = _markers.firstWhere(
+            (marker) => marker.markerId == const MarkerId('user_location'),
+      );
+
+      if (userMarker != null) {
+        _markers.add(userMarker);
+      }
     });
 
     for (var bloodBank in _filteredBloodBanks) {
-      // Retrieve available blood types from cache
       List<String> availableBloodTypes =
           _bloodBankInventoryCache[bloodBank['bloodBankId']] ?? [];
 
-      // Prepare snippet for info window based on inventory status
       String snippet = availableBloodTypes.isNotEmpty
           ? "Blood Types: ${availableBloodTypes.join(', ')}"
           : "Out of Stock";
 
-      // Debugging: Print the blood bank and its available blood types
-      print(
-          'Creating marker for ${bloodBank['bloodBankName']} with snippet: $snippet');
-
-      // Create the marker
       Marker marker = Marker(
         markerId: MarkerId(bloodBank['bloodBankId']),
         position: LatLng(bloodBank['latitude'], bloodBank['longitude']),
+        icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueRed),
         infoWindow: InfoWindow(
           title: bloodBank['bloodBankName'],
           snippet: snippet,
@@ -182,62 +179,6 @@ class SearchScreenState extends State<SearchScreen> {
     }
   }
 
-  // Function to calculate distance and find nearest blood bank
-  Future<void> _locateNearestBloodBank() async {
-    try {
-      Position position = await _getCurrentLocation();
-      LatLng userLocation = LatLng(position.latitude, position.longitude);
-
-      double closestDistance = double.infinity;
-      Map<String, dynamic>? nearestBloodBank;
-
-      for (var bloodBank in _bloodBanks) {
-        double distance = Geolocator.distanceBetween(
-          position.latitude,
-          position.longitude,
-          bloodBank['latitude'],
-          bloodBank['longitude'],
-        );
-
-        if (distance < closestDistance) {
-          closestDistance = distance;
-          nearestBloodBank = bloodBank;
-        }
-      }
-
-      if (nearestBloodBank != null) {
-        _googleMapController.animateCamera(
-          CameraUpdate.newLatLngZoom(
-            LatLng(nearestBloodBank['latitude'], nearestBloodBank['longitude']),
-            14.0,
-          ),
-        );
-
-        setState(() {
-          if (nearestBloodBank != null &&
-              nearestBloodBank['latitude'] != null &&
-              nearestBloodBank['longitude'] != null) {
-            _markers.clear();
-            _markers.add(Marker(
-              markerId: MarkerId(nearestBloodBank['bloodBankId']),
-              position: LatLng(
-                nearestBloodBank['latitude'].toDouble(),
-                nearestBloodBank['longitude'].toDouble(),
-              ),
-              infoWindow: InfoWindow(title: nearestBloodBank['bloodBankName']),
-            ));
-          } else {
-            print(
-                "Invalid nearestBloodBank data: Latitude and/or Longitude missing.");
-          }
-        });
-      }
-    } catch (e) {
-      print("Error locating nearest blood bank: $e");
-    }
-  }
-
-  // Get the user's current location
   Future<Position> _getCurrentLocation() async {
     bool serviceEnabled;
     LocationPermission permission;
@@ -264,215 +205,538 @@ class SearchScreenState extends State<SearchScreen> {
     );
   }
 
-  // Place a marker on the user's location
   Future<void> _placeUserLocationMarker() async {
+    try {
+      setState(() => _isLoading = true);
+
+      Position position = await _getCurrentLocation();
+      LatLng userLocation = LatLng(position.latitude, position.longitude);
+
+      // Remove existing user location marker
+      _markers.removeWhere((marker) => marker.markerId == const MarkerId('user_location'));
+
+      setState(() {
+        _markers.add(
+          Marker(
+            markerId: const MarkerId('user_location'),
+            position: userLocation,
+            icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueAzure),
+            infoWindow: const InfoWindow(title: 'Your Location'),
+          ),
+        );
+      });
+
+      _googleMapController.animateCamera(
+        CameraUpdate.newLatLngZoom(userLocation, 14.0),
+      );
+
+      setState(() => _isLoading = false);
+    } catch (e) {
+      setState(() => _isLoading = false);
+      print('Error getting user location: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Could not fetch location: $e'),
+          backgroundColor: Colors.red,
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    }
+  }
+
+  Future<void> _locateNearestBloodBank() async {
+    setState(() => _isLoading = true);
+
     try {
       Position position = await _getCurrentLocation();
       LatLng userLocation = LatLng(position.latitude, position.longitude);
 
-      _googleMapController.animateCamera(
-        CameraUpdate.newLatLngZoom(userLocation, 15.0),
-      );
+      double closestDistance = double.infinity;
+      Map<String, dynamic>? nearestBloodBank;
+
+      for (var bloodBank in _bloodBanks) {
+        double distance = Geolocator.distanceBetween(
+          position.latitude,
+          position.longitude,
+          bloodBank['latitude'],
+          bloodBank['longitude'],
+        );
+
+        if (distance < closestDistance) {
+          closestDistance = distance;
+          nearestBloodBank = bloodBank;
+        }
+      }
+
+      if (nearestBloodBank != null) {
+        // Calculate distance in kilometers (rounded to 1 decimal place)
+        final distanceInKm = (closestDistance / 1000).toStringAsFixed(1);
+
+        // Animate camera to the nearest blood bank with appropriate zoom
+        _googleMapController.animateCamera(
+          CameraUpdate.newLatLngZoom(
+            LatLng(nearestBloodBank['latitude'], nearestBloodBank['longitude']),
+            14.0,
+          ),
+        );
+
+        // Get blood types from inventory cache
+        List<String> availableBloodTypes =
+            _bloodBankInventoryCache[nearestBloodBank['bloodBankId']] ?? [];
+        String bloodTypeInfo = availableBloodTypes.isNotEmpty
+            ? "Available: ${availableBloodTypes.join(', ')}"
+            : "No blood types available";
+
+        // Update markers - clear existing and add nearest blood bank marker
+        setState(() {
+          _markers.clear();
+
+          // Add user location marker
+          _markers.add(
+            Marker(
+              markerId: const MarkerId('user_location'),
+              position: LatLng(position.latitude, position.longitude),
+              icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueAzure),
+              infoWindow: const InfoWindow(title: 'Your Location'),
+            ),
+          );
+
+          // Add nearest blood bank marker
+          _markers.add(
+            Marker(
+              markerId: MarkerId(nearestBloodBank?['bloodBankId']),
+              position: LatLng(
+                nearestBloodBank?['latitude'],
+                nearestBloodBank?['longitude'],
+              ),
+              infoWindow: InfoWindow(
+                title: nearestBloodBank?['bloodBankName'],
+                snippet: "$distanceInKm km away • $bloodTypeInfo",
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => BloodBankDetailsScreen(
+                        bloodBankId: nearestBloodBank?['bloodBankId'],
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ),
+          );
+        });
+
+        // Show success message
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              'Found nearest blood bank: ${nearestBloodBank['bloodBankName']} ($distanceInKm km away)',
+            ),
+            backgroundColor: Colors.green[700],
+            duration: const Duration(seconds: 3),
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      } else {
+        // Handle case when no blood banks are found
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('No blood banks found in the database'),
+            backgroundColor: Colors.red,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
     } catch (e) {
-      print('Error getting user location: $e');
+      print('Error locating nearest blood bank: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Could not find nearest blood bank: $e'),
+          backgroundColor: Colors.red,
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    } finally {
+      setState(() => _isLoading = false);
     }
   }
 
   @override
   void dispose() {
-    _googleMapController.dispose();
+    if (_isMapInitialized) {
+      _googleMapController.dispose();
+    }
     _searchController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
+    final screenSize = MediaQuery.of(context).size;
+
     return Scaffold(
+      extendBodyBehindAppBar: true,
       appBar: PreferredSize(
-        preferredSize: const Size.fromHeight(120),
-        child: AppBar(
-          backgroundColor: Styles.primaryColor,
-          shape: const RoundedRectangleBorder(
-            borderRadius: BorderRadius.only(
-              topLeft: Radius.circular(30),
-              topRight: Radius.circular(30),
-            ),
-          ),
-          elevation: 0,
-          flexibleSpace: Padding(
-            padding: const EdgeInsets.all(20),
-            child: Align(
-              alignment: Alignment.center,
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const SizedBox(height: 20),
-                  Text(
-                    "Search",
-                    style: Styles.headerStyle2.copyWith(
-                      fontSize: 22,
-                      fontWeight: FontWeight.bold,
-                      color: Styles.tertiaryColor,
-                    ),
-                  ),
+        preferredSize: Size.fromHeight(screenSize.height * 0.11),
+        child: FadeInDown(
+          duration: const Duration(milliseconds: 800),
+          child: Container(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [
+                  Styles.primaryColor,
+                  Styles.primaryColor.withOpacity(0.95),
                 ],
+              ),
+              borderRadius: const BorderRadius.only(
+                bottomLeft: Radius.circular(25),
+                bottomRight: Radius.circular(25),
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.red.withOpacity(0.2),
+                  blurRadius: 15,
+                  spreadRadius: 2,
+                  offset: const Offset(0, 3),
+                ),
+              ],
+            ),
+            child: SafeArea(
+              child: Padding(
+                padding: EdgeInsets.symmetric(
+                    horizontal: screenSize.width * 0.06,
+                    vertical: screenSize.height * 0.015
+                ),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      "Find Blood Banks",
+                      style: GoogleFonts.montserrat(
+                        fontSize: screenSize.width * 0.055,
+                        fontWeight: FontWeight.w700,
+                        color: Colors.white,
+                      ),
+                    ),
+                    SizedBox(height: screenSize.height * 0.005),
+                    Text(
+                      "Search for blood banks near you",
+                      style: GoogleFonts.roboto(
+                        fontSize: screenSize.width * 0.035,
+                        color: Colors.white.withOpacity(0.9),
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
           ),
         ),
       ),
-      body: Stack(
-        children: [
-          // Google Map as the background
-          GoogleMap(
-            myLocationEnabled: true,
-            myLocationButtonEnabled: false,
-            zoomControlsEnabled: true,
-            initialCameraPosition: _initialCameraPosition,
-            onMapCreated: (controller) => _googleMapController = controller,
-            markers: _markers,
-          ),
-
-          // Loading indicator overlay when data is being fetched
-          if (_isLoading) const Center(child: CircularProgressIndicator()),
-
-          // Search bar and location button
-          Positioned(
-            top: 20,
-            left: 10,
-            right: 20,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                Row(
-                  children: [
-                    Expanded(
-                      child: TextFieldInput(
-                        icon: Icons.search,
-                        textEditingController: _searchController,
-                        hintText: 'Search blood bank name or blood type...',
-                        textInputType: TextInputType.text,
-                        externalPadding:
-                            const EdgeInsets.symmetric(horizontal: 10),
-                      ),
-                    ),
-                    const SizedBox(width: 10),
-                    ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        foregroundColor: Styles.tertiaryColor,
-                        backgroundColor: Styles.primaryColor,
-                        shape: const RoundedRectangleBorder(
-                          borderRadius: BorderRadius.all(Radius.circular(10)),
-                        ),
-                        padding: const EdgeInsets.all(15),
-                      ),
-                      onPressed: () async {
-                        try {
-                          Position position = await _getCurrentLocation();
-                          LatLng userLocation =
-                              LatLng(position.latitude, position.longitude);
-
-                          // Remove existing user location marker if any
-                          _markers.removeWhere((marker) =>
-                              marker.markerId ==
-                              const MarkerId('user_location'));
-
-                          setState(() {
-                            _markers.add(
-                              Marker(
-                                markerId: const MarkerId('user_location'),
-                                position: userLocation,
-                                icon: BitmapDescriptor.defaultMarkerWithHue(
-                                    BitmapDescriptor.hueAzure),
-                                infoWindow:
-                                    const InfoWindow(title: 'Your Location'),
-                              ),
-                            );
-                          });
-
-                          _googleMapController.animateCamera(
-                            CameraUpdate.newLatLngZoom(userLocation, 15.0),
-                          );
-                        } catch (e) {
-                          print('Error locating user: $e');
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                                content: Text('Could not fetch location: $e')),
-                          );
-                        }
-                      },
-                      child: const Icon(Icons.location_searching),
-                    ),
-                  ],
+      body: MovingBackground(
+        animationType: AnimationType.translation,
+        backgroundColor: const Color.fromARGB(255, 248, 248, 248),
+        circles: const [
+          MovingCircle(color: Color.fromARGB(65, 230, 132, 125), radius: 120),
+          MovingCircle(color: Color.fromARGB(55, 230, 132, 125), radius: 150),
+          MovingCircle(color: Color.fromARGB(45, 230, 132, 125), radius: 180),
+          MovingCircle(color: Color.fromARGB(35, 230, 132, 125), radius: 200),
+        ],
+        child: Stack(
+          children: [
+            // Google Map
+            Positioned.fill(
+              top: screenSize.height * 0.11,
+              child: ClipRRect(
+                borderRadius: const BorderRadius.only(
+                  topLeft: Radius.circular(30),
+                  topRight: Radius.circular(30),
                 ),
-                // Dropdown list for search results
-                if (_searchController.text.isNotEmpty)
-                  Container(
+                child: GoogleMap(
+                  myLocationEnabled: true,
+                  myLocationButtonEnabled: false,
+                  zoomControlsEnabled: false,
+                  initialCameraPosition: _initialCameraPosition,
+                  onMapCreated: (controller) {
+                    _googleMapController = controller;
+                    setState(() => _isMapInitialized = true);
+                    if (!_isLoading) {
+                      _placeUserLocationMarker();
+                    }
+                  },
+                  markers: _markers,
+                ),
+              ),
+            ),
+
+            // Search bar
+            Positioned(
+              top: screenSize.height * 0.19,
+              left: 20,
+              right: 20,
+              child: FadeInDown(
+                duration: const Duration(milliseconds: 900),
+                child: Card(
+                  elevation: 5,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(15),
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 5),
+                    child: Row(
+                      children: [
+                        Icon(
+                          Icons.search,
+                          color: Styles.primaryColor,
+                        ),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: TextField(
+                            controller: _searchController,
+                            decoration: InputDecoration(
+                              hintText: 'Search blood bank or blood type...',
+                              hintStyle: GoogleFonts.roboto(
+                                color: Colors.grey[400],
+                              ),
+                              border: InputBorder.none,
+                            ),
+                          ),
+                        ),
+                        if (_searchController.text.isNotEmpty)
+                          IconButton(
+                            icon: const Icon(Icons.clear),
+                            onPressed: () {
+                              setState(() {
+                                _searchController.clear();
+                                _filterBloodBanks();
+                              });
+                            },
+                          ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ),
+
+            // Dropdown list for search results
+            if (_isSearching)
+              Positioned(
+                top: screenSize.height * 0.19,
+                left: 20,
+                right: 20,
+                child: FadeInDown(
+                  duration: const Duration(milliseconds: 400),
+                  child: Container(
                     decoration: BoxDecoration(
                       color: Colors.white,
-                      borderRadius: BorderRadius.circular(8),
-                      boxShadow: const [
+                      borderRadius: BorderRadius.circular(15),
+                      boxShadow: [
                         BoxShadow(
-                          color: Colors.black26,
-                          blurRadius: 4,
-                          offset: Offset(0, 2),
+                          color: Colors.black.withOpacity(0.1),
+                          blurRadius: 5,
+                          spreadRadius: 0,
+                          offset: const Offset(0, 3),
                         ),
                       ],
                     ),
-                    margin: const EdgeInsets.only(top: 10),
-                    constraints: const BoxConstraints(maxHeight: 200),
-                    child: ListView.builder(
+                    constraints: BoxConstraints(maxHeight: screenSize.height * 0.3),
+                    child: _filteredBloodBanks.isEmpty
+                        ? Padding(
+                      padding: const EdgeInsets.all(15),
+                      child: Text(
+                        'No blood banks found for "${_searchController.text}"',
+                        style: GoogleFonts.roboto(
+                          fontSize: 14,
+                          color: Colors.grey[600],
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                    )
+                        : ListView.separated(
                       shrinkWrap: true,
                       itemCount: _filteredBloodBanks.length,
+                      separatorBuilder: (context, index) => Divider(
+                        color: Colors.grey[200],
+                        height: 1,
+                      ),
                       itemBuilder: (context, index) {
                         final bank = _filteredBloodBanks[index];
+                        List<String> availableBloodTypes =
+                            _bloodBankInventoryCache[bank['bloodBankId']] ?? [];
+
                         return ListTile(
-                          title: Text(bank['bloodBankName']),
+                          title: Text(
+                            bank['bloodBankName'],
+                            style: GoogleFonts.montserrat(
+                              fontWeight: FontWeight.w600,
+                              fontSize: 16,
+                            ),
+                          ),
                           subtitle: Text(
-                            bank['bloodTypes'].join(', '),
-                            style: const TextStyle(fontSize: 12),
+                            availableBloodTypes.isEmpty
+                                ? 'No blood types available'
+                                : 'Available: ${availableBloodTypes.join(', ')}',
+                            style: GoogleFonts.roboto(
+                              fontSize: 12,
+                              color: Colors.grey[600],
+                            ),
+                          ),
+                          trailing: Icon(
+                            Icons.location_on,
+                            color: Styles.primaryColor,
                           ),
                           onTap: () {
+                            setState(() {
+                              _searchController.clear();
+                              _isSearching = false;
+                            });
+
                             final LatLng position = LatLng(
-                              bank['latitude'] as double,
-                              bank['longitude'] as double,
+                              bank['latitude'],
+                              bank['longitude'],
                             );
+
                             _googleMapController.animateCamera(
-                              CameraUpdate.newLatLngZoom(position, 14),
+                              CameraUpdate.newLatLngZoom(position, 15),
                             );
-                            _searchController.clear();
                           },
                         );
                       },
                     ),
                   ),
-              ],
-            ),
-          ),
-
-          // "Find Nearest Blood Bank" Button at the bottom
-          Positioned(
-            bottom: 20,
-            left: 20,
-            right: 60,
-            child: ElevatedButton(
-              onPressed: _locateNearestBloodBank,
-              style: ElevatedButton.styleFrom(
-                minimumSize: const Size(double.infinity, 50),
-                backgroundColor: Styles.primaryColor,
-                foregroundColor: Styles.tertiaryColor,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10),
                 ),
               ),
-              child: Text(
-                'Find Nearest Blood Bank',
-                style:
-                    Styles.headerStyle6.copyWith(color: Styles.tertiaryColor),
+
+            // Action buttons
+            Positioned(
+              bottom: 20,
+              right: 20,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // My Location Button
+                  FadeInRight(
+                    duration: const Duration(milliseconds: 800),
+                    child: FloatingActionButton(
+                      heroTag: 'locationBtn',
+                      backgroundColor: Colors.white,
+                      foregroundColor: Styles.primaryColor,
+                      mini: false,
+                      onPressed: _placeUserLocationMarker,
+                      child: const Icon(Icons.my_location),
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  // Zoom In Button
+                  FadeInRight(
+                    duration: const Duration(milliseconds: 850),
+                    child: FloatingActionButton(
+                      heroTag: 'zoomInBtn',
+                      backgroundColor: Colors.white,
+                      foregroundColor: Styles.primaryColor,
+                      mini: true,
+                      onPressed: () {
+                        _googleMapController.animateCamera(CameraUpdate.zoomIn());
+                      },
+                      child: const Icon(Icons.add),
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  // Zoom Out Button
+                  FadeInRight(
+                    duration: const Duration(milliseconds: 900),
+                    child: FloatingActionButton(
+                      heroTag: 'zoomOutBtn',
+                      backgroundColor: Colors.white,
+                      foregroundColor: Styles.primaryColor,
+                      mini: true,
+                      onPressed: () {
+                        _googleMapController.animateCamera(CameraUpdate.zoomOut());
+                      },
+                      child: const Icon(Icons.remove),
+                    ),
+                  ),
+                ],
               ),
             ),
-          ),
-        ],
+
+            // Find Nearest Blood Bank Button
+            Positioned(
+              bottom: 20,
+              left: 20,
+              right: 90,
+              child: FadeInUp(
+                duration: const Duration(milliseconds: 800),
+                child: ElevatedButton(
+                  onPressed: _locateNearestBloodBank,
+                  style: ElevatedButton.styleFrom(
+                    minimumSize: const Size(double.infinity, 55),
+                    backgroundColor: Styles.primaryColor,
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(15),
+                    ),
+                    elevation: 5,
+                    shadowColor: Styles.primaryColor.withOpacity(0.5),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Icon(Icons.near_me),
+                      const SizedBox(width: 10),
+                      Text(
+                        'Find Nearest Blood Bank',
+                        style: GoogleFonts.montserrat(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+
+            // Loading Indicator
+            if (_isLoading)
+              Positioned.fill(
+                child: Container(
+                  color: Colors.black.withOpacity(0.3),
+                  child: Center(
+                    child: Card(
+                      elevation: 8,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: Padding(
+                        padding: const EdgeInsets.all(20),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            CircularProgressIndicator(
+                              color: Styles.primaryColor,
+                            ),
+                            const SizedBox(height: 16),
+                            Text(
+                              'Loading...',
+                              style: GoogleFonts.roboto(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+          ],
+        ),
       ),
     );
   }
