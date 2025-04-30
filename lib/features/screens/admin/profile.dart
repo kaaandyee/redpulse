@@ -1,5 +1,5 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:redpulse/features/screens/admin/sub/adminprofile.dart';
 import 'package:redpulse/features/screens/admin/sub/bloodbankprofile.dart';
 import 'package:redpulse/features/screens/login.dart';
 import 'package:redpulse/utilities/constants/styles.dart';
@@ -7,7 +7,7 @@ import 'package:redpulse/utilities/constants/styles.dart';
 import '../../../widgets/confirmLogout.dart';
 
 class ProfileScreen extends StatelessWidget {
-  final String? adminId; // Made adminId optional
+  final String? adminId;
 
   const ProfileScreen({super.key, this.adminId});
 
@@ -35,7 +35,7 @@ class ProfileScreen extends StatelessWidget {
                 children: [
                   const SizedBox(height: 20),
                   Text(
-                    "Profile",
+                    "Blood Bank Profile",
                     style: Styles.headerStyle2.copyWith(
                       fontSize: 22,
                       fontWeight: FontWeight.bold,
@@ -54,27 +54,6 @@ class ProfileScreen extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const SizedBox(height: 50),
-            // Admin Profile Navigation Tile
-            ListTile(
-              title: Text(
-                "My Account",
-                style: Styles.headerStyle3.copyWith(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: Styles.accentColor,
-                ),
-              ),
-              trailing: const Icon(Icons.arrow_forward_ios_outlined, size: 16),
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => const AdminProfileScreen(),
-                  ),
-                );
-              },
-            ),
-            const Divider(), // Simple Line Separator
 
             // Blood Bank Profile Navigation Tile
             ListTile(
@@ -110,23 +89,46 @@ class ProfileScreen extends StatelessWidget {
               ),
               trailing: const Icon(Icons.arrow_forward_ios_outlined, size: 16),
               onTap: () async {
-                // Show the logout confirmation dialog
+                // Show the confirmation dialog
                 final shouldLogout = await showDialog<bool>(
                   context: context,
                   builder: (context) => const Confirmlogout(),
                 );
 
-                // If the user confirmed logout, perform sign-out logic and navigate to LoginScreen
+                // If confirmed, perform complete logout
                 if (shouldLogout == true) {
-                  // Optionally: Add your sign-out logic here, e.g.,
-                  // await FirebaseAuth.instance.signOut();
+                  try {
+                    // Show loading indicator
+                    showDialog(
+                      context: context,
+                      barrierDismissible: false,
+                      builder: (context) => const Center(
+                        child: CircularProgressIndicator(),
+                      ),
+                    );
 
-                  Navigator.of(context).pushAndRemoveUntil(
-                    MaterialPageRoute(
-                      builder: (context) => const LoginScreen(),
-                    ),
-                    (Route<dynamic> route) => false,
-                  );
+                    // Clear all authentication data
+                    final auth = FirebaseAuth.instance;
+                    await auth.signOut();
+
+                    // Remove all routes and navigate to login
+                    if (context.mounted) {
+                      Navigator.of(context).pushAndRemoveUntil(
+                        MaterialPageRoute(
+                          builder: (context) => const LoginScreen(),
+                        ),
+                            (route) => false, // This removes all previous routes
+                      );
+                    }
+                  } catch (e) {
+                    // Handle any errors during logout
+                    if (context.mounted) {
+                      Navigator.pop(context); // Remove loading dialog
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text('Error signing out: $e')),
+                      );
+                    }
+                  }
                 }
               },
             ),

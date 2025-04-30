@@ -101,7 +101,7 @@ class ReservationScreenState extends State<ReservationScreen> {
                 children: [
                   const SizedBox(height: 20),
                   Text(
-                    "Reservation",
+                    "My Reservations",
                     style: Styles.headerStyle2.copyWith(
                       fontSize: 22,
                       fontWeight: FontWeight.bold,
@@ -116,87 +116,115 @@ class ReservationScreenState extends State<ReservationScreen> {
       ),
       body: userId.isEmpty
           ? const Center(
-              child:
-                  CircularProgressIndicator()) // Show loading if userId is not fetched yet
+          child: CircularProgressIndicator()) // Show loading if userId is not fetched yet
           : StreamBuilder<List<ReservationModel>>(
-              stream: _reservationsStream,
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return const Center(child: CircularProgressIndicator());
-                }
+        stream: _reservationsStream,
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator());
+          }
 
-                if (snapshot.hasError) {
-                  return Center(child: Text('Error: ${snapshot.error}'));
-                }
+          if (snapshot.hasError) {
+            return Center(child: Text('Error: ${snapshot.error}'));
+          }
 
-                if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                  return const Center(child: Text('No reservations found.'));
-                }
+          if (!snapshot.hasData || snapshot.data!.isEmpty) {
+            return Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(Icons.event_busy, size: 60, color: Colors.grey[400]),
+                  const SizedBox(height: 16),
+                  Text(
+                    'No reservations found',
+                    style: TextStyle(
+                      fontSize: 18,
+                      color: Colors.grey[600],
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ],
+              ),
+            );
+          }
 
-                final reservations = snapshot.data!;
+          final reservations = snapshot.data!;
 
-                return ListView.builder(
-                  itemCount: reservations.length,
-                  itemBuilder: (context, index) {
-                    final reservation = reservations[index];
+          return ListView.builder(
+            itemCount: reservations.length,
+            itemBuilder: (context, index) {
+              final reservation = reservations[index];
 
-                    // Determine the tile color based on the reservation status
-                    Color tileColor;
-                    if (reservation.status == 'Pending') {
-                      tileColor = Styles.frontColor; // Pending status color
-                    } else if (reservation.status == 'Reserved') {
-                      tileColor = Styles.primaryColor; // Approved status color
-                    } else if (reservation.status == 'Cancelled') {
-                      tileColor =
-                          Styles.complementColor; // Cancelled status color
-                    } else {
-                      tileColor = Styles
-                          .tertiaryColor; // Default color if no status matches
-                    }
+              // Determine the tile color and icon based on the reservation status
+              Color tileColor;
+              IconData statusIcon;
 
-                    return Card(
-                      margin: const EdgeInsets.symmetric(
-                          vertical: 10, horizontal: 20),
-                      child: ListTile(
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10),
+              if (reservation.status == 'Pending') {
+                tileColor = Styles.frontColor; // Pending status color
+                statusIcon = Icons.hourglass_empty;
+              } else if (reservation.status == 'Reserved') {
+                tileColor = Colors.green[700] ?? Colors.green; // Dark green for approved
+                statusIcon = Icons.check_circle;
+              } else if (reservation.status == 'Cancelled') {
+                tileColor = Styles.complementColor; // Cancelled status color
+                statusIcon = Icons.cancel;
+              } else if (reservation.status == 'Completed') {
+                tileColor = Colors.blue[700] ?? Colors.blue; // Completed color
+                statusIcon = Icons.task_alt;
+              } else {
+                tileColor = Styles.tertiaryColor; // Default color
+                statusIcon = Icons.info;
+              }
+
+              return Card(
+                margin: const EdgeInsets.symmetric(vertical: 10, horizontal: 20),
+                elevation: 4,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: ListTile(
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  contentPadding: const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
+                  tileColor: tileColor,
+                  leading: Icon(
+                    statusIcon,
+                    size: 36,
+                    color: Styles.tertiaryColor,
+                  ),
+                  title: Text(
+                    bloodBankName.isNotEmpty
+                        ? bloodBankName
+                        : 'Loading...', // Blood bank name as title
+                    style: Styles.headerStyle2.copyWith(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: Styles.tertiaryColor,
+                    ),
+                  ),
+                  subtitle: Text(
+                    '\nBlood Type: ${reservation.bloodType}\nQuantity: ${reservation.quantity} units\nStatus: ${reservation.status}\nValid Until: ${DateFormat('MM/dd/yyyy').format(reservation.validUntil)}',
+                    style: Styles.headerStyle5
+                        .copyWith(color: Styles.tertiaryColor),
+                  ),
+                  onTap: () {
+                    // Pass reservationId to the ReservationDetailsScreen
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => ReservationDetailsScreen(
+                          reservationId: reservation.reservationId, // Pass the reservationId
                         ),
-                        contentPadding: const EdgeInsets.all(20),
-                        tileColor:
-                            tileColor, // Use the dynamically set tile color
-                        title: Text(
-                          bloodBankName.isNotEmpty
-                              ? bloodBankName
-                              : 'Loading...', // Blood bank name as title
-                          style: Styles.headerStyle2.copyWith(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                            color: Styles.tertiaryColor,
-                          ),
-                        ),
-                        subtitle: Text(
-                          '____________________________________________\nBlood Type: ${reservation.bloodType}\nQuantity: ${reservation.quantity}\nStatus: ${reservation.status}\nValid Until: ${DateFormat('MM/dd/yyyy').format(reservation.validUntil)}',
-                          style: Styles.headerStyle5
-                              .copyWith(color: Styles.tertiaryColor),
-                        ),
-                        onTap: () {
-                          // Pass reservationId to the ReservationDetailsScreen
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => ReservationDetailsScreen(
-                                reservationId: reservation
-                                    .reservationId, // Pass the reservationId
-                              ),
-                            ),
-                          );
-                        },
                       ),
                     );
                   },
-                );
-              },
-            ),
+                ),
+              );
+            },
+          );
+        },
+      ),
     );
   }
 }
