@@ -287,6 +287,34 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
                   SizedBox(height: screenSize.height * 0.03),
 
+                  // Note about blood type changes
+                  FadeInUp(
+                    duration: const Duration(milliseconds: 950),
+                    child: Container(
+                      width: double.infinity,
+                      padding: EdgeInsets.symmetric(
+                        horizontal: screenSize.width * 0.04,
+                        vertical: screenSize.height * 0.01,
+                      ),
+                      decoration: BoxDecoration(
+                        color: Colors.grey[100],
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(color: Colors.grey[300]!),
+                      ),
+                      child: Text(
+                        'To change your blood type, contact redpulse@gmail.com',
+                        textAlign: TextAlign.center,
+                        style: GoogleFonts.roboto(
+                          fontSize: screenSize.width * 0.035,
+                          fontStyle: FontStyle.italic,
+                          color: Colors.grey[700],
+                        ),
+                      ),
+                    ),
+                  ),
+
+                  SizedBox(height: screenSize.height * 0.02),
+
                   // Buttons
                   FadeInUp(
                     duration: const Duration(milliseconds: 1000),

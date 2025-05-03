@@ -1,3 +1,5 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:redpulse/features/screens/user/start.dart';
 import 'package:redpulse/services/auth.dart';
@@ -8,8 +10,10 @@ import 'package:redpulse/widgets/button.dart';
 import 'package:redpulse/widgets/snackbar';
 import 'package:redpulse/widgets/textfield.dart';
 import '../../utilities/flowTransition.dart';
+import 'admin/home.dart';
+import 'google_signup_completion.dart';
 import 'signup.dart';
-
+import 'package:action_slider/action_slider.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_moving_background/flutter_moving_background.dart';
 import 'package:flutter_moving_background/enums/animation_types.dart';
@@ -62,34 +66,89 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
     String email = emailController.text;
     String password = passwordController.text;
 
-    String res = await AuthMethod().loginUser(
-      email: email,
-      password: password,
-      context: context,
-    );
+    try {
+      // First clear any potential cached state
+      await AuthMethod().signOut();
 
-    if (res == "success") {
-      setState(() {
-        isLoading = false;
-      });
-      Navigator.pushReplacement(
-        context,
-        PageRouteBuilder(
-          pageBuilder: (context, animation, secondaryAnimation) => const UserStart(),
-          transitionsBuilder: (context, animation, secondaryAnimation, child) {
-            const begin = Offset(1.0, 0.0);
-            const end = Offset.zero;
-            const curve = Curves.easeInOut;
-            var tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
-            return SlideTransition(position: animation.drive(tween), child: child);
-          },
-        ),
+      // Then attempt to login
+      String res = await AuthMethod().loginUser(
+        email: email,
+        password: password,
+        context: context,
       );
-    } else {
+
+      if (res == "success") {
+        // Get fresh Firestore data to determine user type
+        final currentUser = await AuthMethod().getCurrentUser();
+        if (currentUser == null) {
+          throw Exception("Authentication succeeded but user is null");
+        }
+
+        // Force fetch the user document to avoid caching issues
+        final userDoc = await FirebaseFirestore.instance
+            .collection('users')
+            .doc(currentUser.uid)
+            .get(const GetOptions(source: Source.server));
+
+        if (!userDoc.exists) {
+          throw Exception("User document not found");
+        }
+
+        final userData = userDoc.data() as Map<String, dynamic>;
+        final bool isAdmin = userData['role'] == 'admin';
+
+        setState(() {
+          isLoading = false;
+        });
+
+        if (isAdmin) {
+          final String bloodBankId = userData['bloodBankId'] ?? '';
+          final bool isLinkedToBloodBank = bloodBankId.isNotEmpty;
+
+          // Navigate to AdminHome
+          Navigator.pushReplacement(
+            context,
+            PageRouteBuilder(
+              pageBuilder: (_, animation, __) => AdminHome(
+                isAdminLinkedToBloodBank: isLinkedToBloodBank,
+                bloodBankId: bloodBankId,
+              ),
+              transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                const begin = Offset(1.0, 0.0);
+                const end = Offset.zero;
+                const curve = Curves.easeInOut;
+                var tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+                return SlideTransition(position: animation.drive(tween), child: child);
+              },
+            ),
+          );
+        } else {
+          // Navigate to user start page for regular users
+          Navigator.pushReplacement(
+            context,
+            PageRouteBuilder(
+              pageBuilder: (_, animation, __) => const UserStart(),
+              transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                const begin = Offset(1.0, 0.0);
+                const end = Offset.zero;
+                const curve = Curves.easeInOut;
+                var tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+                return SlideTransition(position: animation.drive(tween), child: child);
+              },
+            ),
+          );
+        }
+      } else {
+        setState(() {
+          isLoading = false;
+        });
+        showSnackBar(context, res);
+      }
+    } catch (e) {
       setState(() {
         isLoading = false;
       });
-      showSnackBar(context, res);
+      showSnackBar(context, "Error during login: $e");
     }
   }
 
@@ -292,7 +351,6 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
 
                           const SizedBox(height: 25),
 
-                          // Google Login Button
                           FadeInUp(
                             delay: const Duration(milliseconds: 1100),
                             child: Padding(
@@ -308,20 +366,58 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                                   padding: const EdgeInsets.symmetric(vertical: 15),
                                 ),
                                 onPressed: () async {
+                                  setState(() {
+                                    isLoading = true;
+                                  });
+
                                   try {
-                                    await FirebaseServices().signInWithGoogle();
-                                    Navigator.pushReplacement(
-                                      context,
-                                      MaterialPageRoute(
-                                        builder: (context) => const UserStart(),
-                                      ),
-                                    );
+                                    // Sign in with Google
+                                    final result = await FirebaseServices().signInWithGoogle();
+                                    final user = result['user'] as User;
+
+                                    if (user != null) {
+                                      // Check if user exists in Firestore
+                                      final userDoc = await FirebaseFirestore.instance
+                                          .collection('users')
+                                          .doc(user.uid)
+                                          .get();
+
+                                      if (userDoc.exists) {
+                                        // User exists, navigate to home
+                                        Navigator.pushReplacement(
+                                          context,
+                                          MaterialPageRoute(
+                                            builder: (context) => const UserStart(),
+                                          ),
+                                        );
+                                      } else {
+                                        // New user, navigate to simplified signup
+                                        Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                            builder: (context) => GoogleSignupCompletionScreen(
+                                              uid: user.uid,
+                                              email: user.email ?? '',
+                                              displayName: user.displayName ?? '',
+                                              photoURL: user.photoURL,
+                                            ),
+                                          ),
+                                        );
+                                      }
+                                    }
                                   } catch (e) {
                                     ScaffoldMessenger.of(context).showSnackBar(
-                                      const SnackBar(
-                                        content: Text("Google sign-in failed. Please try again."),
+                                      SnackBar(
+                                        content: Text("Google sign-in failed: $e"),
+                                        backgroundColor: Colors.red,
                                       ),
                                     );
+                                  } finally {
+                                    if (mounted) {
+                                      setState(() {
+                                        isLoading = false;
+                                      });
+                                    }
                                   }
                                 },
                                 child: Row(

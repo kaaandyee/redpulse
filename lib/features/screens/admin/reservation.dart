@@ -3,7 +3,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:intl/intl.dart';
 import 'package:redpulse/utilities/constants/styles.dart';
 
-import '../user/sub/reservationdetails.dart'; // Import the details screen
+import '../user/sub/reservationdetails.dart';
 
 class AdminReservationScreen extends StatefulWidget {
   final String bloodBankId;
@@ -26,7 +26,6 @@ class _AdminReservationScreenState extends State<AdminReservationScreen> {
     _fetchReservations();
   }
 
-// Add this lifecycle method to refresh when returning to the screen
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
@@ -120,13 +119,10 @@ class _AdminReservationScreenState extends State<AdminReservationScreen> {
     }
   }
 
-  // Function to update reservation status and Firestore
   Future<void> _updateReservationStatus(String reservationId, String newStatus, int quantity) async {
-    // Flag to track if dialog is showing
     bool isDialogShowing = false;
 
     try {
-      // Show loading dialog
       isDialogShowing = true;
       showDialog(
         context: context,
@@ -144,7 +140,6 @@ class _AdminReservationScreenState extends State<AdminReservationScreen> {
         },
       );
 
-      // Fetch the reservation document to get the bloodBankId and bloodType
       final reservationRef = FirebaseFirestore.instance
           .collection('reservations')
           .doc(reservationId);
@@ -180,29 +175,23 @@ class _AdminReservationScreenState extends State<AdminReservationScreen> {
         return;
       }
 
-      // Update the reservation status
-      // Update the reservation status
       await reservationRef.update({
         'status': newStatus,
         'updatedAt': FieldValue.serverTimestamp(),
       });
 
-      // Check if status is 'Cancelled' and update inventory
       if (newStatus == 'Cancelled') {
-        // Access the inventory subcollection of the blood bank
         final inventoryRef = FirebaseFirestore.instance
             .collection('bloodbanks')
             .doc(bloodBankId)
             .collection('inventories')
             .doc(bloodType);
 
-        // Fetch current inventory data
         final inventorySnapshot = await inventoryRef.get();
         if (inventorySnapshot.exists) {
           var inventoryData = inventorySnapshot.data();
           int currentStock = inventoryData?['quantity'] ?? 0;
 
-          // Update the inventory by adding the cancelled reservation's quantity
           await inventoryRef.update({
             'quantity': currentStock + quantity,
             'lastUpdated': FieldValue.serverTimestamp(),
@@ -210,7 +199,6 @@ class _AdminReservationScreenState extends State<AdminReservationScreen> {
         }
       }
 
-      // Close loading dialog and refresh
       if (mounted && Navigator.canPop(context)) {
         Navigator.of(context, rootNavigator: true).pop();
       }
@@ -228,7 +216,6 @@ class _AdminReservationScreenState extends State<AdminReservationScreen> {
     } catch (e) {
       print('Error updating status: $e');
 
-      // Close loading dialog in case of error
       if (mounted && Navigator.canPop(context)) {
         Navigator.of(context, rootNavigator: true).pop();
       }
@@ -244,17 +231,16 @@ class _AdminReservationScreenState extends State<AdminReservationScreen> {
     }
   }
 
-  // Function to navigate to the reservation details screen
-  void _navigateToReservationDetails(String reservationId) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => ReservationDetailsScreen(
-          reservationId: reservationId,
-        ),
-      ),
-    );
-  }
+ void _navigateToReservationDetails(String reservationId) {
+   Navigator.push(
+     context,
+     MaterialPageRoute(
+       builder: (context) => ReservationDetailsScreen(
+         reservationId: reservationId,
+       ),
+     ),
+   );
+ }
 
   @override
   Widget build(BuildContext context) {
@@ -297,38 +283,66 @@ class _AdminReservationScreenState extends State<AdminReservationScreen> {
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
           : _errorMessage.isNotEmpty
-          ? Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
+          ? RefreshIndicator(
+        onRefresh: _fetchReservations,
+        child: ListView(
           children: [
-            const Icon(Icons.error_outline, size: 60, color: Colors.red),
-            const SizedBox(height: 16),
-            Text(
-              _errorMessage,
-              style: const TextStyle(color: Colors.red),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 16),
-            ElevatedButton(
-              onPressed: _fetchReservations,
-              child: const Text('Retry'),
+            SizedBox(
+              height: MediaQuery.of(context).size.height * 0.7,
+              child: Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Icon(Icons.error_outline, size: 60, color: Colors.red),
+                    const SizedBox(height: 16),
+                    Text(
+                      _errorMessage,
+                      style: const TextStyle(color: Colors.red),
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 16),
+                    ElevatedButton(
+                      onPressed: _fetchReservations,
+                      child: const Text('Retry'),
+                    ),
+                  ],
+                ),
+              ),
             ),
           ],
         ),
       )
           : _reservations.isEmpty
-          ? Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
+          ? RefreshIndicator(
+        onRefresh: _fetchReservations,
+        child: ListView(
           children: [
-            Icon(Icons.event_busy, size: 60, color: Colors.grey[400]),
-            const SizedBox(height: 16),
-            Text(
-              'No reservations found for this blood bank',
-              style: TextStyle(
-                fontSize: 18,
-                color: Colors.grey[600],
-                fontWeight: FontWeight.bold,
+            SizedBox(
+              height: MediaQuery.of(context).size.height * 0.7,
+              child: Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(Icons.event_busy, size: 60, color: Colors.grey[400]),
+                    const SizedBox(height: 16),
+                    Text(
+                      'No reservations found for this blood bank',
+                      style: TextStyle(
+                        fontSize: 18,
+                        color: Colors.grey[600],
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    Text(
+                      'Pull down to refresh',
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: Colors.grey[400],
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
           ],
@@ -341,8 +355,18 @@ class _AdminReservationScreenState extends State<AdminReservationScreen> {
             .snapshots(),
         builder: (context, snapshot) {
           if (snapshot.hasError) {
-            return Center(
-              child: Text('Error: ${snapshot.error}'),
+            return RefreshIndicator(
+              onRefresh: _fetchReservations,
+              child: ListView(
+                children: [
+                  SizedBox(
+                    height: MediaQuery.of(context).size.height * 0.7,
+                    child: Center(
+                      child: Text('Error: ${snapshot.error}'),
+                    ),
+                  ),
+                ],
+              ),
             );
           }
 
@@ -396,181 +420,182 @@ class _AdminReservationScreenState extends State<AdminReservationScreen> {
             }
           }
 
-          return ListView.builder(
-            itemCount: displayReservations.length,
-            itemBuilder: (context, index) {
-              final reservation = displayReservations[index];
-              String status = reservation['status'];
-              int quantity = reservation['quantity'];
-              String reservationId = reservation['id'];
-              String userName = reservation['userName'];
+          return RefreshIndicator(
+            onRefresh: _fetchReservations,
+            child: ListView.builder(
+              itemCount: displayReservations.length,
+              itemBuilder: (context, index) {
+                final reservation = displayReservations[index];
+                String status = reservation['status'];
+                int quantity = reservation['quantity'];
+                String reservationId = reservation['id'];
+                String userName = reservation['userName'];
 
-              // Determine tile color based on status
-              Color tileColor;
-              IconData statusIcon;
+                // Determine tile color based on status
+                Color tileColor;
+                IconData statusIcon;
 
-              if (status == 'Pending') {
-                tileColor = Styles.frontColor;
-                statusIcon = Icons.hourglass_empty;
-              } else if (status == 'Reserved') {
-                tileColor = Colors.green[700] ?? Colors.green; // Dark green for approved
-                statusIcon = Icons.check_circle;
-              } else if (status == 'Cancelled') {
-                tileColor = Styles.complementColor;
-                statusIcon = Icons.cancel;
-              } else if (status == 'Completed') {
-                tileColor = Colors.blue[700] ?? Colors.blue;
-                statusIcon = Icons.task_alt;
-              } else {
-                tileColor = Styles.tertiaryColor;
-                statusIcon = Icons.info;
-              }
+                if (status == 'Pending') {
+                  tileColor = Styles.frontColor;
+                  statusIcon = Icons.hourglass_empty;
+                } else if (status == 'Reserved') {
+                  tileColor = Colors.green[700] ?? Colors.green;
+                  statusIcon = Icons.check_circle;
+                } else if (status == 'Cancelled') {
+                  tileColor = Styles.complementColor;
+                  statusIcon = Icons.cancel;
+                } else if (status == 'Completed') {
+                  tileColor = Colors.blue[700] ?? Colors.blue;
+                  statusIcon = Icons.task_alt;
+                } else {
+                  tileColor = Styles.tertiaryColor;
+                  statusIcon = Icons.info;
+                }
 
-              return Card(
-                margin: const EdgeInsets.symmetric(
-                    horizontal: 20, vertical: 10),
-                elevation: 4,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: InkWell(
-                  // Make the entire card tappable
-                  onTap: () => _navigateToReservationDetails(reservationId),
-                  borderRadius: BorderRadius.circular(12),
-                  child: Column(
-                    children: [
-                      ListTile(
-                        contentPadding: const EdgeInsets.all(16),
-                        tileColor: tileColor,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        leading: Icon(
-                          statusIcon,
-                          size: 36,
-                          color: Styles.tertiaryColor,
-                        ),
-                        title: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Expanded(
-                              child: Text(
-                                userName,
-                                style: Styles.headerStyle2.copyWith(
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.bold,
-                                  color: Styles.tertiaryColor,
-                                ),
-                              ),
-                            ),
-                            Icon(
-                              Icons.arrow_forward_ios,
-                              size: 22,
-                              color: Styles.tertiaryColor,
-                            ),
-                          ],
-                        ),
-                        subtitle: Text(
-                          '___________________________________\nBlood Type: ${reservation['bloodType']}\nQuantity: $quantity units\nStatus: $status\nMedical Reason: ${reservation['medicalReason']}\nReserved At: ${reservation['reservationDate'] != null
-                              ? DateFormat('MM/dd/yyyy').format(reservation['reservationDate'])
-                              : 'N/A'}\nValid Until: ${reservation['validUntil'] != null && reservation['validUntil'] is Timestamp
-                              ? DateFormat('MM/dd/yyyy').format(reservation['validUntil'].toDate())
-                              : reservation['validUntil'] != null && reservation['validUntil'] is DateTime
-                              ? DateFormat('MM/dd/yyyy').format(reservation['validUntil'])
-                              : 'N/A'}',
-                          style: Styles.headerStyle5.copyWith(
+                return Card(
+                  margin: const EdgeInsets.symmetric(
+                      horizontal: 20, vertical: 10),
+                  elevation: 4,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: InkWell(
+                    onTap: () => _navigateToReservationDetails(reservationId),
+                    borderRadius: BorderRadius.circular(12),
+                    child: Column(
+                      children: [
+                        ListTile(
+                          contentPadding: const EdgeInsets.all(16),
+                          tileColor: tileColor,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          leading: Icon(
+                            statusIcon,
+                            size: 36,
                             color: Styles.tertiaryColor,
                           ),
+                          title: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Expanded(
+                                child: Text(
+                                  userName,
+                                  style: Styles.headerStyle2.copyWith(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.bold,
+                                    color: Styles.tertiaryColor,
+                                  ),
+                                ),
+                              ),
+                              Icon(
+                                Icons.arrow_forward_ios,
+                                size: 22,
+                                color: Styles.tertiaryColor,
+                              ),
+                            ],
+                          ),
+                          subtitle: Text(
+                            '___________________________________\nBlood Type: ${reservation['bloodType']}\nQuantity: $quantity units\nStatus: $status\nMedical Reason: ${reservation['medicalReason']}\nReserved At: ${reservation['reservationDate'] != null
+                                ? DateFormat('MM/dd/yyyy').format(reservation['reservationDate'])
+                                : 'N/A'}\nValid Until: ${reservation['validUntil'] != null && reservation['validUntil'] is Timestamp
+                                ? DateFormat('MM/dd/yyyy').format(reservation['validUntil'].toDate())
+                                : reservation['validUntil'] != null && reservation['validUntil'] is DateTime
+                                ? DateFormat('MM/dd/yyyy').format(reservation['validUntil'])
+                                : 'N/A'}',
+                            style: Styles.headerStyle5.copyWith(
+                              color: Styles.tertiaryColor,
+                            ),
+                          ),
                         ),
-                      ),
 
-                      // Action buttons for this reservation
-                      if (status == 'Pending')
-                        Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                            children: [
-                              Expanded(
-                                child: ElevatedButton.icon(
-                                  icon: const Icon(Icons.check),
-                                  label: const Text('Confirm'),
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor: Colors.green,
-                                    foregroundColor: Colors.white,
-                                    padding: const EdgeInsets.symmetric(vertical: 12),
+                        if (status == 'Pending')
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                              children: [
+                                Expanded(
+                                  child: ElevatedButton.icon(
+                                    icon: const Icon(Icons.check),
+                                    label: const Text('Confirm'),
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: Colors.green,
+                                      foregroundColor: Colors.white,
+                                      padding: const EdgeInsets.symmetric(vertical: 12),
+                                    ),
+                                    onPressed: () async {
+                                      await _updateReservationStatus(
+                                          reservationId, 'Reserved', quantity);
+                                    },
                                   ),
-                                  onPressed: () async {
-                                    await _updateReservationStatus(
-                                        reservationId, 'Reserved', quantity);
-                                  },
                                 ),
-                              ),
-                              const SizedBox(width: 12),
-                              Expanded(
-                                child: ElevatedButton.icon(
-                                  icon: const Icon(Icons.cancel),
-                                  label: const Text('Deny'),
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor: Colors.red,
-                                    foregroundColor: Colors.white,
-                                    padding: const EdgeInsets.symmetric(vertical: 12),
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  child: ElevatedButton.icon(
+                                    icon: const Icon(Icons.cancel),
+                                    label: const Text('Deny'),
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: Colors.red,
+                                      foregroundColor: Colors.white,
+                                      padding: const EdgeInsets.symmetric(vertical: 12),
+                                    ),
+                                    onPressed: () async {
+                                      await _updateReservationStatus(
+                                          reservationId, 'Cancelled', quantity);
+                                    },
                                   ),
-                                  onPressed: () async {
-                                    await _updateReservationStatus(
-                                        reservationId, 'Cancelled', quantity);
-                                  },
                                 ),
-                              ),
-                            ],
+                              ],
+                            ),
+                          )
+                        else if (status == 'Reserved')
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                              children: [
+                                Expanded(
+                                  child: ElevatedButton.icon(
+                                    icon: const Icon(Icons.check_circle),
+                                    label: const Text('Complete'),
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: Colors.blue,
+                                      foregroundColor: Colors.white,
+                                      padding: const EdgeInsets.symmetric(vertical: 12),
+                                    ),
+                                    onPressed: () async {
+                                      await _updateReservationStatus(
+                                          reservationId, 'Completed', 0);
+                                    },
+                                  ),
+                                ),
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  child: ElevatedButton.icon(
+                                    icon: const Icon(Icons.cancel),
+                                    label: const Text('Cancel'),
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: Colors.red,
+                                      foregroundColor: Colors.white,
+                                      padding: const EdgeInsets.symmetric(vertical: 12),
+                                    ),
+                                    onPressed: () async {
+                                      await _updateReservationStatus(
+                                          reservationId, 'Cancelled', quantity);
+                                    },
+                                  ),
+                                ),
+                              ],
+                            ),
                           ),
-                        )
-                      else if (status == 'Reserved')
-                        Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                            children: [
-                              Expanded(
-                                child: ElevatedButton.icon(
-                                  icon: const Icon(Icons.check_circle),
-                                  label: const Text('Complete'),
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor: Colors.blue,
-                                    foregroundColor: Colors.white,
-                                    padding: const EdgeInsets.symmetric(vertical: 12),
-                                  ),
-                                  onPressed: () async {
-                                    await _updateReservationStatus(
-                                        reservationId, 'Completed', 0);
-                                  },
-                                ),
-                              ),
-                              const SizedBox(width: 12),
-                              Expanded(
-                                child: ElevatedButton.icon(
-                                  icon: const Icon(Icons.cancel),
-                                  label: const Text('Cancel'),
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor: Colors.red,
-                                    foregroundColor: Colors.white,
-                                    padding: const EdgeInsets.symmetric(vertical: 12),
-                                  ),
-                                  onPressed: () async {
-                                    await _updateReservationStatus(
-                                        reservationId, 'Cancelled', quantity);
-                                  },
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      const SizedBox(height: 8),
-                    ],
+                        const SizedBox(height: 8),
+                      ],
+                    ),
                   ),
-                ),
-              );
-            },
+                );
+              },
+            ),
           );
         },
       ),

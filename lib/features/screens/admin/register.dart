@@ -10,7 +10,17 @@ import 'package:geolocator/geolocator.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 class RegisterForm extends StatefulWidget {
-  const RegisterForm({super.key});
+
+  final String? initialEmail;
+  final String? initialAddress;
+  final String? initialContactNumber;
+
+  const RegisterForm({
+    super.key,
+    this.initialEmail,
+    this.initialAddress,
+    this.initialContactNumber
+  });
 
   @override
   State<RegisterForm> createState() => RegisterFormState();
@@ -32,6 +42,18 @@ class RegisterFormState extends State<RegisterForm> {
   void initState() {
     super.initState();
     _requestLocationPermission();
+
+
+    // Pre-fill fields with data from AdminSignupScreen if available
+    if (widget.initialEmail != null) {
+      emailController.text = widget.initialEmail!;
+    }
+    if (widget.initialAddress != null) {
+      addressController.text = widget.initialAddress!;
+    }
+    if (widget.initialContactNumber != null) {
+      contactNumberController.text = widget.initialContactNumber!;
+    }
   }
 
   @override
@@ -260,23 +282,19 @@ class RegisterFormState extends State<RegisterForm> {
                   hintText: 'Blood Bank Name',
                   textInputType: TextInputType.text,
                 ),
-                TextFieldInput(
-                  icon: Icons.email,
-                  textEditingController: emailController,
-                  hintText: 'Blood Bank Email',
-                  textInputType: TextInputType.emailAddress,
-                ),
-                TextFieldInput(
-                  icon: Icons.home,
-                  textEditingController: addressController,
-                  hintText: 'Blood Bank Address',
-                  textInputType: TextInputType.text,
-                ),
-                TextFieldInput(
-                  icon: Icons.phone,
-                  textEditingController: contactNumberController,
-                  hintText: 'Contact Number',
-                  textInputType: TextInputType.phone,
+                // Add this after the blood bank name field
+                Container(
+                  margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 5),
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: Colors.grey.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Text(
+                    "Your email, address, and phone number have been carried over from the previous step.",
+                    style: TextStyle(fontSize: 13, color: Colors.grey.shade700),
+                    textAlign: TextAlign.center,
+                  ),
                 ),
 
                 // Location section with Google Maps

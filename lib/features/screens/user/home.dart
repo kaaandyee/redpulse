@@ -19,10 +19,13 @@ class UserHome extends StatefulWidget {
   State<UserHome> createState() => _UserHomeState();
 }
 
-class _UserHomeState extends State<UserHome> with SingleTickerProviderStateMixin {
+class _UserHomeState extends State<UserHome>
+    with SingleTickerProviderStateMixin {
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
   final DonationStatisticsService _statisticsService = DonationStatisticsService();
+  bool _isRefreshing = false;
+  bool _isPageRefreshing = false;
 
   // Statistics state variables
   int totalDonations = 0;
@@ -49,6 +52,12 @@ class _UserHomeState extends State<UserHome> with SingleTickerProviderStateMixin
     _fetchUserStatistics();
   }
 
+  @override
+  void dispose() {
+    _animationController.dispose();
+    super.dispose();
+  }
+
   Future<void> _fetchUserStatistics() async {
     final user = Provider.of<UserAdminModel?>(context, listen: false);
     if (user != null && user.id != null) {
@@ -57,18 +66,61 @@ class _UserHomeState extends State<UserHome> with SingleTickerProviderStateMixin
 
         final stats = await _statisticsService.getUserDonationStats(user.id!);
 
-        setState(() {
-          totalDonations = stats['totalDonations'];
-          totalBloodDonatedMl = stats['totalBloodDonatedMl'];
-          totalLivesSaved = stats['totalLivesSaved'];
-          isLoadingStats = false;
-        });
+        if (mounted) {
+          setState(() {
+            totalDonations = stats['totalDonations'];
+            totalBloodDonatedMl = stats['totalBloodDonatedMl'];
+            totalLivesSaved = stats['totalLivesSaved'];
+            isLoadingStats = false;
+          });
+        }
       } catch (e) {
         print('Error loading statistics: $e');
-        setState(() => isLoadingStats = false);
+        if (mounted) {
+          setState(() => isLoadingStats = false);
+        }
       }
     }
   }
+
+  Future<void> refreshData() async {
+    if (_isRefreshing) return;
+
+    setState(() {
+      _isRefreshing = true;
+      _isPageRefreshing = true;
+    });
+
+    try {
+      // Refresh user from provider
+      final userProvider = Provider.of<UserAdminModel?>(context, listen: false);
+      if (userProvider != null && userProvider.id != null) {
+        // Refresh user data
+        await userProvider.refreshUserData();
+
+        // Refresh statistics
+        await _fetchUserStatistics();
+      }
+    } catch (e) {
+      print('Error refreshing data: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to refresh: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isRefreshing = false;
+          _isPageRefreshing = false;
+        });
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final user = Provider.of<UserAdminModel?>(context);
@@ -229,228 +281,337 @@ class _UserHomeState extends State<UserHome> with SingleTickerProviderStateMixin
           MovingCircle(color: Color.fromARGB(45, 230, 132, 125), radius: 180),
           MovingCircle(color: Color.fromARGB(35, 230, 132, 125), radius: 200),
         ],
-        child: LayoutBuilder(
-          builder: (context, constraints) {
-            return SingleChildScrollView(
-              physics: const BouncingScrollPhysics(),
-              padding: EdgeInsets.only(
-                top: screenSize.height * 0.18 + 10, // Account for AppBar height
-                bottom: screenSize.height * 0.02,
-              ),
-              child: Column(
-                children: [
-                  // Welcome Card
-                  Padding(
-                    padding: EdgeInsets.symmetric(
-                      horizontal: screenSize.width * 0.06,
-                      vertical: screenSize.height * 0.015,
-                    ),
-                    child: FadeInDown(
-                      duration: const Duration(milliseconds: 800),
-                      child: Container(
-                        decoration: BoxDecoration(
-                          gradient: LinearGradient(
-                            begin: Alignment.topLeft,
-                            end: Alignment.bottomRight,
-                            colors: [
-                              Colors.white,
-                              Colors.grey.shade50,
+        child: RefreshIndicator(
+          onRefresh: refreshData,
+          color: Styles.primaryColor,
+          backgroundColor: Colors.white,
+          displacement: 40.0,
+          strokeWidth: 3.0,
+          child: SingleChildScrollView(
+            physics: const AlwaysScrollableScrollPhysics(
+              parent: BouncingScrollPhysics(),
+            ),
+            padding: EdgeInsets.only(
+              top: screenSize.height * 0.18 + 10,
+              bottom: screenSize.height * 0.02,
+            ),
+            child: Column(
+              children: [
+                // Welcome Card
+                Padding(
+                  padding: EdgeInsets.symmetric(
+                    horizontal: screenSize.width * 0.06,
+                    vertical: screenSize.height * 0.015,
+                  ),
+                  child: FadeInDown(
+                    duration: const Duration(milliseconds: 800),
+                    child: Stack(
+                      children: [
+                        Container(
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                              colors: _isPageRefreshing
+                                  ? [Colors.grey.shade100, Colors.grey.shade200]
+                                  : [Colors.white, Colors.grey.shade50],
+                            ),
+                            borderRadius: BorderRadius.circular(20),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.grey.withOpacity(0.2),
+                                spreadRadius: 2,
+                                blurRadius: 8,
+                                offset: const Offset(0, 3),
+                              ),
                             ],
                           ),
-                          borderRadius: BorderRadius.circular(20),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.grey.withOpacity(0.2),
-                              spreadRadius: 2,
-                              blurRadius: 8,
-                              offset: const Offset(0, 3),
-                            ),
-                          ],
-                        ),
-                        padding: EdgeInsets.all(screenSize.width * 0.04),
-                        child: Row(
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          children: [
-                            Container(
-                              decoration: BoxDecoration(
-                                shape: BoxShape.circle,
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: Styles.primaryColor.withOpacity(0.2),
-                                    spreadRadius: 2,
-                                    blurRadius: 7,
-                                  ),
-                                ],
-                              ),
-                              child: CircleAvatar(
-                                radius: screenSize.width * 0.08,
-                                backgroundImage: (user.profileImageUrl != null &&
-                                    user.profileImageUrl!.isNotEmpty)
-                                    ? NetworkImage(user.profileImageUrl!)
-                                    : const AssetImage('assets/images/default_profile.jpg') as ImageProvider,
-                              ),
-                            ),
-                            SizedBox(width: screenSize.width * 0.04),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    "Welcome back,",
-                                    style: GoogleFonts.roboto(
-                                      fontSize: screenSize.width * 0.035,
-                                      fontWeight: FontWeight.w500,
-                                      color: Colors.grey[600],
-                                    ),
-                                  ),
-                                  SizedBox(height: screenSize.height * 0.005),
-                                  Text(
-                                    "${user.fullName}!",
-                                    style: GoogleFonts.montserrat(
-                                      fontSize: screenSize.width * 0.05,
-                                      fontWeight: FontWeight.bold,
-                                      color: Styles.primaryColor,
-                                    ),
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                ],
-                              ),
-                            ),
-                            // Blood Type Badge
-                            if (user.bloodType != null && user.bloodType!.isNotEmpty)
+                          padding: EdgeInsets.all(screenSize.width * 0.04),
+                          child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
                               Container(
-                                padding: EdgeInsets.symmetric(
-                                  horizontal: screenSize.width * 0.03,
-                                  vertical: screenSize.height * 0.008,
-                                ),
                                 decoration: BoxDecoration(
-                                  color: Styles.primaryColor,
-                                  borderRadius: BorderRadius.circular(12),
+                                  shape: BoxShape.circle,
                                   boxShadow: [
                                     BoxShadow(
-                                      color: Styles.primaryColor.withOpacity(0.3),
-                                      spreadRadius: 1,
-                                      blurRadius: 4,
-                                      offset: const Offset(0, 2),
+                                      color: Styles.primaryColor.withOpacity(0.2),
+                                      spreadRadius: 2,
+                                      blurRadius: 7,
                                     ),
                                   ],
                                 ),
-                                child: Text(
-                                  user.bloodType!,
-                                  style: GoogleFonts.roboto(
-                                    fontSize: screenSize.width * 0.04,
-                                    fontWeight: FontWeight.w700,
-                                    color: Colors.white,
+                                child: CircleAvatar(
+                                  radius: screenSize.width * 0.08,
+                                  backgroundImage: (user.profileImageUrl != null &&
+                                      user.profileImageUrl!.isNotEmpty)
+                                      ? NetworkImage(user.profileImageUrl!)
+                                      : const AssetImage('assets/images/default_profile.jpg') as ImageProvider,
+                                ),
+                              ),
+                              SizedBox(width: screenSize.width * 0.04),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      "Welcome back,",
+                                      style: GoogleFonts.roboto(
+                                        fontSize: screenSize.width * 0.035,
+                                        fontWeight: FontWeight.w500,
+                                        color: Colors.grey[600],
+                                      ),
+                                    ),
+                                    SizedBox(height: screenSize.height * 0.005),
+                                    Text(
+                                      "${user.fullName}!",
+                                      style: GoogleFonts.montserrat(
+                                        fontSize: screenSize.width * 0.05,
+                                        fontWeight: FontWeight.bold,
+                                        color: Styles.primaryColor,
+                                      ),
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              // Blood Type Badge
+                              if (user.bloodType != null && user.bloodType.isNotEmpty)
+                                Container(
+                                  padding: EdgeInsets.symmetric(
+                                    horizontal: screenSize.width * 0.03,
+                                    vertical: screenSize.height * 0.008,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: Styles.primaryColor,
+                                    borderRadius: BorderRadius.circular(12),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: Styles.primaryColor.withOpacity(0.3),
+                                        spreadRadius: 1,
+                                        blurRadius: 4,
+                                        offset: const Offset(0, 2),
+                                      ),
+                                    ],
+                                  ),
+                                  child: Text(
+                                    user.bloodType,
+                                    style: GoogleFonts.roboto(
+                                      fontSize: screenSize.width * 0.04,
+                                      fontWeight: FontWeight.w700,
+                                      color: Colors.white,
+                                    ),
+                                  ),
+                                ),
+                            ],
+                          ),
+                        ),
+                        if (_isPageRefreshing)
+                          Positioned.fill(
+                            child: Container(
+                              decoration: BoxDecoration(
+                                color: Colors.white.withOpacity(0.7),
+                                borderRadius: BorderRadius.circular(20),
+                              ),
+                              child: Center(
+                                child: SizedBox(
+                                  width: 24,
+                                  height: 24,
+                                  child: CircularProgressIndicator(
+                                    color: Styles.primaryColor,
+                                    strokeWidth: 2,
                                   ),
                                 ),
                               ),
-                          ],
-                        ),
-                      ),
+                            ),
+                          ),
+                      ],
                     ),
                   ),
+                ),
 
-                  // Stats Summary
-                  Padding(
-                    padding: EdgeInsets.symmetric(
-                      horizontal: screenSize.width * 0.06,
-                      vertical: screenSize.height * 0.015,
-                    ),
-                    child: FadeInUp(
-                      duration: const Duration(milliseconds: 900),
-                      child: Container(
-                        decoration: BoxDecoration(
-                          gradient: LinearGradient(
-                            begin: Alignment.topLeft,
-                            end: Alignment.bottomRight,
-                            colors: [
-                              Styles.primaryColor.withOpacity(0.95),
-                              Styles.primaryColor.withOpacity(0.85),
-                            ],
-                          ),
-                          borderRadius: BorderRadius.circular(20),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Styles.primaryColor.withOpacity(0.3),
-                              spreadRadius: 1,
-                              blurRadius: 8,
-                              offset: const Offset(0, 3),
-                            ),
-                          ],
-                        ),
-                        padding: EdgeInsets.all(screenSize.width * 0.04),
-                        child: Column(
-                          children: [
-                            Text(
-                              "Your Donation Impact",
-                              style: GoogleFonts.montserrat(
-                                fontSize: screenSize.width * 0.045,
-                                fontWeight: FontWeight.w600,
-                                color: Colors.white,
-                              ),
-                            ),
-                            SizedBox(height: screenSize.height * 0.01),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                              children: [
-                                _buildStatItem(
-                                    context,
-                                    isLoadingStats ? "..." : totalDonations.toString(),
-                                    "Donations",
-                                    Icons.favorite_border
-                                ),
-                                _buildDivider(),
-                                _buildStatItem(
-                                    context,
-                                    isLoadingStats ? "..." : "${totalBloodDonatedMl}ml",
-                                    "Total",
-                                    Icons.water_drop_outlined
-                                ),
-                                _buildDivider(),
-                                _buildStatItem(
-                                    context,
-                                    isLoadingStats ? "..." : totalLivesSaved.toString(),
-                                    "Lives Saved",
-                                    Icons.person_outline
-                                ),
+                // Stats Summary
+                Padding(
+                  padding: EdgeInsets.symmetric(
+                    horizontal: screenSize.width * 0.06,
+                    vertical: screenSize.height * 0.015,
+                  ),
+                  child: FadeInUp(
+                    duration: const Duration(milliseconds: 900),
+                    child: Stack(
+                      children: [
+                        Container(
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                              colors: [
+                                Styles.primaryColor.withOpacity(0.95),
+                                Styles.primaryColor.withOpacity(0.85),
                               ],
                             ),
-                          ],
+                            borderRadius: BorderRadius.circular(20),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Styles.primaryColor.withOpacity(0.3),
+                                spreadRadius: 1,
+                                blurRadius: 8,
+                                offset: const Offset(0, 3),
+                              ),
+                            ],
+                          ),
+                          padding: EdgeInsets.all(screenSize.width * 0.04),
+                          child: Column(
+                            children: [
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Text(
+                                    "Your Donation Impact",
+                                    style: GoogleFonts.montserrat(
+                                      fontSize: screenSize.width * 0.045,
+                                      fontWeight: FontWeight.w600,
+                                      color: Colors.white,
+                                    ),
+                                  ),
+                                  if (_isPageRefreshing)
+                                    Padding(
+                                      padding: EdgeInsets.only(left: 8.0),
+                                      child: SizedBox(
+                                        width: 16,
+                                        height: 16,
+                                        child: CircularProgressIndicator(
+                                          color: Colors.white,
+                                          strokeWidth: 2,
+                                        ),
+                                      ),
+                                    ),
+                                ],
+                              ),
+                              SizedBox(height: screenSize.height * 0.01),
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                                children: [
+                                  _buildStatItem(
+                                      context,
+                                      isLoadingStats || _isPageRefreshing ? "..." : totalDonations.toString(),
+                                      "Donations",
+                                      Icons.favorite_border
+                                  ),
+                                  _buildDivider(),
+                                  _buildStatItem(
+                                      context,
+                                      isLoadingStats || _isPageRefreshing ? "..." : "${totalBloodDonatedMl}ml",
+                                      "Total",
+                                      Icons.water_drop_outlined
+                                  ),
+                                  _buildDivider(),
+                                  _buildStatItem(
+                                      context,
+                                      isLoadingStats || _isPageRefreshing ? "..." : totalLivesSaved.toString(),
+                                      "Lives Saved",
+                                      Icons.person_outline
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
                         ),
+                        if (_isPageRefreshing && !isLoadingStats)
+                          Positioned.fill(
+                            child: Container(
+                              decoration: BoxDecoration(
+                                color: Styles.primaryColor.withOpacity(0.3),
+                                borderRadius: BorderRadius.circular(20),
+                              ),
+                              child: Center(
+                                child: SizedBox(
+                                  width: 30,
+                                  height: 30,
+                                  child: CircularProgressIndicator(
+                                    color: Colors.white,
+                                    strokeWidth: 2.5,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                      ],
+                    ),
+                  ),
+                ),
+
+                SizedBox(height: screenSize.height * 0.01),
+
+                // Blood Compatibility Card with refresh state
+                FadeInUp(
+                  duration: const Duration(milliseconds: 1000),
+                  child: Stack(
+                    children: [
+                      const BloodCompatibilityCard(),
+                      if (_isPageRefreshing)
+                        Positioned.fill(
+                          child: Container(
+                            margin: EdgeInsets.symmetric(horizontal: screenSize.width * 0.06),
+                            decoration: BoxDecoration(
+                              color: Colors.white.withOpacity(0.6),
+                              borderRadius: BorderRadius.circular(20),
+                            ),
+                            child: Center(
+                              child: CircularProgressIndicator(
+                                color: Styles.primaryColor,
+                                strokeWidth: 2.5,
+                              ),
+                            ),
+                          ),
+                        ),
+                    ],
+                  ),
+                ),
+
+                SizedBox(height: screenSize.height * 0.01),
+
+                // User Cards Home with refresh state
+                FadeInUp(
+                  duration: const Duration(milliseconds: 1100),
+                  child: Stack(
+                    children: [
+                      const HeroMode(
+                        enabled: true,
+                        child: userCardsHome(),
                       ),
-                    ),
+                      if (_isPageRefreshing)
+                        Positioned.fill(
+                          child: Container(
+                            margin: EdgeInsets.symmetric(horizontal: screenSize.width * 0.06),
+                            decoration: BoxDecoration(
+                              color: Colors.white.withOpacity(0.6),
+                              borderRadius: BorderRadius.circular(20),
+                            ),
+                            child: Center(
+                              child: CircularProgressIndicator(
+                                color: Styles.primaryColor,
+                                strokeWidth: 2.5,
+                              ),
+                            ),
+                          ),
+                        ),
+                    ],
                   ),
-
-                  SizedBox(height: screenSize.height * 0.01),
-
-                  // Blood Compatibility Card
-                  FadeInUp(
-                    duration: const Duration(milliseconds: 1000),
-                    child: const BloodCompatibilityCard(),
-                  ),
-
-                  SizedBox(height: screenSize.height * 0.01),
-
-                  // User Cards Home
-                  FadeInUp(
-                    duration: const Duration(milliseconds: 1100),
-                    child: const HeroMode(
-                      enabled: true,
-                      child: userCardsHome(),
-                    ),
-                  ),
-                ],
-              ),
-            );
-          },
+                ),
+              ],
+            ),
+          ),
         ),
       ),
     );
   }
 
+  // Updated _buildStatItem method to handle both local and global refresh states
   Widget _buildStatItem(BuildContext context, String value, String label, IconData icon) {
     final screenSize = MediaQuery.of(context).size;
+    final isLoading = isLoadingStats || _isPageRefreshing;
 
     return Column(
       children: [
@@ -460,14 +621,32 @@ class _UserHomeState extends State<UserHome> with SingleTickerProviderStateMixin
             color: Colors.white.withOpacity(0.2),
             borderRadius: BorderRadius.circular(12),
           ),
-          child: Icon(
+          child: isLoading
+              ? SizedBox(
+            width: screenSize.width * 0.05,
+            height: screenSize.width * 0.05,
+            child: const CircularProgressIndicator(
+              color: Colors.white,
+              strokeWidth: 2,
+            ),
+          )
+              : Icon(
             icon,
             color: Colors.white,
             size: screenSize.width * 0.05,
           ),
         ),
         SizedBox(height: screenSize.height * 0.008),
-        Text(
+        isLoading
+            ? Container(
+          width: screenSize.width * 0.15,
+          height: screenSize.width * 0.045,
+          decoration: BoxDecoration(
+            color: Colors.white.withOpacity(0.3),
+            borderRadius: BorderRadius.circular(4),
+          ),
+        )
+            : Text(
           value,
           style: GoogleFonts.montserrat(
             fontSize: screenSize.width * 0.045,

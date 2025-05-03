@@ -99,4 +99,99 @@ class DonationStatisticsService {
       return null;
     }
   }
+
+  // Add this method to DonationStatisticsService class
+  Future<Map<String, dynamic>> getBloodBankStats(String bloodBankId) async {
+    try {
+      // Query completed reservations for this blood bank
+      final reservationsSnapshot = await _firestore
+          .collection('reservations')
+          .where('bloodBankId', isEqualTo: bloodBankId)
+          .where('status', isEqualTo: 'Completed')
+          .get();
+
+      // Count total donations
+      final int totalDonations = reservationsSnapshot.docs.length;
+
+      // Calculate total blood donated
+      int totalQuantity = 0;
+      Set<String> uniqueDonorIds = {};
+
+      for (var doc in reservationsSnapshot.docs) {
+        final reservationData = doc.data();
+        totalQuantity += (reservationData['quantity'] as int? ?? 0);
+        if (reservationData['userId'] != null) {
+          uniqueDonorIds.add(reservationData['userId']);
+        }
+      }
+
+      final int totalBloodDonatedMl = totalQuantity * mlPerDonation;
+      final int totalLivesSaved = totalDonations * livesSavedPerDonation;
+
+      return {
+        'totalDonations': totalDonations,
+        'totalBloodDonatedMl': totalBloodDonatedMl,
+        'totalLivesSaved': totalLivesSaved,
+        'uniqueDonors': uniqueDonorIds.length,
+      };
+    } catch (e) {
+      print('Error fetching blood bank statistics: $e');
+      return {
+        'totalDonations': 0,
+        'totalBloodDonatedMl': 0,
+        'totalLivesSaved': 0,
+        'uniqueDonors': 0,
+      };
+    }
+  }
+
+  // Add this method to fetch donors
+  Future<List<Map<String, dynamic>>> getBloodBankDonors(String bloodBankId) async {
+    try {
+      // Get all completed reservations for this blood bank
+      final reservationsSnapshot = await _firestore
+          .collection('reservations')
+          .where('bloodBankId', isEqualTo: bloodBankId)
+          .where('status', isEqualTo: 'Completed')
+          .get();
+
+      // Get unique donor IDs
+      Set<String> uniqueDonorIds = {};
+      Map<String, int> donorDonations = {};
+
+      for (var doc in reservationsSnapshot.docs) {
+        final data = doc.data();
+        final String userId = data['userId'];
+        if (userId != null) {
+          uniqueDonorIds.add(userId);
+          donorDonations[userId] = (donorDonations[userId] ?? 0) + 1;
+        }
+      }
+
+      // Get donor details for each unique donor
+      List<Map<String, dynamic>> donors = [];
+
+      for (String donorId in uniqueDonorIds) {
+        final userDoc = await _firestore.collection('users').doc(donorId).get();
+        if (userDoc.exists) {
+          final userData = userDoc.data()!;
+          donors.add({
+            'id': donorId,
+            'name': userData['fullName'] ?? '${userData['firstName']} ${userData['lastName']}',
+            'bloodType': userData['bloodType'] ?? 'Unknown',
+            'donationCount': donorDonations[donorId] ?? 0,
+            'profileImageUrl': userData['profileImageUrl'],
+          });
+        }
+      }
+
+      // Sort by donation count (highest first)
+      donors.sort((a, b) => b['donationCount'].compareTo(a['donationCount']));
+
+      return donors;
+    } catch (e) {
+      print('Error fetching blood bank donors: $e');
+      return [];
+    }
+  }
 }

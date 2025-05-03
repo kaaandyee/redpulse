@@ -1,6 +1,9 @@
 import 'dart:core';
+import 'package:flutter/foundation.dart';
 
-class UserAdminModel {
+import 'package:cloud_firestore/cloud_firestore.dart';
+
+class UserAdminModel extends ChangeNotifier {
   final String? id;
   String firstName;
   String lastName;
@@ -14,7 +17,7 @@ class UserAdminModel {
   DateTime dateCreated;
   DateTime? lastLogin;
   final String? bloodBankId; // For admin only
-  final String? profileImageUrl; // Profile image URL
+  late final String? profileImageUrl; // Profile image URL
 
   // Constructor for User Model
   UserAdminModel({
@@ -114,5 +117,31 @@ class UserAdminModel {
       bloodBankId: json['bloodBankId'],
       profileImageUrl: json['profileImageUrl'],
     );
+  }
+
+  Future<void> refreshUserData() async {
+    try {
+      // Assuming you have a reference to your database or API service
+      // This example assumes you're using Firebase, adjust as needed for your data source
+      final docRef = FirebaseFirestore.instance.collection('users').doc(id);
+      final userData = await docRef.get();
+
+      if (userData.exists) {
+        // Update all the user properties with fresh data
+        final data = userData.data() as Map<String, dynamic>;
+
+        // Update all relevant fields
+        fullName = data['fullName'];
+        email = data['email'];
+        bloodType = data['bloodType'];
+        profileImageUrl = data['profileImageUrl'];
+        // Update other fields as needed
+
+        notifyListeners(); // If UserAdminModel extends ChangeNotifier
+      }
+    } catch (e) {
+      print('Error refreshing user data: $e');
+      rethrow;
+    }
   }
 }

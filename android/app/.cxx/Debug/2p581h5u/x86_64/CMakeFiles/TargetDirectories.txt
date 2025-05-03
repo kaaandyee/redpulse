@@ -1,0 +1,2 @@
+C:/Users/LKFD/Desktop/LORDKENT/COLLEGE/3rd Year 2nd Semester/Assignment/Software Development 2/RedPulse/RedPulse_Krishna/redpulse/android/app/.cxx/Debug/2p581h5u/x86_64/CMakeFiles/edit_cache.dir
+C:/Users/LKFD/Desktop/LORDKENT/COLLEGE/3rd Year 2nd Semester/Assignment/Software Development 2/RedPulse/RedPulse_Krishna/redpulse/android/app/.cxx/Debug/2p581h5u/x86_64/CMakeFiles/rebuild_cache.dir
