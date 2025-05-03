@@ -181,7 +181,22 @@ class AuthMethod {
 
   // SignOut User
   Future<void> signOut() async {
-    await _auth.signOut();
+    await FirebaseAuth.instance.signOut();
+  }
+
+  Future<User?> getCurrentUser() async {
+    return FirebaseAuth.instance.currentUser;
+  }
+
+  Future<void> forceCompleteSignOut() async {
+    // Sign out from Firebase
+    await FirebaseAuth.instance.signOut();
+
+    // Clear any persistent auth state
+    await FirebaseAuth.instance.setPersistence(Persistence.NONE);
+
+    // Re-initialize persistence to default after clearing
+    await FirebaseAuth.instance.setPersistence(Persistence.LOCAL);
   }
 
   /// Fetch the first name of the currently signed-in user
@@ -423,5 +438,28 @@ class AuthMethod {
       return "Failed to register blood bank. Please try again.";
     }
   }
+
+  // Add this to your AuthMethod class
+  Future<bool> isCurrentUserAdmin() async {
+    try {
+      final user = FirebaseAuth.instance.currentUser;
+      if (user == null) return false;
+
+      final userDoc = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(user.uid)
+          .get();
+
+      if (!userDoc.exists) return false;
+
+      final userData = userDoc.data();
+      return userData != null && userData['role'] == 'admin';
+    } catch (e) {
+      print("Error checking admin status: $e");
+      return false;
+    }
+  }
+
+
 
 }

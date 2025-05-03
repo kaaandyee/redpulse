@@ -12,7 +12,12 @@
           "package_name": "com.example.redpulse"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "134772036993-0t461vcc701d7an6kkefdkmtfccdggbl.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyBSIfd9R0-327Hr0wFU4pHrspmywiHJxQ4"
@@ -20,7 +25,19 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "134772036993-0t461vcc701d7an6kkefdkmtfccdggbl.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "134772036993-su6a1e5uru58ho92j31lcm87lplqfh92.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.redpulse"
+              }
+            }
+          ]
         }
       }
     }

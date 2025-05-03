@@ -118,10 +118,14 @@ class _AdminSignupScreenState extends State<AdminSignupScreen> {
           isLoading = false;
         });
 
-        // Proceed to blood bank registration
+        // Proceed to blood bank registration with pre-filled data
         Navigator.of(context).pushReplacement(
           MaterialPageRoute(
-            builder: (context) => const RegisterForm(),
+            builder: (context) => RegisterForm(
+              initialEmail: emailController.text.trim(),
+              initialAddress: addressController.text.trim(),
+              initialContactNumber: phoneNumberController.text.trim(),
+            ),
           ),
         );
       } else {

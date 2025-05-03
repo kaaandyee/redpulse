@@ -133,18 +133,6 @@ class SearchScreenState extends State<SearchScreen> {
   }
 
   void _createMarkers() {
-    setState(() {
-      _markers.clear();
-
-      // Keep user location marker if it exists
-      final userMarker = _markers.firstWhere(
-            (marker) => marker.markerId == const MarkerId('user_location'),
-      );
-
-      if (userMarker != null) {
-        _markers.add(userMarker);
-      }
-    });
 
     for (var bloodBank in _filteredBloodBanks) {
       List<String> availableBloodTypes =
@@ -244,7 +232,7 @@ class SearchScreenState extends State<SearchScreen> {
     }
   }
 
-  Future<void> _locateNearestBloodBank() async {
+ Future<void> _locateNearestBloodBank() async {
     setState(() => _isLoading = true);
 
     try {
@@ -287,42 +275,18 @@ class SearchScreenState extends State<SearchScreen> {
             ? "Available: ${availableBloodTypes.join(', ')}"
             : "No blood types available";
 
-        // Update markers - clear existing and add nearest blood bank marker
+        // Update user location marker without clearing other markers
         setState(() {
-          _markers.clear();
+          // Remove only the user location marker
+          _markers.removeWhere((marker) => marker.markerId == const MarkerId('user_location'));
 
-          // Add user location marker
+          // Add updated user location marker
           _markers.add(
             Marker(
               markerId: const MarkerId('user_location'),
               position: LatLng(position.latitude, position.longitude),
               icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueAzure),
               infoWindow: const InfoWindow(title: 'Your Location'),
-            ),
-          );
-
-          // Add nearest blood bank marker
-          _markers.add(
-            Marker(
-              markerId: MarkerId(nearestBloodBank?['bloodBankId']),
-              position: LatLng(
-                nearestBloodBank?['latitude'],
-                nearestBloodBank?['longitude'],
-              ),
-              infoWindow: InfoWindow(
-                title: nearestBloodBank?['bloodBankName'],
-                snippet: "$distanceInKm km away • $bloodTypeInfo",
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => BloodBankDetailsScreen(
-                        bloodBankId: nearestBloodBank?['bloodBankId'],
-                      ),
-                    ),
-                  );
-                },
-              ),
             ),
           );
         });
@@ -463,6 +427,12 @@ class SearchScreenState extends State<SearchScreen> {
                   onMapCreated: (controller) {
                     _googleMapController = controller;
                     setState(() => _isMapInitialized = true);
+
+                    // Make sure to create markers if data is already loaded
+                    if (_filteredBloodBanks.isNotEmpty) {
+                      _createMarkers();
+                    }
+
                     if (!_isLoading) {
                       _placeUserLocationMarker();
                     }
@@ -525,12 +495,13 @@ class SearchScreenState extends State<SearchScreen> {
             // Dropdown list for search results
             if (_isSearching)
               Positioned(
-                top: screenSize.height * 0.19,
+                top: screenSize.height * 0.25,
                 left: 20,
                 right: 20,
                 child: FadeInDown(
                   duration: const Duration(milliseconds: 400),
                   child: Container(
+                    margin: const EdgeInsets.only(top: 5), // Small margin from search bar
                     decoration: BoxDecoration(
                       color: Colors.white,
                       borderRadius: BorderRadius.circular(15),
