@@ -30,7 +30,7 @@ class BloodBankProfileScreen extends StatefulWidget {
       // Retrieve the adminId (or other relevant field) from the document
       String? adminId = userSnapshot['id'];
 
-      if (adminId == null || adminId.isEmpty) {
+      if (adminId!.isEmpty) {
         throw Exception("AdminId not found or is empty.");
       }
 
@@ -82,7 +82,7 @@ class _BloodBankProfileScreenState extends State<BloodBankProfileScreen> {
       }
 
       String? bloodBankId = adminSnapshot['bloodBankId'];
-      if (bloodBankId == null || bloodBankId.isEmpty) {
+      if (bloodBankId!.isEmpty) {
         throw Exception("BloodBankId not found for admin.");
       }
 
@@ -152,25 +152,52 @@ class _BloodBankProfileScreenState extends State<BloodBankProfileScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('Blood Bank Name:', style: Styles.headerStyle5.copyWith(fontSize: 18, color: Styles.accentColor)),
-                      Text(bloodBank.bloodBankName, style: Styles.headerStyle5.copyWith(fontSize: 20, fontWeight: FontWeight.bold, color: Styles.accentColor)),
+                      Text('Blood Bank Name:',
+                          style: Styles.headerStyle5.copyWith(
+                              fontSize: 18, color: Styles.accentColor)),
+                      Text(bloodBank.bloodBankName,
+                          style: Styles.headerStyle5.copyWith(
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
+                              color: Styles.accentColor)),
                       SizedBox(height: 15),
-
-                      Text('Email:', style: Styles.headerStyle5.copyWith(fontSize: 18, color: Styles.accentColor)),
-                      Text(bloodBank.email, style: Styles.headerStyle5.copyWith(fontSize: 20, fontWeight: FontWeight.bold, color: Styles.accentColor)),
+                      Text('Email:',
+                          style: Styles.headerStyle5.copyWith(
+                              fontSize: 18, color: Styles.accentColor)),
+                      Text(bloodBank.email,
+                          style: Styles.headerStyle5.copyWith(
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
+                              color: Styles.accentColor)),
                       SizedBox(height: 15),
-
-                      Text('Address:', style: Styles.headerStyle5.copyWith(fontSize: 18, color: Styles.accentColor)),
-                      Text(bloodBank.address, style: Styles.headerStyle5.copyWith(fontSize: 20, fontWeight: FontWeight.bold, color: Styles.accentColor)),
+                      Text('Address:',
+                          style: Styles.headerStyle5.copyWith(
+                              fontSize: 18, color: Styles.accentColor)),
+                      Text(bloodBank.address,
+                          style: Styles.headerStyle5.copyWith(
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
+                              color: Styles.accentColor)),
                       SizedBox(height: 15),
-
-                      Text('Contact Number:', style: Styles.headerStyle5.copyWith(fontSize: 18, color: Styles.accentColor)),
-                      Text(bloodBank.contactNumber, style: Styles.headerStyle5.copyWith(fontSize: 20, fontWeight: FontWeight.bold, color: Styles.accentColor)),
+                      Text('Contact Number:',
+                          style: Styles.headerStyle5.copyWith(
+                              fontSize: 18, color: Styles.accentColor)),
+                      Text(bloodBank.contactNumber,
+                          style: Styles.headerStyle5.copyWith(
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
+                              color: Styles.accentColor)),
                       SizedBox(height: 15),
-
-                      Text('Location (Latitude, Longitude):', style: Styles.headerStyle5.copyWith(fontSize: 18, color: Styles.accentColor)),
-                      Text('(${bloodBank.latitude}, ${bloodBank.longitude})', style: Styles.headerStyle5.copyWith(fontSize: 20, fontWeight: FontWeight.bold, color: Styles.accentColor)),
+                      Text('Location (Latitude, Longitude):',
+                          style: Styles.headerStyle5.copyWith(
+                              fontSize: 18, color: Styles.accentColor)),
+                      Text('(${bloodBank.latitude}, ${bloodBank.longitude})',
+                          style: Styles.headerStyle5.copyWith(
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
+                              color: Styles.accentColor)),
                       SizedBox(height: 15),
+<<<<<<< Updated upstream
                       Text('Blood Bank Name:',
                           style: Styles.headerStyle5.copyWith(
                               fontSize: 18, color: Styles.accentColor)),
@@ -216,6 +243,8 @@ class _BloodBankProfileScreenState extends State<BloodBankProfileScreen> {
                               fontWeight: FontWeight.bold,
                               color: Styles.accentColor)),
                       const SizedBox(height: 15),
+=======
+>>>>>>> Stashed changes
 
                       /*Text('Inventory ID:', style: Styles.headerStyle5.copyWith(fontSize: 18, color: Styles.accentColor)),
                       Text('${bloodBank.inventoryId ?? 'Not available'}', style: Styles.headerStyle5.copyWith(fontSize: 20, fontWeight: FontWeight.bold, color: Styles.accentColor)),

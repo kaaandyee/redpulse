@@ -30,7 +30,7 @@ class AdminProfileScreen extends StatefulWidget {
       // Retrieve the userId (or other relevant field) from the document
       String? userId = userSnapshot['id'];
 
-      if (userId == null || userId.isEmpty) {
+      if (userId!.isEmpty) {
         throw Exception("UserId not found or is empty.");
       }
 
@@ -143,30 +143,60 @@ class _AdminProfileScreenState extends State<AdminProfileScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('Full Name:', style: Styles.headerStyle5.copyWith(fontSize: 18, color: Styles.accentColor)),
-                      Text(user.fullName, style: Styles.headerStyle5.copyWith(fontSize: 20, fontWeight: FontWeight.bold, color: Styles.accentColor)),
+                      Text('Full Name:',
+                          style: Styles.headerStyle5.copyWith(
+                              fontSize: 18, color: Styles.accentColor)),
+                      Text(user.fullName,
+                          style: Styles.headerStyle5.copyWith(
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
+                              color: Styles.accentColor)),
                       SizedBox(height: 15),
-
-                      Text('Email:', style: Styles.headerStyle5.copyWith(fontSize: 18, color: Styles.accentColor)),
-                      Text(user.email, style: Styles.headerStyle5.copyWith(fontSize: 20, fontWeight: FontWeight.bold, color: Styles.accentColor)),
+                      Text('Email:',
+                          style: Styles.headerStyle5.copyWith(
+                              fontSize: 18, color: Styles.accentColor)),
+                      Text(user.email,
+                          style: Styles.headerStyle5.copyWith(
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
+                              color: Styles.accentColor)),
                       SizedBox(height: 15),
-
-                      Text('Phone Number:', style: Styles.headerStyle5.copyWith(fontSize: 18, color: Styles.accentColor)),
-                      Text(user.phoneNumber, style: Styles.headerStyle5.copyWith(fontSize: 20, fontWeight: FontWeight.bold, color: Styles.accentColor)),
+                      Text('Phone Number:',
+                          style: Styles.headerStyle5.copyWith(
+                              fontSize: 18, color: Styles.accentColor)),
+                      Text(user.phoneNumber,
+                          style: Styles.headerStyle5.copyWith(
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
+                              color: Styles.accentColor)),
                       SizedBox(height: 15),
-
-                      Text('Address:', style: Styles.headerStyle5.copyWith(fontSize: 18, color: Styles.accentColor)),
-                      Text(user.address, style: Styles.headerStyle5.copyWith(fontSize: 20, fontWeight: FontWeight.bold, color: Styles.accentColor)),
+                      Text('Address:',
+                          style: Styles.headerStyle5.copyWith(
+                              fontSize: 18, color: Styles.accentColor)),
+                      Text(user.address,
+                          style: Styles.headerStyle5.copyWith(
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
+                              color: Styles.accentColor)),
                       SizedBox(height: 15),
-
-                      Text('Role:', style: Styles.headerStyle5.copyWith(fontSize: 18, color: Styles.accentColor)),
-                      Text(user.role, style: Styles.headerStyle5.copyWith(fontSize: 20, fontWeight: FontWeight.bold, color: Styles.accentColor)),
+                      Text('Role:',
+                          style: Styles.headerStyle5.copyWith(
+                              fontSize: 18, color: Styles.accentColor)),
+                      Text(user.role,
+                          style: Styles.headerStyle5.copyWith(
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
+                              color: Styles.accentColor)),
                       SizedBox(height: 15),
-
-                      Text('Account Created:', style: Styles.headerStyle5.copyWith(fontSize: 18, color: Styles.accentColor)),
-                      Text(DateFormat('MM/dd/yyyy').format(user.dateCreated), style: Styles.headerStyle5.copyWith(fontSize: 20, fontWeight: FontWeight.bold, color: Styles.accentColor)),
+                      Text('Account Created:',
+                          style: Styles.headerStyle5.copyWith(
+                              fontSize: 18, color: Styles.accentColor)),
+                      Text(DateFormat('MM/dd/yyyy').format(user.dateCreated),
+                          style: Styles.headerStyle5.copyWith(
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
+                              color: Styles.accentColor)),
                       SizedBox(height: 30),
-
                       Text('Full Name:',
                           style: Styles.headerStyle5.copyWith(
                               fontSize: 18, color: Styles.accentColor)),

@@ -33,7 +33,7 @@ class ABottomBar extends StatefulWidget {
 
       // Check and retrieve the bloodBankId.
       String? bloodBankId = adminSnapshot['bloodBankId'];
-      if (bloodBankId == null || bloodBankId.isEmpty) {
+      if (bloodBankId!.isEmpty) {
         throw Exception("Admin is not linked to a blood bank.");
       }
       return bloodBankId;

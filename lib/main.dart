@@ -3,6 +3,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:redpulse/features/screens/login.dart';
+import 'package:redpulse/features/screens/signup.dart';
 import 'package:redpulse/features/screens/splash.dart';
 import 'package:redpulse/utilities/constants/styles.dart';
 
@@ -48,7 +49,15 @@ class MyApp extends StatelessWidget {
         primarySwatch: Colors.red,
         visualDensity: VisualDensity.adaptivePlatformDensity,
       ),
+<<<<<<< Updated upstream
       home: const SplashScreen(),
+=======
+      home:
+          const SplashScreen(), // Make SplashScreen the first screen to appear
+      routes: {
+        '/wrapper': (context) => Wrapper(), // Add the SignUpScreen route here
+      },
+>>>>>>> Stashed changes
     );
   }
 }
