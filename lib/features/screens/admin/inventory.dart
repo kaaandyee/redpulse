@@ -1,10 +1,12 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:redpulse/features/models/inventory.dart';
 import 'package:redpulse/services/auth.dart';
 import 'package:redpulse/utilities/constants/styles.dart';
 import 'package:intl/intl.dart';
 import 'package:redpulse/widgets/button.dart';
+import 'package:animate_do/animate_do.dart';
 
 class Inventory extends StatefulWidget {
   final String bloodBankId;
@@ -37,17 +39,13 @@ class InventoryState extends State<Inventory> {
 
   Future<List<InventoryModel>> _loadInventory() async {
     try {
-      // First, ensure all blood types are initialized
       await InventoryModel.initializeBloodTypeInventory(widget.bloodBankId);
-
-      // Then fetch the inventory data
       QuerySnapshot inventorySnapshot = await FirebaseFirestore.instance
           .collection('bloodbanks')
           .doc(widget.bloodBankId)
           .collection('inventories')
           .get();
 
-      // Convert documents to InventoryModel objects
       List<InventoryModel> inventoryList = inventorySnapshot.docs.map((doc) {
         return InventoryModel.fromFirestore(
           widget.bloodBankId,
@@ -55,9 +53,7 @@ class InventoryState extends State<Inventory> {
         );
       }).toList();
 
-      // Sort by blood type for consistent display
       inventoryList.sort((a, b) => a.bloodType.compareTo(b.bloodType));
-
       return inventoryList;
     } catch (e) {
       print('Error loading inventory: $e');
@@ -65,7 +61,6 @@ class InventoryState extends State<Inventory> {
     }
   }
 
-  // Update a single blood type inventory
   Future<void> _updateSingleInventory(String bloodType, int newQuantity) async {
     try {
       await FirebaseFirestore.instance
@@ -79,7 +74,6 @@ class InventoryState extends State<Inventory> {
         'status': _determineStatus(newQuantity),
       });
 
-      // Reload inventory after update
       setState(() {
         _inventoryFuture = _loadInventory();
       });
@@ -88,17 +82,14 @@ class InventoryState extends State<Inventory> {
     }
   }
 
-  // Update all blood types with the same quantity
   Future<void> _updateAllInventory(int newQuantity) async {
     try {
-      // Get all blood types
       QuerySnapshot inventorySnapshot = await FirebaseFirestore.instance
           .collection('bloodbanks')
           .doc(widget.bloodBankId)
           .collection('inventories')
           .get();
 
-      // Update each blood type
       WriteBatch batch = FirebaseFirestore.instance.batch();
 
       for (var doc in inventorySnapshot.docs) {
@@ -114,7 +105,6 @@ class InventoryState extends State<Inventory> {
 
       await batch.commit();
 
-      // Reload inventory after update
       setState(() {
         _inventoryFuture = _loadInventory();
       });
@@ -123,7 +113,6 @@ class InventoryState extends State<Inventory> {
     }
   }
 
-  // Determine status based on quantity
   String _determineStatus(int quantity) {
     if (quantity <= 0) {
       return 'out of stock';
@@ -134,7 +123,6 @@ class InventoryState extends State<Inventory> {
     }
   }
 
-  // Show dialog to update single blood type
   void _showUpdateDialog(String bloodType, int currentQuantity) {
     _quantityController.text = currentQuantity.toString();
 
@@ -142,7 +130,12 @@ class InventoryState extends State<Inventory> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text('Update $bloodType Units'),
+          backgroundColor: Colors.white,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          title: Text(
+            'Update $bloodType Units',
+            style: GoogleFonts.montserrat(fontWeight: FontWeight.bold),
+          ),
           content: TextField(
             controller: _quantityController,
             keyboardType: TextInputType.number,
@@ -154,7 +147,7 @@ class InventoryState extends State<Inventory> {
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
-              child: const Text('Cancel'),
+              child: Text('Cancel', style: GoogleFonts.roboto()),
             ),
             ElevatedButton(
               onPressed: () {
@@ -167,7 +160,7 @@ class InventoryState extends State<Inventory> {
               style: ElevatedButton.styleFrom(
                 backgroundColor: Styles.accentColor,
               ),
-              child: const Text('Update'),
+              child: Text('Update', style: GoogleFonts.roboto(color: Colors.white)),
             ),
           ],
         );
@@ -175,7 +168,6 @@ class InventoryState extends State<Inventory> {
     );
   }
 
-  // Show dialog to update all blood types
   void _showUpdateAllDialog() {
     _quantityController.text = '';
 
@@ -183,7 +175,12 @@ class InventoryState extends State<Inventory> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: const Text('Update All Blood Types'),
+          backgroundColor: Colors.white,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          title: Text(
+            'Update All Blood Types',
+            style: GoogleFonts.montserrat(fontWeight: FontWeight.bold),
+          ),
           content: TextField(
             controller: _quantityController,
             keyboardType: TextInputType.number,
@@ -195,7 +192,7 @@ class InventoryState extends State<Inventory> {
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
-              child: const Text('Cancel'),
+              child: Text('Cancel', style: GoogleFonts.roboto()),
             ),
             ElevatedButton(
               onPressed: () {
@@ -208,7 +205,7 @@ class InventoryState extends State<Inventory> {
               style: ElevatedButton.styleFrom(
                 backgroundColor: Styles.accentColor,
               ),
-              child: const Text('Update All'),
+              child: Text('Update All', style: GoogleFonts.roboto(color: Colors.white)),
             ),
           ],
         );
@@ -218,48 +215,76 @@ class InventoryState extends State<Inventory> {
 
   @override
   Widget build(BuildContext context) {
+    final screenSize = MediaQuery.of(context).size;
+
     return FutureBuilder<String>(
       future: _bloodBankNameFuture,
       builder: (context, snapshot) {
         String bloodBankName = snapshot.data ?? 'Blood Bank';
 
         return Scaffold(
+          backgroundColor: const Color.fromARGB(255, 248, 248, 248),
           appBar: PreferredSize(
-            preferredSize: const Size.fromHeight(120),
-            child: AppBar(
-              backgroundColor: Styles.primaryColor,
-              shape: const RoundedRectangleBorder(
-                borderRadius: BorderRadius.only(
-                  topLeft: Radius.circular(30),
-                  topRight: Radius.circular(30),
-                ),
-              ),
-              elevation: 0,
-              flexibleSpace: Padding(
-                padding: const EdgeInsets.all(20),
-                child: Align(
-                  alignment: Alignment.center,
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      const SizedBox(height: 20),
-                      Text(
-                        bloodBankName,
-                        style: Styles.headerStyle2.copyWith(
-                          fontSize: 22,
-                          fontWeight: FontWeight.bold,
-                          color: Styles.tertiaryColor,
-                        ),
-                      ),
-                      Text(
-                        'Inventory',
-                        style: Styles.headerStyle2.copyWith(
-                          fontSize: 18,
-                          color: Styles.tertiaryColor,
-                        ),
-                      ),
+            preferredSize: Size.fromHeight(screenSize.height * 0.13),
+            child: FadeInDown(
+              duration: const Duration(milliseconds: 800),
+              child: Container(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [
+                      Styles.primaryColor,
+                      Styles.primaryColor.withOpacity(0.95),
                     ],
+                  ),
+                  borderRadius: const BorderRadius.only(
+                    bottomLeft: Radius.circular(25),
+                    bottomRight: Radius.circular(25),
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.red.withOpacity(0.2),
+                      blurRadius: 15,
+                      spreadRadius: 2,
+                      offset: const Offset(0, 3),
+                    ),
+                  ],
+                ),
+                child: SafeArea(
+                  child: Padding(
+                    padding: EdgeInsets.symmetric(
+                        horizontal: screenSize.width * 0.06,
+                        vertical: screenSize.height * 0.015),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Icon(Icons.inventory_2_rounded,
+                                color: Colors.white, size: 32),
+                            const SizedBox(width: 12),
+                            Text(
+                              bloodBankName,
+                              style: GoogleFonts.montserrat(
+                                fontSize: screenSize.width * 0.06,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 6),
+                        Text(
+                          'Inventory',
+                          style: GoogleFonts.roboto(
+                            fontSize: screenSize.width * 0.045,
+                            color: Colors.white.withOpacity(0.9),
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ),
@@ -269,11 +294,11 @@ class InventoryState extends State<Inventory> {
             future: _inventoryFuture,
             builder: (context, snapshot) {
               if (snapshot.connectionState == ConnectionState.waiting) {
-                return const Center(child: CircularProgressIndicator());
+                return const Center(child: CircularProgressIndicator(color: Colors.red));
               } else if (snapshot.hasError) {
-                return Center(child: Text('Error: ${snapshot.error}'));
+                return Center(child: Text('Error: ${snapshot.error}', style: GoogleFonts.roboto()));
               } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                return const Center(child: Text('No inventory found.'));
+                return Center(child: Text('No inventory found.', style: GoogleFonts.roboto()));
               }
 
               final inventoryList = snapshot.data!;
@@ -282,22 +307,34 @@ class InventoryState extends State<Inventory> {
                 children: [
                   Expanded(
                     child: ListView.builder(
+                      padding: EdgeInsets.symmetric(
+                        horizontal: screenSize.width * 0.06,
+                        vertical: screenSize.height * 0.015,
+                      ),
                       itemCount: inventoryList.length,
                       itemBuilder: (context, index) {
                         final inventory = inventoryList[index];
 
-                        return BloodInventoryCard(
-                          inventory: inventory,
-                          onUpdateTap: () {
-                            _showUpdateDialog(inventory.bloodType, inventory.quantity);
-                          },
+                        return FadeInUp(
+                          duration: Duration(milliseconds: 700 + index * 100),
+                          child: BloodInventoryCard(
+                            inventory: inventory,
+                            onUpdateTap: () {
+                              _showUpdateDialog(inventory.bloodType, inventory.quantity);
+                            },
+                          ),
                         );
                       },
                     ),
                   ),
-                  MyButtons(
-                    onTap: _showUpdateAllDialog,
-                    text: "Update All Inventory",
+                  Padding(
+                    padding: EdgeInsets.symmetric(
+                        horizontal: screenSize.width * 0.06,
+                        vertical: screenSize.height * 0.01),
+                    child: MyButtons(
+                      onTap: _showUpdateAllDialog,
+                      text: "Update All Inventory",
+                    ),
                   ),
                 ],
               );
@@ -309,7 +346,6 @@ class InventoryState extends State<Inventory> {
   }
 }
 
-// Blood Inventory Card Widget
 class BloodInventoryCard extends StatelessWidget {
   final InventoryModel inventory;
   final VoidCallback? onUpdateTap;
@@ -335,162 +371,161 @@ class BloodInventoryCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-      child: Container(
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(15),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.grey.withOpacity(0.2),
-              spreadRadius: 2,
-              blurRadius: 5,
-              offset: const Offset(0, 3),
-            ),
-          ],
+    final screenSize = MediaQuery.of(context).size;
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 18),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [Colors.white, Colors.grey.shade50],
         ),
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Blood drop shape with blood type
-              BloodDropIcon(bloodType: inventory.bloodType),
-              const SizedBox(width: 16),
-
-              // Inventory details
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.withOpacity(0.18),
+            spreadRadius: 2,
+            blurRadius: 8,
+            offset: const Offset(0, 3),
+          ),
+        ],
+      ),
+      child: Padding(
+        padding: EdgeInsets.all(screenSize.width * 0.045),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Header Row
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Row(
                   children: [
-                    // Status indicator
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          'Blood Type ${inventory.bloodType}',
-                          style: const TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                          decoration: BoxDecoration(
-                            color: _getStatusColor(inventory.status).withOpacity(0.1),
-                            borderRadius: BorderRadius.circular(20),
-                            border: Border.all(
-                              color: _getStatusColor(inventory.status),
-                              width: 1,
-                            ),
-                          ),
-                          child: Text(
-                            inventory.status,
-                            style: TextStyle(
-                              color: _getStatusColor(inventory.status),
-                              fontWeight: FontWeight.bold,
-                              fontSize: 14,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-
-                    const SizedBox(height: 16),
-
-                    // Quantity with circular indicator
-                    Row(
-                      children: [
-                        Stack(
-                          alignment: Alignment.center,
-                          children: [
-                            SizedBox(
-                              width: 60,
-                              height: 60,
-                              child: CircularProgressIndicator(
-                                value: inventory.quantity / 100,
-                                strokeWidth: 8,
-                                backgroundColor: Colors.grey.withOpacity(0.2),
-                                valueColor: AlwaysStoppedAnimation<Color>(
-                                  _getStatusColor(inventory.status),
-                                ),
-                              ),
-                            ),
-                            Text(
-                              '${inventory.quantity}',
-                              style: const TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(width: 16),
-                        const Expanded(
-                          child: Text(
-                            'units available',
-                            style: TextStyle(
-                              fontSize: 16,
-                              color: Colors.grey,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-
-                    const SizedBox(height: 16),
-
-                    // Last updated info
-                    Row(
-                      children: [
-                        const Icon(Icons.update, color: Colors.grey, size: 18),
-                        const SizedBox(width: 8),
-                        Expanded(
-                          child: Text(
-                            'Last updated: ${DateFormat('MMM dd, yyyy').format(inventory.lastUpdated)}',
-                            style: const TextStyle(
-                              color: Colors.grey,
-                              fontSize: 14,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-
-                    // Update button
-                    if (onUpdateTap != null)
-                      Padding(
-                        padding: const EdgeInsets.only(top: 16.0),
-                        child: SizedBox(
-                          width: double.infinity,
-                          child: ElevatedButton.icon(
-                            onPressed: onUpdateTap,
-                            icon: const Icon(Icons.edit),
-                            label: const Text("Update Unit"),
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Styles.accentColor,
-                              foregroundColor: Colors.white,
-                              padding: const EdgeInsets.symmetric(vertical: 12),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                            ),
-                          ),
-                        ),
+                    BloodDropIcon(bloodType: inventory.bloodType),
+                    const SizedBox(width: 12),
+                    Text(
+                      'Blood Type ${inventory.bloodType}',
+                      style: GoogleFonts.montserrat(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: Styles.primaryColor,
                       ),
+                    ),
                   ],
                 ),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: _getStatusColor(inventory.status).withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(
+                      color: _getStatusColor(inventory.status),
+                      width: 1,
+                    ),
+                  ),
+                  child: Text(
+                    inventory.status,
+                    style: GoogleFonts.roboto(
+                      color: _getStatusColor(inventory.status),
+                      fontWeight: FontWeight.bold,
+                      fontSize: 14,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 18),
+            // Quantity Row
+            Row(
+              children: [
+                Stack(
+                  alignment: Alignment.center,
+                  children: [
+                    SizedBox(
+                      width: 60,
+                      height: 60,
+                      child: CircularProgressIndicator(
+                        value: inventory.quantity / 100,
+                        strokeWidth: 8,
+                        backgroundColor: Colors.grey.withOpacity(0.2),
+                        valueColor: AlwaysStoppedAnimation<Color>(
+                          _getStatusColor(inventory.status),
+                        ),
+                      ),
+                    ),
+                    Text(
+                      '${inventory.quantity}',
+                      style: GoogleFonts.montserrat(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: Styles.primaryColor,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Text(
+                    'units available',
+                    style: GoogleFonts.roboto(
+                      fontSize: 16,
+                      color: Colors.grey[600],
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            // Last updated
+            Row(
+              children: [
+                const Icon(Icons.update, color: Colors.grey, size: 18),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    'Last updated: ${DateFormat('MMM dd, yyyy').format(inventory.lastUpdated)}',
+                    style: GoogleFonts.roboto(
+                      color: Colors.grey,
+                      fontSize: 14,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            // Update button
+            if (onUpdateTap != null)
+              Padding(
+                padding: const EdgeInsets.only(top: 16.0),
+                child: SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton.icon(
+                    onPressed: onUpdateTap,
+                    icon: const Icon(Icons.edit),
+                    label: Text("Update Unit", style: GoogleFonts.montserrat(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    )),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.red[700],
+                      foregroundColor: Colors.black,
+
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                    ),
+                  ),
+                ),
               ),
-            ],
-          ),
+          ],
         ),
       ),
     );
   }
 }
 
-// Custom Blood Drop Icon Widget
 class BloodDropIcon extends StatelessWidget {
   final String bloodType;
 
@@ -502,21 +537,13 @@ class BloodDropIcon extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      width: 60,
-      height: 80,
+      width: 40,
+      height: 54,
       child: CustomPaint(
-        painter: BloodDropPainter(Styles.primaryColor),
         child: Center(
           child: Padding(
             padding: const EdgeInsets.only(bottom: 5),
-            child: Text(
-              bloodType,
-              style: const TextStyle(
-                color: Colors.white,
-                fontWeight: FontWeight.bold,
-                fontSize: 20,
-              ),
-            ),
+
           ),
         ),
       ),
@@ -524,43 +551,4 @@ class BloodDropIcon extends StatelessWidget {
   }
 }
 
-// Custom Painter for Blood Drop Shape
-class BloodDropPainter extends CustomPainter {
-  final Color color;
 
-  BloodDropPainter(this.color);
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final Paint paint = Paint()
-      ..color = color
-      ..style = PaintingStyle.fill;
-
-    final double width = size.width;
-    final double height = size.height;
-
-    final Path path = Path();
-
-    // Start from the top center
-    path.moveTo(width / 2, 0);
-
-    // Right curve
-    path.quadraticBezierTo(
-        width, height / 3,
-        width / 2, height
-    );
-
-    // Left curve
-    path.quadraticBezierTo(
-        0, height / 3,
-        width / 2, 0
-    );
-
-    path.close();
-
-    canvas.drawPath(path, paint);
-  }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
-}
