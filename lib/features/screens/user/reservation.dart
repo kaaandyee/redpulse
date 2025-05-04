@@ -20,14 +20,47 @@ class ReservationScreen extends StatefulWidget {
 class ReservationScreenState extends State<ReservationScreen> {
   late String userId = '';
   late Stream<List<ReservationModel>> _reservationsStream;
-  // Cache to store blood bank names by ID
   final Map<String, String> _bloodBankNames = {};
   bool isLoading = true;
+  String searchQuery = '';
+
+  // Filter options
+  String? selectedStatusFilter;
+  String? selectedBloodTypeFilter;
+  DateTime? startDateFilter;
+  DateTime? endDateFilter;
+  int? minQuantityFilter;
+  int? maxQuantityFilter;
+
+  final TextEditingController _searchController = TextEditingController();
+  final List<String> bloodTypes = [
+    'A+',
+    'A-',
+    'B+',
+    'B-',
+    'AB+',
+    'AB-',
+    'O+',
+    'O-'
+  ];
+  final List<String> statusTypes = [
+    'Pending',
+    'Reserved',
+    'Cancelled',
+    'Completed',
+    'All'
+  ];
 
   @override
   void initState() {
     super.initState();
     fetchUserId();
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
   }
 
   // Function to fetch the current user's UID
@@ -68,7 +101,8 @@ class ReservationScreenState extends State<ReservationScreen> {
           .get();
 
       if (bloodBankDoc.exists) {
-        final name = bloodBankDoc.data()?['bloodBankName'] ?? 'Unknown Blood Bank';
+        final name = bloodBankDoc.data()?['bloodBankName'] ??
+            'Unknown Blood Bank';
         // Cache the result
         _bloodBankNames[bloodBankId] = name;
         return name;
@@ -80,9 +114,393 @@ class ReservationScreenState extends State<ReservationScreen> {
     }
   }
 
+  // Sort reservations by status
+  List<ReservationModel> sortReservations(List<ReservationModel> reservations) {
+    reservations.sort((a, b) {
+      // Priority: 1. Pending, 2. Other statuses, 3. Completed
+      if (a.status == 'Pending' && b.status != 'Pending') {
+        return -1;
+      } else if (a.status != 'Pending' && b.status == 'Pending') {
+        return 1;
+      } else if (a.status == 'Completed' && b.status != 'Completed') {
+        return 1;
+      } else if (a.status != 'Completed' && b.status == 'Completed') {
+        return -1;
+      }
+      // If they have the same priority, sort by date
+      return b.validUntil.compareTo(a.validUntil);
+    });
+    return reservations;
+  }
+
+  // Filter reservations
+  List<ReservationModel> filterReservations(
+      List<ReservationModel> reservations) {
+    return reservations.where((reservation) {
+      // Check if reservation matches the search query
+      bool matchesSearch = searchQuery.isEmpty ||
+          _bloodBankNames[reservation.bloodBankId]?.toLowerCase().contains(
+              searchQuery.toLowerCase()) == true ||
+          reservation.bloodType.toLowerCase().contains(
+              searchQuery.toLowerCase()) ||
+          reservation.status.toLowerCase().contains(searchQuery.toLowerCase());
+
+      // Check if reservation matches the selected status filter
+      bool matchesStatus = selectedStatusFilter == null ||
+          selectedStatusFilter == 'All' ||
+          reservation.status == selectedStatusFilter;
+
+      // Check if reservation matches the selected blood type filter
+      bool matchesBloodType = selectedBloodTypeFilter == null ||
+          reservation.bloodType == selectedBloodTypeFilter;
+
+      // Check if reservation falls within the selected date range
+      bool matchesDateRange = true;
+      if (startDateFilter != null && endDateFilter != null) {
+        matchesDateRange = reservation.validUntil.isAfter(startDateFilter!) &&
+            reservation.validUntil.isBefore(
+                endDateFilter!.add(const Duration(days: 1)));
+      }
+
+      // Check if reservation falls within the quantity range
+      bool matchesQuantity = true;
+      if (minQuantityFilter != null) {
+        matchesQuantity = reservation.quantity >= minQuantityFilter!;
+      }
+      if (maxQuantityFilter != null && matchesQuantity) {
+        matchesQuantity = reservation.quantity <= maxQuantityFilter!;
+      }
+
+      return matchesSearch && matchesStatus && matchesBloodType &&
+          matchesDateRange && matchesQuantity;
+    }).toList();
+  }
+
+  // Show filter dialog
+  void _showFilterDialog() {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) =>
+          StatefulBuilder(
+              builder: (context, setModalState) {
+                return Container(
+                  padding: EdgeInsets.only(
+                    bottom: MediaQuery
+                        .of(context)
+                        .viewInsets
+                        .bottom + 20,
+                    top: 20,
+                    left: 20,
+                    right: 20,
+                  ),
+                  decoration: const BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.only(
+                      topLeft: Radius.circular(25),
+                      topRight: Radius.circular(25),
+                    ),
+                  ),
+                  child: SingleChildScrollView(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              'Filter Reservations',
+                              style: GoogleFonts.montserrat(
+                                fontSize: 22,
+                                fontWeight: FontWeight.w700,
+                                color: Styles.primaryColor,
+                              ),
+                            ),
+                            IconButton(
+                              icon: const Icon(Icons.close),
+                              onPressed: () => Navigator.pop(context),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 20),
+
+                        // Status filter
+                        Text(
+                          'Status',
+                          style: GoogleFonts.montserrat(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        const SizedBox(height: 10),
+                        Wrap(
+                          spacing: 10,
+                          children: statusTypes.map((status) =>
+                              ChoiceChip(
+                                label: Text(status),
+                                selected: selectedStatusFilter == status,
+                                onSelected: (selected) {
+                                  setModalState(() {
+                                    selectedStatusFilter =
+                                    selected ? status : null;
+                                  });
+                                },
+                                selectedColor: Styles.primaryColor,
+                                labelStyle: TextStyle(
+                                  color: selectedStatusFilter == status ? Colors
+                                      .white : Colors.black,
+                                ),
+                              )
+                          ).toList(),
+                        ),
+
+                        const SizedBox(height: 20),
+
+                        // Blood Type filter
+                        Text(
+                          'Blood Type',
+                          style: GoogleFonts.montserrat(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        const SizedBox(height: 10),
+                        Wrap(
+                          spacing: 10,
+                          children: bloodTypes.map((type) =>
+                              ChoiceChip(
+                                label: Text(type),
+                                selected: selectedBloodTypeFilter == type,
+                                onSelected: (selected) {
+                                  setModalState(() {
+                                    selectedBloodTypeFilter =
+                                    selected ? type : null;
+                                  });
+                                },
+                                selectedColor: Styles.primaryColor,
+                                labelStyle: TextStyle(
+                                  color: selectedBloodTypeFilter == type
+                                      ? Colors.white
+                                      : Colors.black,
+                                ),
+                              )
+                          ).toList(),
+                        ),
+
+                        const SizedBox(height: 20),
+
+                        // Date Range filter
+                        Text(
+                          'Valid Until Date Range',
+                          style: GoogleFonts.montserrat(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        const SizedBox(height: 10),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: OutlinedButton(
+                                onPressed: () async {
+                                  final picked = await showDatePicker(
+                                    context: context,
+                                    initialDate: startDateFilter ??
+                                        DateTime.now(),
+                                    firstDate: DateTime(2020),
+                                    lastDate: DateTime(2101),
+                                  );
+                                  if (picked != null) {
+                                    setModalState(() {
+                                      startDateFilter = picked;
+                                    });
+                                  }
+                                },
+                                child: Text(
+                                  startDateFilter != null
+                                      ? DateFormat('MM/dd/yyyy').format(
+                                      startDateFilter!)
+                                      : 'Start Date',
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 10),
+                            Expanded(
+                              child: OutlinedButton(
+                                onPressed: () async {
+                                  final picked = await showDatePicker(
+                                    context: context,
+                                    initialDate: endDateFilter ??
+                                        DateTime.now(),
+                                    firstDate: DateTime(2020),
+                                    lastDate: DateTime(2101),
+                                  );
+                                  if (picked != null) {
+                                    setModalState(() {
+                                      endDateFilter = picked;
+                                    });
+                                  }
+                                },
+                                child: Text(
+                                  endDateFilter != null
+                                      ? DateFormat('MM/dd/yyyy').format(
+                                      endDateFilter!)
+                                      : 'End Date',
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+
+                        const SizedBox(height: 20),
+
+                        // Quantity Range filter
+                        Text(
+                          'Quantity Range',
+                          style: GoogleFonts.montserrat(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        const SizedBox(height: 10),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: TextFormField(
+                                decoration: const InputDecoration(
+                                  labelText: 'Min',
+                                  border: OutlineInputBorder(),
+                                ),
+                                keyboardType: TextInputType.number,
+                                initialValue: minQuantityFilter?.toString(),
+                                onChanged: (value) {
+                                  if (value.isNotEmpty) {
+                                    setModalState(() {
+                                      minQuantityFilter = int.tryParse(value);
+                                    });
+                                  } else {
+                                    setModalState(() {
+                                      minQuantityFilter = null;
+                                    });
+                                  }
+                                },
+                              ),
+                            ),
+                            const SizedBox(width: 10),
+                            Expanded(
+                              child: TextFormField(
+                                decoration: const InputDecoration(
+                                  labelText: 'Max',
+                                  border: OutlineInputBorder(),
+                                ),
+                                keyboardType: TextInputType.number,
+                                initialValue: maxQuantityFilter?.toString(),
+                                onChanged: (value) {
+                                  if (value.isNotEmpty) {
+                                    setModalState(() {
+                                      maxQuantityFilter = int.tryParse(value);
+                                    });
+                                  } else {
+                                    setModalState(() {
+                                      maxQuantityFilter = null;
+                                    });
+                                  }
+                                },
+                              ),
+                            ),
+                          ],
+                        ),
+
+                        const SizedBox(height: 30),
+
+                        // Apply and Reset buttons
+                        Row(
+                          children: [
+                            Expanded(
+                              child: OutlinedButton(
+                                onPressed: () {
+                                  setModalState(() {
+                                    selectedStatusFilter = null;
+                                    selectedBloodTypeFilter = null;
+                                    startDateFilter = null;
+                                    endDateFilter = null;
+                                    minQuantityFilter = null;
+                                    maxQuantityFilter = null;
+                                  });
+                                },
+                                child: Text(
+                                  'Reset',
+                                  style: GoogleFonts.roboto(
+                                      color: Colors.grey[700]),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 10),
+                            Expanded(
+                              child: ElevatedButton(
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Styles.primaryColor,
+                                ),
+                                onPressed: () {
+                                  setState(() {
+                                    // Apply filters
+                                  });
+                                  Navigator.pop(context);
+                                },
+                                child: Text(
+                                  'Apply',
+                                  style: GoogleFonts.roboto(
+                                      color: Colors.white),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              }
+          ),
+    );
+  }
+
+  // Build section header
+  Widget _buildSectionHeader(String title) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+      margin: const EdgeInsets.only(bottom: 5),
+      child: Row(
+        children: [
+          Container(
+            height: 24,
+            width: 4,
+            decoration: BoxDecoration(
+              color: Styles.primaryColor,
+              borderRadius: BorderRadius.circular(2),
+            ),
+          ),
+          const SizedBox(width: 10),
+          Text(
+            title,
+            style: GoogleFonts.montserrat(
+              fontSize: 16,
+              fontWeight: FontWeight.w600,
+              color: Colors.grey[800],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    final screenSize = MediaQuery.of(context).size;
+    final screenSize = MediaQuery
+        .of(context)
+        .size;
 
     return Scaffold(
       extendBodyBehindAppBar: true,
@@ -160,7 +578,8 @@ class ReservationScreenState extends State<ReservationScreen> {
           stream: _reservationsStream,
           builder: (context, snapshot) {
             if (snapshot.connectionState == ConnectionState.waiting) {
-              return Center(child: CircularProgressIndicator(color: Styles.primaryColor));
+              return Center(
+                  child: CircularProgressIndicator(color: Styles.primaryColor));
             }
 
             if (snapshot.hasError) {
@@ -170,7 +589,8 @@ class ReservationScreenState extends State<ReservationScreen> {
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Icon(Icons.error_outline, size: 60, color: Colors.grey[400]),
+                      Icon(Icons.error_outline, size: 60,
+                          color: Colors.grey[400]),
                       const SizedBox(height: 16),
                       Text(
                         'Error loading reservations',
@@ -226,108 +646,240 @@ class ReservationScreenState extends State<ReservationScreen> {
               );
             }
 
-            final reservations = snapshot.data!;
+            // Sort and filter the reservations
+            var allReservations = snapshot.data!;
+            var filteredReservations = filterReservations(allReservations);
+            var sortedReservations = sortReservations(filteredReservations);
 
-            return Padding(
-              padding: EdgeInsets.only(top: screenSize.height * 0.13),
-              child: ListView.builder(
-                physics: const BouncingScrollPhysics(),
-                padding: EdgeInsets.symmetric(vertical: 10, horizontal: 20),
-                itemCount: reservations.length,
-                itemBuilder: (context, index) {
-                  final reservation = reservations[index];
+            // Separate reservations by status
+            var pendingReservations = sortedReservations.where((r) =>
+            r.status == 'Pending').toList();
+            var completedReservations = sortedReservations.where((r) =>
+            r.status == 'Completed').toList();
+            var otherReservations = sortedReservations.where((r) =>
+            r.status != 'Pending' && r.status != 'Completed').toList();
 
-                  // Determine the tile color and icon based on the reservation status
-                  Color tileColor;
-                  IconData statusIcon;
+            return Column(
+              children: [
+                // Extra spacing for the AppBar
+                SizedBox(height: screenSize.height * 0.18),
 
-                  if (reservation.status == 'Pending') {
-                    tileColor = Styles.frontColor;
-                    statusIcon = Icons.hourglass_empty;
-                  } else if (reservation.status == 'Reserved') {
-                    tileColor = Colors.green[700] ?? Colors.green;
-                    statusIcon = Icons.check_circle;
-                  } else if (reservation.status == 'Cancelled') {
-                    tileColor = Styles.complementColor;
-                    statusIcon = Icons.cancel;
-                  } else if (reservation.status == 'Completed') {
-                    tileColor = Colors.blue[700] ?? Colors.blue;
-                    statusIcon = Icons.task_alt;
-                  } else {
-                    tileColor = Styles.tertiaryColor;
-                    statusIcon = Icons.info;
-                  }
-
-                  return FadeInUp(
-                    duration: Duration(milliseconds: 800 + (index * 100)),
-                    child: Card(
-                      margin: const EdgeInsets.only(bottom: 15),
-                      elevation: 4,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(15),
-                      ),
-                      child: ListTile(
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(15),
-                        ),
-                        contentPadding: const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
-                        tileColor: tileColor,
-                        leading: Container(
-                          padding: const EdgeInsets.all(8),
-                          decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(0.3),
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: Icon(
-                            statusIcon,
-                            size: 36,
-                            color: Styles.tertiaryColor,
-                          ),
-                        ),
-                        title: FutureBuilder<String>(
-                          future: getBloodBankName(reservation.bloodBankId),
-                          builder: (context, nameSnapshot) {
-                            return Text(
-                              nameSnapshot.connectionState == ConnectionState.waiting
-                                  ? 'Loading...'
-                                  : nameSnapshot.data ?? 'Unknown Blood Bank',
-                              style: GoogleFonts.montserrat(
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
-                                color: Styles.tertiaryColor,
+                // Search bar and filter button
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  child: FadeInDown(
+                    duration: const Duration(milliseconds: 900),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: Container(
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(15),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.grey.withOpacity(0.15),
+                                  blurRadius: 8,
+                                  offset: const Offset(0, 2),
+                                ),
+                              ],
+                            ),
+                            child: TextField(
+                              controller: _searchController,
+                              onChanged: (value) {
+                                setState(() {
+                                  searchQuery = value;
+                                });
+                              },
+                              decoration: InputDecoration(
+                                hintText: 'Search reservations',
+                                hintStyle: GoogleFonts.roboto(
+                                    color: Colors.grey),
+                                prefixIcon: const Icon(
+                                    Icons.search, color: Colors.grey),
+                                suffixIcon: searchQuery.isNotEmpty
+                                    ? IconButton(
+                                  icon: const Icon(
+                                      Icons.clear, color: Colors.grey),
+                                  onPressed: () {
+                                    setState(() {
+                                      _searchController.clear();
+                                      searchQuery = '';
+                                    });
+                                  },
+                                )
+                                    : null,
+                                border: InputBorder.none,
+                                contentPadding: const EdgeInsets.symmetric(
+                                    vertical: 15),
                               ),
-                            );
-                          },
+                            ),
+                          ),
                         ),
-                        subtitle: Padding(
-                          padding: const EdgeInsets.only(top: 8.0),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              _buildReservationDetail('Blood Type', reservation.bloodType),
-                              _buildReservationDetail('Quantity', '${reservation.quantity} units'),
-                              _buildReservationDetail('Status', reservation.status),
-                              _buildReservationDetail('Valid Until',
-                                  DateFormat('MM/dd/yyyy').format(reservation.validUntil)
+                        const SizedBox(width: 10),
+                        Container(
+                          decoration: BoxDecoration(
+                            color: Styles.primaryColor,
+                            borderRadius: BorderRadius.circular(15),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.grey.withOpacity(0.15),
+                                blurRadius: 8,
+                                offset: const Offset(0, 2),
                               ),
                             ],
                           ),
+                          child: IconButton(
+                            onPressed: _showFilterDialog,
+                            icon: const Icon(
+                                Icons.filter_list, color: Colors.white),
+                            tooltip: 'Filter reservations',
+                          ),
                         ),
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => ReservationDetailsScreen(
-                                reservationId: reservation.reservationId,
+                      ],
+                    ),
+                  ),
+                ),
+
+                const SizedBox(height: 10),
+
+                // Active filters display
+                if (selectedStatusFilter != null ||
+                    selectedBloodTypeFilter != null ||
+                    startDateFilter != null || minQuantityFilter != null)
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    child: FadeInDown(
+                      duration: const Duration(milliseconds: 950),
+                      child: Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 15, vertical: 8),
+                        decoration: BoxDecoration(
+                          color: Colors.blue.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(10),
+                          border: Border.all(
+                              color: Colors.blue.withOpacity(0.3)),
+                        ),
+                        child: Row(
+                          children: [
+                            Icon(Icons.filter_alt_outlined,
+                                color: Colors.blue[700], size: 18),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: Text(
+                                'Filters applied',
+                                style: GoogleFonts.roboto(
+                                  color: Colors.blue[700],
+                                  fontSize: 14,
+                                ),
                               ),
                             ),
-                          );
-                        },
+                            GestureDetector(
+                              onTap: () {
+                                setState(() {
+                                  selectedStatusFilter = null;
+                                  selectedBloodTypeFilter = null;
+                                  startDateFilter = null;
+                                  endDateFilter = null;
+                                  minQuantityFilter = null;
+                                  maxQuantityFilter = null;
+                                });
+                              },
+                              child: Text(
+                                'Clear all',
+                                style: GoogleFonts.roboto(
+                                  color: Colors.blue[700],
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                     ),
-                  );
-                },
-              ),
+                  ),
+
+                // Reservations list
+                Expanded(
+                  child: pendingReservations.isEmpty &&
+                      otherReservations.isEmpty && completedReservations.isEmpty
+                      ? Center(
+                    child: FadeInUp(
+                      duration: const Duration(milliseconds: 800),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(Icons.search_off, size: 60,
+                              color: Colors.grey[400]),
+                          const SizedBox(height: 16),
+                          Text(
+                            'No matching reservations',
+                            style: TextStyle(
+                              fontSize: 18,
+                              color: Colors.grey[600],
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            'Try adjusting your search or filters',
+                            style: TextStyle(
+                              fontSize: 14,
+                              color: Colors.grey[500],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  )
+                      : ListView(
+                    physics: const BouncingScrollPhysics(),
+                    padding: const EdgeInsets.only(bottom: 20),
+                    children: [
+                      // Pending reservations section
+                      if (pendingReservations.isNotEmpty) _buildSectionHeader(
+                          'Pending Reservations'),
+                      if (pendingReservations.isNotEmpty)
+                        ...pendingReservations
+                            .asMap()
+                            .entries
+                            .map((entry) {
+                          int index = entry.key;
+                          ReservationModel reservation = entry.value;
+                          return _buildReservationTile(reservation, index);
+                        }),
+
+                      // Other reservations section
+                      if (otherReservations.isNotEmpty) _buildSectionHeader(
+                          'Active Reservations'),
+                      if (otherReservations.isNotEmpty)
+                        ...otherReservations
+                            .asMap()
+                            .entries
+                            .map((entry) {
+                          int index = entry.key;
+                          ReservationModel reservation = entry.value;
+                          return _buildReservationTile(reservation, index);
+                        }),
+
+                      // Completed reservations section
+                      if (completedReservations.isNotEmpty) _buildSectionHeader(
+                          'Completed Reservations'),
+                      if (completedReservations.isNotEmpty)
+                        ...completedReservations
+                            .asMap()
+                            .entries
+                            .map((entry) {
+                          int index = entry.key;
+                          ReservationModel reservation = entry.value;
+                          return _buildReservationTile(reservation, index);
+                        }),
+                    ],
+                  ),
+                ),
+              ],
             );
           },
         ),
@@ -335,22 +887,168 @@ class ReservationScreenState extends State<ReservationScreen> {
     );
   }
 
+  Widget _buildReservationTile(ReservationModel reservation, int index) {
+    // Determine the tile color and icon based on the reservation status
+    Color tileColor;
+    IconData statusIcon;
+
+    if (reservation.status == 'Pending') {
+      tileColor = Styles.frontColor;
+      statusIcon = Icons.hourglass_empty;
+    } else if (reservation.status == 'Reserved') {
+      tileColor = Colors.green[700] ?? Colors.green;
+      statusIcon = Icons.check_circle;
+    } else if (reservation.status == 'Cancelled') {
+      tileColor = Styles.complementColor;
+      statusIcon = Icons.cancel;
+    } else if (reservation.status == 'Completed') {
+      tileColor = Colors.blue[700] ?? Colors.blue;
+      statusIcon = Icons.task_alt;
+    } else {
+      tileColor = Styles.tertiaryColor;
+      statusIcon = Icons.info;
+    }
+
+    return FadeInUp(
+      duration: Duration(milliseconds: 800 + (index * 100)),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 5),
+        child: Card(
+          elevation: 4,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(15),
+          ),
+          child: ListTile(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(15),
+            ),
+            contentPadding: const EdgeInsets.symmetric(
+                vertical: 16, horizontal: 20),
+            tileColor: tileColor,
+            leading: Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.3),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Icon(
+                statusIcon,
+                size: 36,
+                color: Colors.white,
+              ),
+            ),
+            title: FutureBuilder<String>(
+              future: getBloodBankName(reservation.bloodBankId),
+              builder: (context, nameSnapshot) {
+                return Text(
+                  nameSnapshot.connectionState == ConnectionState.waiting
+                      ? 'Loading...'
+                      : nameSnapshot.data ?? 'Unknown Blood Bank',
+                  style: GoogleFonts.montserrat(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
+                );
+              },
+            ),
+            subtitle: Padding(
+              padding: const EdgeInsets.only(top: 8.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _buildReservationDetail('Blood Type', reservation.bloodType),
+                  _buildReservationDetail(
+                      'Quantity', '${reservation.quantity} units'),
+                  _buildReservationDetail('Status', reservation.status),
+                  _buildReservationDetail(
+                      'Valid Until',
+                      DateFormat('MM/dd/yyyy').format(reservation.validUntil)
+                  ),
+                ],
+              ),
+            ),
+            trailing: Icon(
+              Icons.arrow_forward_ios,
+              color: Colors.white.withOpacity(0.7),
+              size: 20,
+            ),
+            onTap: () async {
+              final result = await Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) =>
+                      ReservationDetailsScreen(
+                        reservationId: reservation.reservationId,
+                      ),
+                ),
+              );
+
+              // Show beautiful SnackBar if reservation was cancelled successfully
+              if (result == true) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Row(
+                      children: [
+                        const Icon(Icons.check_circle, color: Colors.white),
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: Text(
+                            'Reservation cancelled successfully',
+                            style: GoogleFonts.roboto(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    backgroundColor: Styles.primaryColor,
+                    behavior: SnackBarBehavior.floating,
+                    margin: const EdgeInsets.all(16),
+                    elevation: 8,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    duration: const Duration(seconds: 3),
+                    action: SnackBarAction(
+                      label: 'DISMISS',
+                      textColor: Colors.white,
+                      onPressed: () {
+                        ScaffoldMessenger.of(context).hideCurrentSnackBar();
+                      },
+                    ),
+                  ),
+                );
+
+                // Refresh the UI if needed
+                setState(() {});
+              }
+            },
+          ),
+        ),
+      ),
+    );
+  }
+
   Widget _buildReservationDetail(String label, String value) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 4.0),
+      padding: const EdgeInsets.only(bottom: 6.0),
       child: Row(
         children: [
           Text(
             '$label: ',
             style: GoogleFonts.roboto(
+              fontSize: 14,
               fontWeight: FontWeight.w500,
-              color: Colors.white.withOpacity(0.85),
+              color: Colors.white.withOpacity(0.9),
             ),
           ),
           Text(
             value,
             style: GoogleFonts.roboto(
-              fontWeight: FontWeight.w700,
+              fontSize: 14,
+              fontWeight: FontWeight.w600,
               color: Colors.white,
             ),
           ),

@@ -6,6 +6,7 @@ import 'package:redpulse/utilities/constants/styles.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:animate_do/animate_do.dart';
 import 'package:lottie/lottie.dart';
+import 'package:action_slider/action_slider.dart';
 
 class ReservationDetailsScreen extends StatefulWidget {
   final String reservationId;
@@ -87,6 +88,10 @@ class _ReservationDetailsScreenState extends State<ReservationDetailsScreen> {
             .doc(widget.reservationId)
             .delete();
 
+        // Navigate back immediately
+        Navigator.pop(context, true);
+
+        // Show the SnackBar on the previous screen after navigation
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Reservation successfully canceled',
@@ -98,7 +103,6 @@ class _ReservationDetailsScreenState extends State<ReservationDetailsScreen> {
             ),
           ),
         );
-        Navigator.pop(context);
       }
     } catch (e) {
       print('Error canceling reservation: $e');
@@ -113,10 +117,7 @@ class _ReservationDetailsScreenState extends State<ReservationDetailsScreen> {
           ),
         ),
       );
-    } finally {
-      if (mounted) {
-        setState(() => isCancelling = false);
-      }
+      setState(() => isCancelling = false);
     }
   }
 
@@ -325,6 +326,7 @@ class _ReservationDetailsScreenState extends State<ReservationDetailsScreen> {
                             color: Colors.white,
                           ),
                         ),
+
                       ],
                     ),
                     SizedBox(height: screenSize.height * 0.02),
@@ -471,43 +473,114 @@ class _ReservationDetailsScreenState extends State<ReservationDetailsScreen> {
             ),
             SizedBox(height: screenSize.height * 0.04),
 
-            // Cancel Button
-            FadeInUp(
-              duration: const Duration(milliseconds: 1200),
-              child: SizedBox(
-                width: double.infinity,
-                child: ElevatedButton.icon(
-                  onPressed: isCancelling ? null : cancelReservation,
-                  style: ElevatedButton.styleFrom(
+            // Only show Cancel Button if status is not Completed
+            if (reservation?.status != 'Completed')
+              FadeInUp(
+                duration: const Duration(milliseconds: 1200),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  child: ActionSlider.standard(
+                    width: double.infinity,
                     backgroundColor: Styles.primaryColor,
-                    foregroundColor: Colors.white,
-                    padding: EdgeInsets.symmetric(vertical: screenSize.height * 0.02),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(15),
+                    toggleColor: Colors.white,
+                    iconAlignment: Alignment.centerRight,
+                    loadingIcon: SizedBox(
+                      width: 25,
+                      height: 25,
+                      child: CircularProgressIndicator(
+                        color: Styles.primaryColor,
+                        strokeWidth: 3,
+                      ),
                     ),
-                    elevation: 5,
-                    shadowColor: Styles.primaryColor.withOpacity(0.5),
-                  ),
-                  icon: isCancelling
-                      ? SizedBox(
-                    width: 20,
-                    height: 20,
-                    child: CircularProgressIndicator(
-                      color: Colors.white,
-                      strokeWidth: 2,
+                    successIcon: const Icon(
+                      Icons.check,
+                      color: Colors.green,
+                      size: 30,
                     ),
-                  )
-                      : const Icon(Icons.cancel_outlined),
-                  label: Text(
-                    isCancelling ? "Cancelling..." : "Cancel Reservation",
-                    style: GoogleFonts.montserrat(
-                      fontSize: screenSize.width * 0.04,
-                      fontWeight: FontWeight.w600,
+                    icon: Icon(
+                      Icons.close,
+                      color: Styles.primaryColor,
+                      size: 20,
                     ),
+                    height: 60,
+                    child: Text(
+                      'Slide to Cancel Reservation',
+                      style: GoogleFonts.montserrat(
+                        color: Colors.white,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                        letterSpacing: 0.5,
+                      ),
+                    ),
+                    action: (controller) async {
+                      if (isCancelling) {
+                        return;
+                      }
+
+                      controller.loading();
+                      await Future.delayed(const Duration(milliseconds: 400));
+
+                      bool confirmed = await showDialog(
+                        context: context,
+                        builder: (context) => AlertDialog(
+                          backgroundColor: Colors.white,
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                          title: Row(
+                            children: [
+                              Icon(Icons.warning_amber_rounded, color: Styles.primaryColor),
+                              const SizedBox(width: 10),
+                              Text(
+                                'Cancel Reservation',
+                                style: GoogleFonts.montserrat(
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.black87,
+                                ),
+                              ),
+                            ],
+                          ),
+                          content: Text(
+                            'Are you sure you want to cancel this reservation? This action cannot be undone.',
+                            style: GoogleFonts.roboto(
+                              fontSize: 16,
+                              color: Colors.black87,
+                            ),
+                          ),
+                          actions: [
+                            TextButton(
+                              onPressed: () => Navigator.pop(context, false),
+                              child: Text(
+                                'No, Keep It',
+                                style: GoogleFonts.roboto(color: Colors.grey[700]),
+                              ),
+                            ),
+                            ElevatedButton(
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Styles.primaryColor,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                              ),
+                              onPressed: () => Navigator.pop(context, true),
+                              child: Text(
+                                'Yes, Cancel',
+                                style: GoogleFonts.roboto(color: Colors.white),
+                              ),
+                            ),
+                          ],
+                        ),
+                      );
+
+                      if (confirmed) {
+                        controller.success();
+                        await Future.delayed(const Duration(milliseconds: 400));
+                        await cancelReservation();
+                      } else {
+                        controller.reset();
+                      }
+                    },
                   ),
                 ),
               ),
-            ),
           ],
         ),
       ),
