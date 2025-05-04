@@ -12,6 +12,8 @@ import 'package:redpulse/utilities/constants/styles.dart';
 import 'package:animate_do/animate_do.dart';
 import 'package:flutter_moving_background/flutter_moving_background.dart';
 import 'package:flutter_moving_background/enums/animation_types.dart';
+import 'package:redpulse/features/screens/wrapper/BiometricAuthService.dart';
+
 
 import '../../../widgets/confirmLogout.dart';
 
@@ -376,6 +378,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                 child: CircularProgressIndicator(),
                               ),
                             );
+
+                            await BiometricAuthService.clearAuthState();
 
                             // Clear all authentication data
                             final auth = FirebaseAuth.instance;

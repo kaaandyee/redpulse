@@ -66,6 +66,7 @@ dependencies:
   lottie: ^3.3.0
   firebase_messaging: ^15.2.5
   action_slider: ^0.7.0
+  local_auth: ^2.3.0
 
 
 flutter_launcher_icons:

@@ -19,6 +19,7 @@ import 'package:flutter_moving_background/flutter_moving_background.dart';
 import 'package:flutter_moving_background/enums/animation_types.dart';
 import 'package:lottie/lottie.dart';
 import 'package:animate_do/animate_do.dart';
+import 'package:redpulse/features/screens/wrapper/BiometricAuthService.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -96,6 +97,9 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
 
         final userData = userDoc.data() as Map<String, dynamic>;
         final bool isAdmin = userData['role'] == 'admin';
+
+        await BiometricAuthService.setLoggedIn(true);
+
 
         setState(() {
           isLoading = false;
@@ -455,6 +459,8 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
 
                                       if (userDoc.exists) {
                                         // User exists, navigate to home
+                                        await BiometricAuthService.setLoggedIn(true);
+
                                         Navigator.pushReplacement(
                                           context,
                                           MaterialPageRoute(
