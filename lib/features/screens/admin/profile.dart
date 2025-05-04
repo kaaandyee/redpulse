@@ -3,10 +3,14 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:intl/intl.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:redpulse/features/models/bloodbank.dart';
 import 'package:redpulse/features/screens/login.dart';
 import 'package:redpulse/utilities/constants/styles.dart';
 import 'package:redpulse/widgets/confirmLogout.dart';
+import 'package:animate_do/animate_do.dart';
+import 'package:flutter_moving_background/flutter_moving_background.dart';
+import 'package:flutter_moving_background/enums/animation_types.dart';
 
 class ProfileScreen extends StatefulWidget {
   final String? adminId;
@@ -140,8 +144,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
       context: context,
       builder: (context) => AlertDialog(
         title: Text(
-            "Edit Blood Bank Details",
-            style: TextStyle(color: Styles.primaryColor, fontWeight: FontWeight.bold)
+          "Edit Blood Bank Details",
+          style: GoogleFonts.montserrat(
+            color: Styles.primaryColor,
+            fontWeight: FontWeight.bold,
+          ),
         ),
         content: SingleChildScrollView(
           child: Column(
@@ -198,11 +205,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: Text('Cancel', style: TextStyle(color: Colors.grey)),
+            child: Text(
+              'Cancel',
+              style: GoogleFonts.roboto(color: Colors.grey),
+            ),
           ),
           ElevatedButton(
             style: ElevatedButton.styleFrom(
               backgroundColor: Styles.primaryColor,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
             ),
             onPressed: () {
               Navigator.pop(context);
@@ -213,89 +224,189 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 'contactNumber': contactController.text.trim(),
               });
             },
-            child: const Text('Save Changes', style: TextStyle(color: Colors.white)),
+            child: Text(
+              'Save Changes',
+              style: GoogleFonts.montserrat(
+                fontWeight: FontWeight.w600,
+                color: Colors.white,
+              ),
+            ),
           ),
         ],
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
       ),
     );
   }
 
   @override
   Widget build(BuildContext context) {
+    final screenSize = MediaQuery.of(context).size;
+
     return Scaffold(
+      extendBodyBehindAppBar: true,
       appBar: PreferredSize(
-        preferredSize: const Size.fromHeight(120),
-        child: AppBar(
-          backgroundColor: Styles.primaryColor,
-          shape: const RoundedRectangleBorder(
-            borderRadius: BorderRadius.only(
-              topLeft: Radius.circular(30),
-              topRight: Radius.circular(30),
-            ),
-          ),
-          elevation: 0,
-          flexibleSpace: Padding(
-            padding: const EdgeInsets.all(20),
-            child: Align(
-              alignment: Alignment.center,
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  const SizedBox(height: 20),
-                  Text(
-                    "Blood Bank Profile",
-                    style: Styles.headerStyle2.copyWith(
-                      fontSize: 22,
-                      fontWeight: FontWeight.bold,
-                      color: Styles.tertiaryColor,
-                    ),
-                  ),
+        preferredSize: Size.fromHeight(screenSize.height * 0.07),
+        child: FadeInDown(
+          duration: const Duration(milliseconds: 800),
+          child: Container(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [
+                  Styles.primaryColor,
+                  Styles.primaryColor.withOpacity(0.95),
                 ],
+              ),
+              borderRadius: const BorderRadius.only(
+                bottomLeft: Radius.circular(25),
+                bottomRight: Radius.circular(25),
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.red.withOpacity(0.2),
+                  blurRadius: 15,
+                  spreadRadius: 2,
+                  offset: const Offset(0, 3),
+                ),
+              ],
+            ),
+            child: SafeArea(
+              child: Padding(
+                padding: EdgeInsets.symmetric(
+                  horizontal: screenSize.width * 0.06,
+                  vertical: screenSize.height * 0.015,
+                ),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Text(
+                      "Blood Bank Profile",
+                      style: GoogleFonts.montserrat(
+                        fontSize: screenSize.width * 0.055,
+                        fontWeight: FontWeight.w700,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
           ),
         ),
       ),
       body: _adminId == null
-          ? const Center(child: CircularProgressIndicator())
-          : FutureBuilder<BloodBankModel?>(
-        future: _bloodBankFuture,
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
-          }
-          if (snapshot.hasError) {
-            return Center(child: Text('Error: ${snapshot.error}'));
-          }
-          if (!snapshot.hasData) {
-            return const Center(child: Text('No blood bank data available'));
-          }
+          ? Center(child: CircularProgressIndicator(color: Styles.primaryColor))
+          : MovingBackground(
+        animationType: AnimationType.translation,
+        backgroundColor: const Color.fromARGB(255, 248, 248, 248),
+        circles: const [
+          MovingCircle(color: Color.fromARGB(65, 230, 132, 125), radius: 120),
+          MovingCircle(color: Color.fromARGB(55, 230, 132, 125), radius: 150),
+          MovingCircle(color: Color.fromARGB(45, 230, 132, 125), radius: 180),
+          MovingCircle(color: Color.fromARGB(35, 230, 132, 125), radius: 200),
+        ],
+        child: FutureBuilder<BloodBankModel?>(
+          future: _bloodBankFuture,
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return Center(child: CircularProgressIndicator(color: Styles.primaryColor));
+            }
+            if (snapshot.hasError) {
+              return Center(
+                child: FadeInUp(
+                  duration: const Duration(milliseconds: 800),
+                  child: Text(
+                    'Error: ${snapshot.error}',
+                    style: GoogleFonts.roboto(
+                      fontSize: 16,
+                      color: Colors.grey[600],
+                    ),
+                  ),
+                ),
+              );
+            }
+            if (!snapshot.hasData) {
+              return Center(
+                child: FadeInUp(
+                  duration: const Duration(milliseconds: 800),
+                  child: Text(
+                    'No blood bank data available',
+                    style: GoogleFonts.roboto(
+                      fontSize: 16,
+                      color: Colors.grey[600],
+                    ),
+                  ),
+                ),
+              );
+            }
 
-          final bloodBank = snapshot.data!;
+            final bloodBank = snapshot.data!;
 
-          // Parse location coordinates
-          final double latitude = bloodBank.latitude;
-          final double longitude = bloodBank.longitude;
-          final LatLng bloodBankLocation = LatLng(latitude, longitude);
+            // Parse location coordinates
+            final double latitude = bloodBank.latitude;
+            final double longitude = bloodBank.longitude;
+            final LatLng bloodBankLocation = LatLng(latitude, longitude);
 
-          return SingleChildScrollView(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16.0),
+            return SingleChildScrollView(
+              physics: const BouncingScrollPhysics(),
+              padding: EdgeInsets.only(
+                top: screenSize.height * 0.15,
+                left: screenSize.width * 0.06,
+                right: screenSize.width * 0.06,
+                bottom: screenSize.height * 0.05,
+              ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const SizedBox(height: 20),
-
-                  // Blood Bank Details Section
-                  Card(
-                    elevation: 3,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10),
-                      side: BorderSide(color: Styles.primaryColor.withOpacity(0.3)),
+                  // Blood Bank Icon/Logo
+                  Center(
+                    child: FadeInDown(
+                      duration: const Duration(milliseconds: 800),
+                      child: Container(
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          boxShadow: [
+                            BoxShadow(
+                              color: Styles.primaryColor.withOpacity(0.25),
+                              spreadRadius: 2,
+                              blurRadius: 10,
+                              offset: const Offset(0, 3),
+                            ),
+                          ],
+                        ),
+                        child: CircleAvatar(
+                          radius: screenSize.width * 0.15,
+                          backgroundColor: Styles.primaryColor.withOpacity(0.9),
+                          child: Icon(
+                            Icons.local_hospital_rounded,
+                            color: Colors.white,
+                            size: screenSize.width * 0.15,
+                          ),
+                        ),
+                      ),
                     ),
-                    child: Padding(
-                      padding: const EdgeInsets.all(16.0),
+                  ),
+                  SizedBox(height: screenSize.height * 0.03),
+
+                  // Blood Bank Details Card
+                  FadeInUp(
+                    duration: const Duration(milliseconds: 900),
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(20),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.grey.withOpacity(0.2),
+                            spreadRadius: 2,
+                            blurRadius: 8,
+                            offset: const Offset(0, 3),
+                          ),
+                        ],
+                      ),
+                      padding: EdgeInsets.all(screenSize.width * 0.05),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
@@ -304,46 +415,63 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             children: [
                               Text(
                                 "Blood Bank Details",
-                                style: TextStyle(
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.bold,
+                                style: GoogleFonts.montserrat(
+                                  fontSize: screenSize.width * 0.05,
+                                  fontWeight: FontWeight.w700,
                                   color: Styles.primaryColor,
                                 ),
                               ),
                               IconButton(
-                                icon: Icon(Icons.edit, color: Styles.primaryColor),
+                                icon: Icon(
+                                  Icons.edit,
+                                  color: Styles.primaryColor,
+                                  size: screenSize.width * 0.06,
+                                ),
                                 onPressed: () => _showEditDialog(bloodBank),
                               )
                             ],
                           ),
-                          const Divider(),
-                          _buildDetailItem('Blood Bank Name', bloodBank.bloodBankName),
-                          _buildDetailItem('Email', bloodBank.email),
-                          _buildDetailItem('Address', bloodBank.address),
-                          _buildDetailItem('Contact Number', bloodBank.contactNumber),
+                          _buildDivider(),
+                          _buildDetailItem('Blood Bank Name', bloodBank.bloodBankName, context),
+                          _buildDivider(),
+                          _buildDetailItem('Email', bloodBank.email, context),
+                          _buildDivider(),
+                          _buildDetailItem('Address', bloodBank.address, context),
+                          _buildDivider(),
+                          _buildDetailItem('Contact Number', bloodBank.contactNumber, context),
+                          _buildDivider(),
 
-                          // Location as Google Map
+                          // Location Map
                           Padding(
-                            padding: const EdgeInsets.symmetric(vertical: 6.0),
+                            padding: EdgeInsets.symmetric(vertical: screenSize.height * 0.01),
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
                                   'Location',
-                                  style: TextStyle(
-                                    fontSize: 14,
-                                    color: Styles.accentColor,
+                                  style: GoogleFonts.roboto(
+                                    fontSize: screenSize.width * 0.035,
+                                    fontWeight: FontWeight.w500,
+                                    color: Colors.grey[600],
                                   ),
                                 ),
-                                const SizedBox(height: 5),
+                                SizedBox(height: screenSize.height * 0.01),
                                 Container(
                                   height: 200,
                                   decoration: BoxDecoration(
-                                    borderRadius: BorderRadius.circular(8),
+                                    borderRadius: BorderRadius.circular(15),
                                     border: Border.all(color: Colors.grey.shade300),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: Colors.grey.withOpacity(0.1),
+                                        spreadRadius: 1,
+                                        blurRadius: 4,
+                                        offset: const Offset(0, 2),
+                                      ),
+                                    ],
                                   ),
                                   child: ClipRRect(
-                                    borderRadius: BorderRadius.circular(8),
+                                    borderRadius: BorderRadius.circular(15),
                                     child: GoogleMap(
                                       initialCameraPosition: CameraPosition(
                                         target: bloodBankLocation,
@@ -361,102 +489,123 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                     ),
                                   ),
                                 ),
-                                const SizedBox(height: 5),
                               ],
                             ),
                           ),
-
-                          _buildDetailItem('Account Created', DateFormat('MM/dd/yyyy').format(bloodBank.dateCreated)),
+                          _buildDivider(),
+                          _buildDetailItem('Account Created',
+                              DateFormat('MM/dd/yyyy').format(bloodBank.dateCreated),
+                              context),
                         ],
                       ),
                     ),
                   ),
 
-                  const SizedBox(height: 30),
+                  SizedBox(height: screenSize.height * 0.03),
 
-                  // Log Out Section
-                  ListTile(
-                    title: Text(
-                      "Log Out",
-                      style: Styles.headerStyle3.copyWith(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: Styles.primaryColor,
-                      ),
-                    ),
-                    trailing: const Icon(Icons.arrow_forward_ios_outlined, size: 16),
-                    onTap: () async {
-                      final shouldLogout = await showDialog<bool>(
-                        context: context,
-                        builder: (context) => const Confirmlogout(),
-                      );
+                  // Log Out Button
+                  FadeInUp(
+                    duration: const Duration(milliseconds: 1100),
+                    child: ElevatedButton(
+                      onPressed: () async {
+                        final shouldLogout = await showDialog<bool>(
+                          context: context,
+                          builder: (context) => const Confirmlogout(),
+                        );
 
-                      if (shouldLogout == true) {
-                        try {
-                          showDialog(
-                            context: context,
-                            barrierDismissible: false,
-                            builder: (context) => const Center(
-                              child: CircularProgressIndicator(),
-                            ),
-                          );
-
-                          final auth = FirebaseAuth.instance;
-                          await auth.signOut();
-
-                          if (context.mounted) {
-                            Navigator.of(context).pushAndRemoveUntil(
-                              MaterialPageRoute(
-                                builder: (context) => const LoginScreen(),
+                        if (shouldLogout == true) {
+                          try {
+                            showDialog(
+                              context: context,
+                              barrierDismissible: false,
+                              builder: (context) => const Center(
+                                child: CircularProgressIndicator(),
                               ),
-                                  (route) => false,
                             );
-                          }
-                        } catch (e) {
-                          if (context.mounted) {
-                            Navigator.pop(context);
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(content: Text('Error signing out: $e')),
-                            );
+
+                            final auth = FirebaseAuth.instance;
+                            await auth.signOut();
+
+                            if (mounted) {
+                              Navigator.of(context).pushAndRemoveUntil(
+                                MaterialPageRoute(
+                                  builder: (context) => const LoginScreen(),
+                                ),
+                                    (route) => false,
+                              );
+                            }
+                          } catch (e) {
+                            if (mounted) {
+                              Navigator.pop(context);
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(content: Text('Error signing out: $e')),
+                              );
+                            }
                           }
                         }
-                      }
-                    },
+                      },
+                      style: ElevatedButton.styleFrom(
+                        minimumSize: Size(double.infinity, screenSize.height * 0.06),
+                        backgroundColor: Colors.red.shade700,
+                        foregroundColor: Colors.white,
+                        elevation: 4,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(15),
+                        ),
+                      ),
+                      child: Text(
+                        'Log Out',
+                        style: GoogleFonts.montserrat(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ),
                   ),
-                  const Divider(),
                 ],
               ),
-            ),
-          );
-        },
+            );
+          },
+        ),
       ),
     );
   }
 
-  Widget _buildDetailItem(String label, String value) {
+  Widget _buildDetailItem(String label, String value, BuildContext context) {
+    final screenSize = MediaQuery.of(context).size;
+
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 6.0),
+      padding: EdgeInsets.symmetric(vertical: screenSize.height * 0.01),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
             label,
-            style: TextStyle(
-              fontSize: 14,
-              color: Styles.accentColor,
+            style: GoogleFonts.roboto(
+              fontSize: screenSize.width * 0.035,
+              fontWeight: FontWeight.w500,
+              color: Colors.grey[600],
             ),
           ),
+          SizedBox(height: screenSize.height * 0.005),
           Text(
             value,
-            style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.bold,
-              color: Colors.black87,
+            style: GoogleFonts.montserrat(
+              fontSize: screenSize.width * 0.045,
+              fontWeight: FontWeight.w600,
+              color: Styles.primaryColor,
             ),
           ),
-          const SizedBox(height: 5),
         ],
       ),
+    );
+  }
+
+  Widget _buildDivider() {
+    return Divider(
+      color: Colors.grey.withOpacity(0.3),
+      thickness: 1,
     );
   }
 }

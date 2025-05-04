@@ -152,6 +152,77 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
     }
   }
 
+  // Shows a standard snackbar message
+  void showSnackBar(BuildContext context, String content) {
+    ScaffoldMessenger.of(context).hideCurrentSnackBar();
+
+    final snackBar = SnackBar(
+      content: Row(
+        children: [
+          const Icon(Icons.error_outline, color: Colors.white),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Text(
+              content,
+              style: GoogleFonts.roboto(
+                color: Colors.white,
+                fontSize: 14,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ),
+        ],
+      ),
+      behavior: SnackBarBehavior.floating,
+      backgroundColor: const Color.fromARGB(250, 212, 61, 61),
+      duration: const Duration(seconds: 4),
+      margin: const EdgeInsets.all(8),
+      elevation: 6,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+      action: SnackBarAction(
+        label: 'Dismiss',
+        textColor: Colors.white,
+        onPressed: () {
+          ScaffoldMessenger.of(context).hideCurrentSnackBar();
+        },
+      ),
+    );
+
+    ScaffoldMessenger.of(context).showSnackBar(snackBar);
+  }
+
+  // Shows a success message with green styling
+  void showSuccessSnackBar(BuildContext context, String message) {
+    ScaffoldMessenger.of(context).hideCurrentSnackBar();
+
+    final snackBar = SnackBar(
+      content: Row(
+        children: [
+          const Icon(Icons.check_circle_outline, color: Colors.white),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Text(
+              message,
+              style: GoogleFonts.roboto(
+                color: Colors.white,
+                fontSize: 14,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ),
+        ],
+      ),
+      behavior: SnackBarBehavior.floating,
+      backgroundColor: Colors.green,
+      duration: const Duration(seconds: 4),
+      margin: const EdgeInsets.all(8),
+      elevation: 6,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+    );
+
+    ScaffoldMessenger.of(context).showSnackBar(snackBar);
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(

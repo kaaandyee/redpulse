@@ -231,16 +231,16 @@ class _AdminReservationScreenState extends State<AdminReservationScreen> {
     }
   }
 
- void _navigateToReservationDetails(String reservationId) {
-   Navigator.push(
-     context,
-     MaterialPageRoute(
-       builder: (context) => ReservationDetailsScreen(
-         reservationId: reservationId,
-       ),
-     ),
-   );
- }
+  void _navigateToReservationDetails(String reservationId) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => ReservationDetailsScreen(
+          reservationId: reservationId,
+        ),
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
