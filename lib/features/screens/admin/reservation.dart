@@ -1,9 +1,12 @@
+// ignore_for_file: avoid_print, deprecated_member_use
+
+import 'package:animate_do/animate_do.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:intl/intl.dart';
+import 'package:redpulse/features/screens/admin/sub/adminreservation.dart';
 import 'package:redpulse/utilities/constants/styles.dart';
 import 'package:google_fonts/google_fonts.dart';
-import '../user/sub/reservationdetails.dart';
 
 class AdminReservationScreen extends StatefulWidget {
   final String bloodBankId;
@@ -17,8 +20,6 @@ class AdminReservationScreen extends StatefulWidget {
 
 class _AdminReservationScreenState extends State<AdminReservationScreen> {
   List<Map<String, dynamic>> _reservations = [];
-  bool _isLoading = true;
-  String _errorMessage = '';
   String searchQuery = '';
 
   // Filter options
@@ -45,8 +46,6 @@ class _AdminReservationScreenState extends State<AdminReservationScreen> {
 
 Future<void> _fetchReservations() async {
   setState(() {
-    _isLoading = true;
-    _errorMessage = '';
   });
 
   try {
@@ -118,7 +117,6 @@ Future<void> _fetchReservations() async {
 
     setState(() {
       _reservations = reservations;
-      _isLoading = false;
     });
 
     // Debug: Print resulting reservations
@@ -127,8 +125,6 @@ Future<void> _fetchReservations() async {
   } catch (e) {
     print("Error in _fetchReservations: $e");
     setState(() {
-      _errorMessage = 'Error loading reservations: $e';
-      _isLoading = false;
     });
   }
 }
@@ -435,11 +431,13 @@ Future<void> _fetchReservations() async {
       tileColor = Colors.blue[700] ?? Colors.blue;
       statusIcon = Icons.task_alt;
     } else {
-      tileColor = Styles.tertiaryColor;
+      tileColor = Styles.complementColor;
       statusIcon = Icons.info;
     }
 
-    return Padding(
+    return FadeInUp(
+    duration: Duration(milliseconds: 800 + (index * 100)),
+    child: Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 5),
       child: Card(
         elevation: 4,
@@ -450,7 +448,7 @@ Future<void> _fetchReservations() async {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(15),
           ),
-          contentPadding: const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
+          contentPadding: const EdgeInsets.symmetric(vertical: 16, horizontal: 15),
           tileColor: tileColor,
           leading: Container(
             padding: const EdgeInsets.all(8),
@@ -460,45 +458,62 @@ Future<void> _fetchReservations() async {
             ),
             child: Icon(
               statusIcon,
-              size: 36,
+              size: 30,
               color: Colors.white,
             ),
           ),
           title: Text(
             reservation['userName'] ?? 'Unknown User',
             style: GoogleFonts.montserrat(
-              fontSize: 18,
+              fontSize: 16,
               fontWeight: FontWeight.bold,
               color: Colors.white,
             ),
           ),
           subtitle: Padding(
-            padding: const EdgeInsets.only(top: 8.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+            padding: const EdgeInsets.only(top: 0.0),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.start,
               children: [
-                _buildReservationDetail('Blood Type', reservation['bloodType']),
-                _buildReservationDetail('Quantity', '${reservation['quantity']} units'),
-                _buildReservationDetail('Status', reservation['status']),
-                _buildReservationDetail(
-                  'Valid Until',
-                  reservation['validUntil'] != null
-                      ? DateFormat('MM/dd/yyyy').format(reservation['validUntil'])
-                      : 'N/A',
+                Text(
+                  'Blood Type ${reservation['bloodType']}',
+                  style: GoogleFonts.montserrat(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w400,
+                    color: Colors.white,
+                  ),
+                ),
+                SizedBox(width: 8),
+                Text(
+                  '|',
+                  style: GoogleFonts.montserrat(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.white70,
+                  ),
+                ),
+                SizedBox(width: 8),
+                Text(
+                  '${reservation['quantity']} Units',
+                  style: GoogleFonts.montserrat(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w400,
+                    color: Colors.white,
+                  ),
                 ),
               ],
             ),
           ),
           trailing: Icon(
             Icons.arrow_forward_ios,
-            color: Colors.white.withOpacity(0.7),
+            color: Colors.white,
             size: 20,
           ),
           onTap: () async {
             await Navigator.push(
               context,
               MaterialPageRoute(
-                builder: (context) => ReservationDetailsScreen(
+                builder: (context) => AdminReservationDetailsScreen(
                   reservationId: reservation['id'],
                 ),
               ),
@@ -507,34 +522,10 @@ Future<void> _fetchReservations() async {
           },
         ),
       ),
-    );
+    ),
+  );
   }
 
-  Widget _buildReservationDetail(String label, String value) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 6.0),
-      child: Row(
-        children: [
-          Text(
-            '$label: ',
-            style: GoogleFonts.roboto(
-              fontSize: 14,
-              fontWeight: FontWeight.w500,
-              color: Colors.white.withOpacity(0.9),
-            ),
-          ),
-          Text(
-            value,
-            style: GoogleFonts.roboto(
-              fontSize: 14,
-              fontWeight: FontWeight.w600,
-              color: Colors.white,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
 
   // Add this method to process stream data
   Future<void> _processStreamData(List<QueryDocumentSnapshot> docs) async {
@@ -618,9 +609,11 @@ Widget build(BuildContext context) {
   // Section reservations
   var pending = sorted.where((r) => r['status'] == 'Pending').toList();
   var completed = sorted.where((r) => r['status'] == 'Completed').toList();
-  var other = sorted.where((r) => r['status'] != 'Pending' && r['status'] != 'Completed').toList();
+  var reserved = sorted.where((r) => r['status'] == 'Reserved').toList();
+  var cancelled = sorted.where((r) => r['status'] == 'Cancelled').toList();
 
   return Scaffold(
+    backgroundColor: Color.fromARGB(255, 248, 248, 248),
     extendBodyBehindAppBar: true,
     appBar: PreferredSize(
       preferredSize: Size.fromHeight(screenSize.height * 0.11),
@@ -671,10 +664,6 @@ Widget build(BuildContext context) {
                       ),
                     ),
                     const Spacer(),
-                    IconButton(
-                      icon: const Icon(Icons.refresh, color: Colors.white),
-                      onPressed: _fetchReservations,
-                    )
                   ],
                 ),
               ],
@@ -695,15 +684,32 @@ Widget build(BuildContext context) {
               Expanded(
                 child: TextField(
                   controller: _searchController,
+                  cursorColor: Colors.black,
                   decoration: InputDecoration(
-                    hintText: 'Search reservations...',
-                    prefixIcon: const Icon(Icons.search),
+                    hintText: 'Reservations...',
+                    hintStyle: GoogleFonts.roboto(
+                                        color: Colors.grey[500],),
+                                prefixIcon: Icon(
+                                  Icons.search,
+                                  color: Styles.primaryColor,
+                                ),
+                                suffixIcon: searchQuery.isNotEmpty
+                                    ? IconButton(
+                                  icon: Icon(
+                                      Icons.clear, color: Styles.primaryColor,),
+                                  onPressed: () {
+                                    setState(() {
+                                      _searchController.clear();
+                                      searchQuery = '';
+                                    });
+                                  },
+                                ): null,
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(10),
                       borderSide: BorderSide.none,
                     ),
                     filled: true,
-                    fillColor: Colors.grey[200],
+                    fillColor: Colors.white,
                     contentPadding: const EdgeInsets.symmetric(vertical: 12),
                   ),
                   onChanged: (value) {
@@ -730,66 +736,63 @@ Widget build(BuildContext context) {
         ),
 
         const SizedBox(height: 10),
-
-        // Active filters display
-        if (selectedStatusFilter != null ||
-            selectedBloodTypeFilter != null ||
-            startDateFilter != null ||
-            minQuantityFilter != null)
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20),
-            child: Container(
-              width: double.infinity,
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-              decoration: BoxDecoration(
-                color: Colors.blue.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: Colors.blue.withOpacity(0.3)),
-              ),
-              child: Wrap(
-                spacing: 8,
-                runSpacing: 8,
-                children: [
-                  if (selectedStatusFilter != null)
-                    Chip(
-                      label: Text(selectedStatusFilter!),
-                      onDeleted: () => setState(() => selectedStatusFilter = null),
-                      backgroundColor: Colors.blue.withOpacity(0.2),
-                    ),
-                  if (selectedBloodTypeFilter != null)
-                    Chip(
-                      label: Text(selectedBloodTypeFilter!),
-                      onDeleted: () => setState(() => selectedBloodTypeFilter = null),
-                      backgroundColor: Colors.red.withOpacity(0.2),
-                    ),
-                  if (startDateFilter != null && endDateFilter != null)
-                    Chip(
-                      label: Text('${DateFormat('MM/dd/yy').format(startDateFilter!)} - ${DateFormat('MM/dd/yy').format(endDateFilter!)}'),
-                      onDeleted: () => setState(() {
-                        startDateFilter = null;
-                        endDateFilter = null;
-                      }),
-                      backgroundColor: Colors.green.withOpacity(0.2),
-                    ),
-                  if (minQuantityFilter != null || maxQuantityFilter != null)
-                    Chip(
-                      label: Text(
-                        minQuantityFilter != null && maxQuantityFilter != null
-                            ? '${minQuantityFilter!} - ${maxQuantityFilter!} units'
-                            : minQuantityFilter != null
-                                ? '≥ ${minQuantityFilter!} units'
-                                : '≤ ${maxQuantityFilter!} units',
+          // Active filters display
+                if (selectedStatusFilter != null ||
+                    selectedBloodTypeFilter != null ||
+                    startDateFilter != null || minQuantityFilter != null)
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    child: FadeInDown(
+                      duration: const Duration(milliseconds: 950),
+                      child: Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 15, vertical: 8),
+                        decoration: BoxDecoration(
+                          color: Colors.blue.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(10),
+                          border: Border.all(
+                              color: Colors.blue.withOpacity(0.3)),
+                        ),
+                        child: Row(
+                          children: [
+                            Icon(Icons.filter_alt_outlined,
+                                color: Colors.blue[700], size: 18),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: Text(
+                                'Filters applied',
+                                style: GoogleFonts.roboto(
+                                  color: Colors.blue[700],
+                                  fontSize: 14,
+                                ),
+                              ),
+                            ),
+                            GestureDetector(
+                              onTap: () {
+                                setState(() {
+                                  selectedStatusFilter = null;
+                                  selectedBloodTypeFilter = null;
+                                  startDateFilter = null;
+                                  endDateFilter = null;
+                                  minQuantityFilter = null;
+                                  maxQuantityFilter = null;
+                                });
+                              },
+                              child: Text(
+                                'Clear all',
+                                style: GoogleFonts.roboto(
+                                  color: Colors.blue[700],
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
-                      onDeleted: () => setState(() {
-                        minQuantityFilter = null;
-                        maxQuantityFilter = null;
-                      }),
-                      backgroundColor: Colors.purple.withOpacity(0.2),
                     ),
-                ],
-              ),
-            ),
-          ),
+                  ),
 
         // Reservations list with Stream and pull-down refresh
         Expanded(
@@ -802,11 +805,13 @@ Widget build(BuildContext context) {
               if (snapshot.hasError) {
                 return RefreshIndicator(
                   onRefresh: _fetchReservations,
+                  color: Colors.red,
+                  backgroundColor: Colors.white,
                   child: ListView(
                     physics: const AlwaysScrollableScrollPhysics(),
                     children: [
                       SizedBox(
-                        height: MediaQuery.of(context).size.height * 0.7,
+                        height: MediaQuery.of(context).size.height * 0.5,
                         child: Center(
                           child: Text('Error: ${snapshot.error}'),
                         ),
@@ -824,12 +829,14 @@ Widget build(BuildContext context) {
 
               return RefreshIndicator(
                 onRefresh: _fetchReservations,
-                child: pending.isEmpty && other.isEmpty && completed.isEmpty
+                color: Styles.primaryColor,
+                backgroundColor: Colors.white,
+                child: pending.isEmpty && reserved.isEmpty && completed.isEmpty
                     ? ListView(
                         physics: const AlwaysScrollableScrollPhysics(),
                         children: [
                           SizedBox(
-                            height: MediaQuery.of(context).size.height * 0.5,
+                            height: MediaQuery.of(context).size.height * 0.2,
                             child: Center(
                               child: Column(
                                 mainAxisAlignment: MainAxisAlignment.center,
@@ -838,16 +845,16 @@ Widget build(BuildContext context) {
                                   const SizedBox(height: 16),
                                   Text(
                                     'No reservations found',
-                                    style: GoogleFonts.montserrat(
+                                    style: TextStyle(
                                       fontSize: 18,
+                                      color: Colors.grey[600],
                                       fontWeight: FontWeight.bold,
-                                      color: Colors.grey[700],
                                     ),
                                   ),
                                   const SizedBox(height: 8),
                                   Text(
                                     'Pull down to refresh',
-                                    style: GoogleFonts.roboto(
+                                    style: TextStyle(
                                       fontSize: 14,
                                       color: Colors.grey[500],
                                     ),
@@ -869,9 +876,9 @@ Widget build(BuildContext context) {
                               var reservation = entry.value;
                               return _buildReservationTile(reservation, index);
                             }),
-                          if (other.isNotEmpty) _buildSectionHeader('Active Reservations'),
-                          if (other.isNotEmpty)
-                            ...other.asMap().entries.map((entry) {
+                          if (reserved.isNotEmpty) _buildSectionHeader('Approved Reservations'),
+                          if (reserved.isNotEmpty)
+                            ...reserved.asMap().entries.map((entry) {
                               int index = entry.key;
                               var reservation = entry.value;
                               return _buildReservationTile(reservation, index);
@@ -879,6 +886,13 @@ Widget build(BuildContext context) {
                           if (completed.isNotEmpty) _buildSectionHeader('Completed Reservations'),
                           if (completed.isNotEmpty)
                             ...completed.asMap().entries.map((entry) {
+                              int index = entry.key;
+                              var reservation = entry.value;
+                              return _buildReservationTile(reservation, index);
+                            }),
+                          if (cancelled.isNotEmpty) _buildSectionHeader('Cancelled Reservations'),
+                          if (cancelled.isNotEmpty)
+                            ...cancelled.asMap().entries.map((entry) {
                               int index = entry.key;
                               var reservation = entry.value;
                               return _buildReservationTile(reservation, index);

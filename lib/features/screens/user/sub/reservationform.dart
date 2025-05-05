@@ -1,3 +1,5 @@
+// ignore_for_file: deprecated_member_use
+
 import 'package:flutter/material.dart';
   import 'package:cloud_firestore/cloud_firestore.dart';
   import 'package:google_fonts/google_fonts.dart';
@@ -329,6 +331,7 @@ import 'package:flutter/material.dart';
                                   ),
                                 ],
                               ),
+                              
                               child: DropdownButtonHideUnderline(
                                 child: DropdownButton<String>(
                                   isExpanded: true,
@@ -552,7 +555,7 @@ import 'package:flutter/material.dart';
                               controller: medicalReasonController,
                               maxLines: 4,
                               decoration: InputDecoration(
-                                hintText: 'Please explain why you need this blood reservation...',
+                                hintText: 'Kindly explain your reason for this blood reservation.',
                                 hintStyle: GoogleFonts.roboto(color: Colors.grey),
                                 filled: true,
                                 fillColor: Colors.grey.shade50,
@@ -584,14 +587,14 @@ import 'package:flutter/material.dart';
                   FadeInUp(
                     duration: const Duration(milliseconds: 1200),
                     child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 20),
+                      padding: const EdgeInsets.symmetric(horizontal: 0),
                       child: ActionSlider.standard(
                         width: double.infinity,
                         backgroundColor: _isFormValid()
                             ? Styles.primaryColor
                             : Colors.grey.shade400,
                         toggleColor: _isFormValid() ? Colors.white : Colors.grey.shade300,
-                        iconAlignment: Alignment.centerRight,
+                        iconAlignment: Alignment.center,
                         loadingIcon: SizedBox(
                           width: 25,
                           height: 25,
@@ -611,16 +614,20 @@ import 'package:flutter/material.dart';
                           size: 20,
                         ),
                         height: 60,
-                        child: Text(
-                          _isFormValid()
-                              ? 'Slide to Confirm Reservation'
-                              : 'Complete all fields to continue',
-                          style: GoogleFonts.montserrat(
-                            color: Colors.white,
-                            fontSize: 16,
-                            fontWeight: FontWeight.w600,
-                            letterSpacing: 0.5,
-                          ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            const SizedBox(width: 10),
+                            Text(
+                              'Complete All Fields',
+                              style: GoogleFonts.montserrat(
+                                color: Colors.white,
+                                fontSize: 15,
+                                fontWeight: FontWeight.w600,
+                                letterSpacing: 0.5,
+                              ),
+                            ),
+                          ],
                         ),
                         action: (controller) async {
                           if (isSubmitting || !_isFormValid()) {
@@ -647,6 +654,7 @@ import 'package:flutter/material.dart';
                                   Text(
                                     'Confirm Reservation',
                                     style: GoogleFonts.montserrat(
+                                      fontSize: 16,
                                       fontWeight: FontWeight.bold,
                                       color: Colors.black87,
                                     ),
@@ -654,43 +662,58 @@ import 'package:flutter/material.dart';
                                 ],
                               ),
                               content: Text(
-                                'Are you sure you want to reserve $quantity units of ${selectedBloodType ?? "blood"}?',
+                                'Are you sure you want to reserve $quantity units of Blood Type ${selectedBloodType ?? "blood"}?',
                                 style: GoogleFonts.roboto(
-                                  fontSize: 16,
+                                  fontSize: 14,
                                   color: Colors.black87,
                                 ),
                               ),
                               actions: [
-                                TextButton(
-                                  onPressed: () => Navigator.pop(context, false),
-                                  child: Text(
-                                    'Cancel',
-                                    style: GoogleFonts.roboto(color: Colors.grey[700]),
-                                  ),
-                                ),
-                                ElevatedButton(
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor: Styles.primaryColor,
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(8),
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                                  children: [
+                                    Expanded(
+                                      child: TextButton(
+                                        onPressed: () => Navigator.pop(context, false),
+                                        child: Text(
+                                          'Cancel',
+                                          style: GoogleFonts.roboto(color: Colors.grey[700]),
+                                        ),
+                                      ),
                                     ),
-                                  ),
-                                  onPressed: () => Navigator.pop(context, true),
-                                  child: Text(
-                                    'Confirm',
-                                    style: GoogleFonts.roboto(color: Colors.white),
-                                  ),
+                                    const SizedBox(width: 10), // Space between buttons
+                                    Expanded(
+                                      child: ElevatedButton(
+                                        style: ElevatedButton.styleFrom(
+                                          backgroundColor: Styles.primaryColor,
+                                          shape: RoundedRectangleBorder(
+                                            borderRadius: BorderRadius.circular(8),
+                                          ),
+                                        ),
+                                        onPressed: () => Navigator.pop(context, true),
+                                        child: Text(
+                                          'Confirm',
+                                          style: GoogleFonts.roboto(color: Colors.white),
+                                        ),
+                                      ),
+                                    ),
+                                  ],
                                 ),
                               ],
+
                             ),
                           );
 
                           if (confirmed) {
                             controller.success();
                             await _reserveBlood();
+
+                            // Navigate back to Blood Bank Details screen
+                             Navigator.of(context).pop(); // Pops current reservation screen
                           } else {
                             controller.reset();
                           }
+
                         },
                       ),
                     ),

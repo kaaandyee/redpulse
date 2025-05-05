@@ -1,4 +1,4 @@
-// ignore_for_file: avoid_print, deprecated_member_use, use_build_context_synchronously
+// ignore_for_file: avoid_print, deprecated_member_use
 
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
@@ -8,21 +8,21 @@ import 'package:redpulse/utilities/constants/styles.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:animate_do/animate_do.dart';
 import 'package:lottie/lottie.dart';
-import 'package:action_slider/action_slider.dart';
 
-class ReservationDetailsScreen extends StatefulWidget {
+class AdminReservationDetailsScreen extends StatefulWidget {
   final String reservationId;
 
-  const ReservationDetailsScreen({super.key, required this.reservationId});
+  const AdminReservationDetailsScreen({super.key, required this.reservationId});
 
   @override
-  _ReservationDetailsScreenState createState() =>
-      _ReservationDetailsScreenState();
+  _AdminReservationDetailsScreenState createState() =>
+      _AdminReservationDetailsScreenState();
 }
 
-class _ReservationDetailsScreenState extends State<ReservationDetailsScreen> {
+class _AdminReservationDetailsScreenState extends State<AdminReservationDetailsScreen> {
   ReservationModel? reservation;
   String bloodBankName = '';
+  String userName = '';
   bool isLoading = true;
   bool isCancelling = false;
 
@@ -45,6 +45,7 @@ class _ReservationDetailsScreenState extends State<ReservationDetailsScreen> {
               widget.reservationId, docSnapshot.data() as Map<String, dynamic>);
         });
         await fetchBloodBankName(reservation!.bloodBankId);
+        fetchUserName(reservation!.userId);
       } else {
         print('Reservation not found.');
       }
@@ -58,6 +59,26 @@ class _ReservationDetailsScreenState extends State<ReservationDetailsScreen> {
       }
     }
   }
+
+Future<void> fetchUserName(String userId) async {
+  try {
+    final userDoc = await FirebaseFirestore.instance
+        .collection('users')
+        .doc(userId)
+        .get();
+
+    if (userDoc.exists) {
+      setState(() {
+        //userName = userDoc.data()?['firstName'] + ' ' + userDoc.data()?['lastName'];
+        userName = userDoc.data()?['fullName'] ?? 'Unknown User';
+      });
+    } else {
+      print('User not found.');
+    }
+  } catch (e) {
+    print('Error fetching user name: $e');
+  }
+}
 
   Future<void> fetchBloodBankName(String bloodBankId) async {
     try {
@@ -88,7 +109,7 @@ class _ReservationDetailsScreenState extends State<ReservationDetailsScreen> {
         await FirebaseFirestore.instance
             .collection('reservations')
             .doc(widget.reservationId)
-            .update({'status': 'Cancelled'});
+            .delete();
 
         // Navigate back immediately
         Navigator.pop(context, true);
@@ -166,11 +187,11 @@ class _ReservationDetailsScreenState extends State<ReservationDetailsScreen> {
   @override
   Widget build(BuildContext context) {
     final screenSize = MediaQuery.of(context).size;
+
     return Scaffold(
       extendBodyBehindAppBar: true,
       appBar: PreferredSize(
         preferredSize: Size.fromHeight(screenSize.height * 0.11),
-        
         child: FadeInDown(
           duration: const Duration(milliseconds: 800),
           child: Container(
@@ -283,6 +304,7 @@ class _ReservationDetailsScreenState extends State<ReservationDetailsScreen> {
       tileColor = Styles.tertiaryColor;
       statusIcon = Icons.info;
     }
+
     return Container(
       decoration: BoxDecoration(
         color: const Color.fromARGB(255, 248, 248, 248),
@@ -302,8 +324,8 @@ class _ReservationDetailsScreenState extends State<ReservationDetailsScreen> {
             FadeInDown(
               duration: const Duration(milliseconds: 800),
               child: _buildInfoCard(
-                title: "Blood Bank",
-                value: bloodBankName,
+                title: "Recipient",
+                value: userName,
                 icon: Icons.local_hospital_outlined,
                 screenSize: screenSize,
               ),
@@ -353,6 +375,7 @@ class _ReservationDetailsScreenState extends State<ReservationDetailsScreen> {
                       ],
                     ),
                     SizedBox(height: screenSize.height * 0.02),
+
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                       children: [
@@ -380,8 +403,6 @@ class _ReservationDetailsScreenState extends State<ReservationDetailsScreen> {
                         ),
                       ],
                     ),
-
-
                   ],
                 ),
               ),
@@ -501,183 +522,208 @@ class _ReservationDetailsScreenState extends State<ReservationDetailsScreen> {
             ),
             SizedBox(height: screenSize.height * 0.04),
 
+            //ADMIN CONTROL
             if (reservation?.status == 'Pending' || reservation?.status == 'Reserved')
               FadeInUp(
                 duration: const Duration(milliseconds: 1200),
                 child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20),
-                  child: ActionSlider.standard(
-                    width: double.infinity,
-                    backgroundColor: Styles.primaryColor,
-                    toggleColor: Colors.white,
-                    iconAlignment: Alignment.center,
-                    loadingIcon: SizedBox(
-                      width: 25,
-                      height: 25,
-                      child: CircularProgressIndicator(
-                        color: Styles.primaryColor,
-                        strokeWidth: 3,
-                      ),
-                    ),
-                    successIcon: const Icon(
-                      Icons.check,
-                      color: Colors.green,
-                      size: 30,
-                    ),
-                    icon: Icon(
-                      Icons.close,
-                      color: Styles.primaryColor,
-                      size: 20,
-                    ),
-                    height: 60,
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(
-                          Icons.close,
-                          color: Styles.primaryColor,
-                          size: 20,
-                        ),
-                        const SizedBox(width: 10),
-                        Text(
-                          'Slide to Cancel Reservation',
-                          style: GoogleFonts.montserrat(
-                            color: Colors.white,
-                            fontSize: 15,
-                            fontWeight: FontWeight.w600,
-                            letterSpacing: 0.5,
+                  padding: const EdgeInsets.symmetric(horizontal: 0),
+                  child: Row(
+                    children: [
+                      // Confirm / Complete Button
+                      Expanded(
+                        child: ElevatedButton.icon(
+                          icon: Icon(Icons.check, color: Colors.white),
+                          label: Text(
+                            reservation!.status == 'Pending' ? 'Approve' : 'Complete',
+                            style: GoogleFonts.montserrat(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w600,
+                              color: Colors.white,
+                            ),
                           ),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: reservation!.status == 'Pending'
+                              ? (Colors.green[700] ?? Colors.green)
+                              : (Colors.blue[700] ?? Colors.blue),
+
+                            padding: const EdgeInsets.symmetric(vertical: 16),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                          ),
+                            onPressed: () async {
+                              final now = Timestamp.now();
+                              final newStatus = reservation!.status == 'Pending' ? 'Reserved' : 'Completed';
+
+                              // SHOW CONFIRMATION DIALOG BEFORE PROCEEDING
+                              final confirmed = await showDialog<bool>(
+                                context: context,
+                                barrierDismissible: false,
+                                builder: (BuildContext context) {
+                                  return AlertDialog(
+                                  backgroundColor: Colors.white,
+                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                                  title: Row(
+                                    children: [
+                                      Icon(Icons.safety_check, color: Styles.primaryColor),
+                                      const SizedBox(width: 10),
+                                      Text(
+                                        'Confirm Action',
+                                        style: GoogleFonts.montserrat(
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.bold,
+                                          color: Colors.black87,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  content: Text(
+                                    newStatus == 'Reserved'
+                                        ? 'Are you sure you want to approve this reservation?'
+                                        : 'Are you sure you want to complete this reservation?',
+                                    style: GoogleFonts.montserrat(),
+                                  ),
+                                    actions: [
+                                      TextButton(
+                                        onPressed: () => Navigator.pop(context, false), // User canceled
+                                        child: Text(
+                                          'No',
+                                          style: GoogleFonts.roboto(color: Colors.grey[700]),
+                                        ),
+                                      ),
+                                      ElevatedButton(
+                                        style: ElevatedButton.styleFrom(
+                                          backgroundColor: Styles.primaryColor,
+                                          shape: RoundedRectangleBorder(
+                                            borderRadius: BorderRadius.circular(8),
+                                          ),
+                                        ),
+                                        onPressed: () => Navigator.pop(context, true), // User confirmed
+                                        child: Text(
+                                          'Yes',
+                                          style: GoogleFonts.roboto(color: Colors.white),
+                                        ),
+                                      ),
+                                    ],
+                                  );
+                                },
+                              );
+                            // CHECK USER CONFIRMATION
+                              if (confirmed == true) {
+                                // Proceed with update only if user confirmed
+                                await FirebaseFirestore.instance
+                                    .collection('reservations')
+                                    .doc(widget.reservationId)
+                                    .update({
+                                  'status': newStatus,
+                                  'updatedAt': now,
+                                  if (newStatus == 'Reserved') 'reservedAt': now,
+                                });
+                                fetchReservationDetails.call(); // Optional UI refresh
+                              }
+                            }
                         ),
-                      ],
-                    ),
-                    action: (controller) async {
-                      if (isCancelling) {
-                        return;
-                      }
+                      ),
 
-                      controller.loading();
-                      await Future.delayed(const Duration(milliseconds: 400));
+                      const SizedBox(width: 10),
 
-                      bool confirmed = await showDialog(
-                        context: context,
-                        builder: (context) => AlertDialog(
-                          backgroundColor: Colors.white,
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-                          title: Row(
-                            children: [
-                              Icon(Icons.warning_amber_rounded, color: Styles.primaryColor),
-                              const SizedBox(width: 10),
-                              Text(
-                                'Cancel Reservation',
-                                style: GoogleFonts.montserrat(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.black87,
+                      // Cancel Button
+                      Expanded(
+                        child: ElevatedButton.icon(
+                          icon: Icon(Icons.close, color: Colors.white),
+                          label: Text(
+                            'Cancel',
+                            style: GoogleFonts.montserrat(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w600,
+                              color: Colors.white,
+                            ),
+                          ),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Styles.primaryColor,
+                            padding: const EdgeInsets.symmetric(vertical: 16),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                          ),
+                          onPressed: () async {
+                            bool confirmed = await showDialog(
+                                context: context,
+                                builder: (context) => AlertDialog(
+                            backgroundColor: Colors.white,
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                            title: Row(
+                              children: [
+                                Icon(Icons.warning_amber_rounded, color: Styles.primaryColor),
+                                const SizedBox(width: 10),
+                                Text(
+                                  'Cancel Reservation',
+                                  style: GoogleFonts.montserrat(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.black87,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            content: Text(
+                              'Are you sure you want to cancel this reservation? This action cannot be undone.',
+                              style: GoogleFonts.roboto(
+                                fontSize: 14,
+                                color: Colors.black87,
+                              ),
+                            ),
+                            actions: [
+                              TextButton(
+                                onPressed: () => Navigator.pop(context, false),
+                                child: Text(
+                                  'No',
+                                  style: GoogleFonts.roboto(color: Colors.grey[700]),
+                                ),
+                              ),
+                              ElevatedButton(
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Styles.primaryColor,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                ),
+                                onPressed: () => Navigator.pop(context, true),
+                                child: Text(
+                                  'Yes',
+                                  style: GoogleFonts.roboto(color: Colors.white),
                                 ),
                               ),
                             ],
                           ),
-                          content: Text(
-                            'Are you sure you want to cancel this reservation? This action cannot be undone.',
-                            style: GoogleFonts.roboto(
-                              fontSize: 14,
-                              color: Colors.black87,
-                            ),
-                          ),
-                          actions: [
-                            TextButton(
-                              onPressed: () => Navigator.pop(context, false),
-                              child: Text(
-                                'No, Keep It',
-                                style: GoogleFonts.roboto(color: Colors.grey[700]),
-                              ),
-                            ),
-                            ElevatedButton(
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: Styles.primaryColor,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(8),
-                                ),
-                              ),
-                              onPressed: () => Navigator.pop(context, true),
-                              child: Text(
-                                'Yes, Cancel',
-                                style: GoogleFonts.roboto(color: Colors.white),
-                              ),
-                            ),
-                          ],
-                        ),
-                      );
+                            );
 
-                      if (confirmed) {
-                        controller.success();
-                        await Future.delayed(const Duration(milliseconds: 400));
-                        await cancelReservation();
-                      } else {
-                        controller.reset();
-                      }
-                    },
+                            if (confirmed) {
+                              final now = Timestamp.now();
+
+                              await FirebaseFirestore.instance
+                                  .collection('reservations')
+                                  .doc(widget.reservationId)
+                                  .update({
+                                'status': 'Cancelled',
+                                'updatedAt': now,
+                              });
+
+                              // Optional: Refresh UI
+                              fetchReservationDetails.call();
+                            }
+                          },
+                        ),
+                      ),
+                    ],
                   ),
                 ),
-              ),
+              )
+
+
           ],
         ),
-      ),
-    );
-  }
-
-  Widget _buildInfoCard({
-    required String title,
-    required String value,
-    required IconData icon,
-    required Size screenSize,
-  }) {
-    return Container(
-      width: double.infinity,
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.grey.withOpacity(0.2),
-            spreadRadius: 2,
-            blurRadius: 8,
-            offset: const Offset(0, 3),
-          ),
-        ],
-      ),
-      padding: EdgeInsets.all(screenSize.width * 0.05),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Icon(
-                icon,
-                color: Styles.primaryColor,
-                size: screenSize.width * 0.06,
-              ),
-              SizedBox(width: screenSize.width * 0.03),
-              Text(
-                title,
-                style: GoogleFonts.montserrat(
-                  fontSize: screenSize.width * 0.045,
-                  fontWeight: FontWeight.w600,
-                  color: Styles.primaryColor,
-                ),
-              ),
-            ],
-          ),
-          SizedBox(height: screenSize.height * 0.01),
-          Text(
-            value,
-            style: GoogleFonts.roboto(
-              fontSize: screenSize.width * 0.045,
-              fontWeight: FontWeight.w500,
-              color: Colors.black87,
-            ),
-          ),
-        ],
       ),
     );
   }
@@ -755,6 +801,63 @@ Widget _buildInfoBox({
     ],
   );
 }
+
+  Widget _buildInfoCard({
+    required String title,
+    required String value,
+    required IconData icon,
+    required Size screenSize,
+  }) {
+    return Container(
+      width: double.infinity,
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.withOpacity(0.2),
+            spreadRadius: 2,
+            blurRadius: 8,
+            offset: const Offset(0, 3),
+          ),
+        ],
+      ),
+      padding: EdgeInsets.all(screenSize.width * 0.05),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(
+                icon,
+                color: Styles.primaryColor,
+                size: screenSize.width * 0.06,
+              ),
+              SizedBox(width: screenSize.width * 0.03),
+              Text(
+                title,
+                style: GoogleFonts.montserrat(
+                  fontSize: screenSize.width * 0.045,
+                  fontWeight: FontWeight.w600,
+                  color: Styles.primaryColor,
+                ),
+              ),
+            ],
+          ),
+          SizedBox(height: screenSize.height * 0.01),
+          Text(
+            value,
+            style: GoogleFonts.roboto(
+              fontSize: screenSize.width * 0.045,
+              fontWeight: FontWeight.w500,
+              color: Colors.black87,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildDivider() {
     return Container(
       height: 40,

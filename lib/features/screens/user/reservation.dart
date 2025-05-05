@@ -1,3 +1,5 @@
+// ignore_for_file: avoid_print, deprecated_member_use
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
@@ -116,22 +118,36 @@ class ReservationScreenState extends State<ReservationScreen> {
 
   // Sort reservations by status
   List<ReservationModel> sortReservations(List<ReservationModel> reservations) {
-    reservations.sort((a, b) {
-      // Priority: 1. Pending, 2. Other statuses, 3. Completed
-      if (a.status == 'Pending' && b.status != 'Pending') {
-        return -1;
-      } else if (a.status != 'Pending' && b.status == 'Pending') {
-        return 1;
-      } else if (a.status == 'Completed' && b.status != 'Completed') {
-        return 1;
-      } else if (a.status != 'Completed' && b.status == 'Completed') {
-        return -1;
+  reservations.sort((a, b) {
+    int getStatusPriority(String status) {
+      switch (status) {
+        case 'Pending':
+          return 1;
+        case 'Reserved':
+          return 2;
+        case 'Cancelled':
+          return 3;
+        case 'Completed':
+          return 4;
+        default:
+          return 5; // Unknown status gets lowest priority
       }
-      // If they have the same priority, sort by date
-      return b.validUntil.compareTo(a.validUntil);
-    });
-    return reservations;
-  }
+    }
+
+    int priorityA = getStatusPriority(a.status);
+    int priorityB = getStatusPriority(b.status);
+
+    if (priorityA != priorityB) {
+      return priorityA - priorityB;
+    }
+
+    // Same priority → sort by validUntil (descending)
+    return b.validUntil.compareTo(a.validUntil);
+  });
+
+  return reservations;
+}
+
 
   // Filter reservations
   List<ReservationModel> filterReservations(
@@ -503,6 +519,7 @@ class ReservationScreenState extends State<ReservationScreen> {
         .size;
 
     return Scaffold(
+      backgroundColor: Color.fromARGB(255, 248, 248, 248),
       extendBodyBehindAppBar: true,
       appBar: PreferredSize(
         preferredSize: Size.fromHeight(screenSize.height * 0.11),
@@ -550,7 +567,7 @@ class ReservationScreenState extends State<ReservationScreen> {
                     ),
                     SizedBox(height: screenSize.height * 0.005),
                     Text(
-                      "View and manage your blood reservations",
+                      "Manage your blood reservations",
                       style: GoogleFonts.roboto(
                         fontSize: screenSize.width * 0.035,
                         color: Colors.white.withOpacity(0.9),
@@ -654,10 +671,15 @@ class ReservationScreenState extends State<ReservationScreen> {
             // Separate reservations by status
             var pendingReservations = sortedReservations.where((r) =>
             r.status == 'Pending').toList();
+
+            var reservedReservations = sortedReservations.where((r) => 
+            r.status == 'Reserved').toList();
+
             var completedReservations = sortedReservations.where((r) =>
             r.status == 'Completed').toList();
-            var otherReservations = sortedReservations.where((r) =>
-            r.status != 'Pending' && r.status != 'Completed').toList();
+
+            var cancelledReservations = sortedReservations.where((r) => 
+            r.status == 'Cancelled').toList();
 
             return Column(
               children: [
@@ -686,21 +708,24 @@ class ReservationScreenState extends State<ReservationScreen> {
                             ),
                             child: TextField(
                               controller: _searchController,
+                              cursorColor: Colors.black,
                               onChanged: (value) {
                                 setState(() {
                                   searchQuery = value;
                                 });
                               },
                               decoration: InputDecoration(
-                                hintText: 'Search reservations',
+                                hintText: 'Reservations...',
                                 hintStyle: GoogleFonts.roboto(
-                                    color: Colors.grey),
-                                prefixIcon: const Icon(
-                                    Icons.search, color: Colors.grey),
+                                        color: Colors.grey[500],),
+                                prefixIcon: Icon(
+                                  Icons.search,
+                                  color: Styles.primaryColor,
+                                ),
                                 suffixIcon: searchQuery.isNotEmpty
                                     ? IconButton(
-                                  icon: const Icon(
-                                      Icons.clear, color: Colors.grey),
+                                  icon: Icon(
+                                      Icons.clear, color: Styles.primaryColor,),
                                   onPressed: () {
                                     setState(() {
                                       _searchController.clear();
@@ -804,7 +829,8 @@ class ReservationScreenState extends State<ReservationScreen> {
                 // Reservations list
                 Expanded(
                   child: pendingReservations.isEmpty &&
-                      otherReservations.isEmpty && completedReservations.isEmpty
+                      reservedReservations.isEmpty && completedReservations.isEmpty &&
+                      cancelledReservations.isEmpty
                       ? Center(
                     child: FadeInUp(
                       duration: const Duration(milliseconds: 800),
@@ -813,18 +839,18 @@ class ReservationScreenState extends State<ReservationScreen> {
                         children: [
                           Icon(Icons.search_off, size: 60,
                               color: Colors.grey[400]),
-                          const SizedBox(height: 16),
+                          const SizedBox(height: 10),
                           Text(
-                            'No matching reservations',
+                            'No Matching Reservations',
                             style: TextStyle(
                               fontSize: 18,
                               color: Colors.grey[600],
                               fontWeight: FontWeight.bold,
                             ),
                           ),
-                          const SizedBox(height: 8),
+                          const SizedBox(height: 0),
                           Text(
-                            'Try adjusting your search or filters',
+                            'Try adjusting your search filters',
                             style: TextStyle(
                               fontSize: 14,
                               color: Colors.grey[500],
@@ -852,10 +878,10 @@ class ReservationScreenState extends State<ReservationScreen> {
                         }),
 
                       // Other reservations section
-                      if (otherReservations.isNotEmpty) _buildSectionHeader(
-                          'Active Reservations'),
-                      if (otherReservations.isNotEmpty)
-                        ...otherReservations
+                      if (reservedReservations.isNotEmpty) _buildSectionHeader(
+                          'Approved Reservations'),
+                      if (reservedReservations.isNotEmpty)
+                        ...reservedReservations
                             .asMap()
                             .entries
                             .map((entry) {
@@ -872,6 +898,15 @@ class ReservationScreenState extends State<ReservationScreen> {
                             .asMap()
                             .entries
                             .map((entry) {
+                          int index = entry.key;
+                          ReservationModel reservation = entry.value;
+                          return _buildReservationTile(reservation, index);
+                        }),
+                      // Cancelled reservations section
+                      if (cancelledReservations.isNotEmpty) 
+                        _buildSectionHeader('Cancelled Reservations'),
+                      if (cancelledReservations.isNotEmpty) 
+                        ...cancelledReservations.asMap().entries.map((entry) {
                           int index = entry.key;
                           ReservationModel reservation = entry.value;
                           return _buildReservationTile(reservation, index);
@@ -923,7 +958,7 @@ class ReservationScreenState extends State<ReservationScreen> {
               borderRadius: BorderRadius.circular(15),
             ),
             contentPadding: const EdgeInsets.symmetric(
-                vertical: 16, horizontal: 20),
+                vertical: 16, horizontal: 15),
             tileColor: tileColor,
             leading: Container(
               padding: const EdgeInsets.all(8),
@@ -933,7 +968,7 @@ class ReservationScreenState extends State<ReservationScreen> {
               ),
               child: Icon(
                 statusIcon,
-                size: 36,
+                size: 30,
                 color: Colors.white,
               ),
             ),
@@ -945,7 +980,7 @@ class ReservationScreenState extends State<ReservationScreen> {
                       ? 'Loading...'
                       : nameSnapshot.data ?? 'Unknown Blood Bank',
                   style: GoogleFonts.montserrat(
-                    fontSize: 18,
+                    fontSize: 16,
                     fontWeight: FontWeight.bold,
                     color: Colors.white,
                   ),
@@ -953,24 +988,43 @@ class ReservationScreenState extends State<ReservationScreen> {
               },
             ),
             subtitle: Padding(
-              padding: const EdgeInsets.only(top: 8.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+              padding: const EdgeInsets.only(top: 0.0),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.start,
                 children: [
-                  _buildReservationDetail('Blood Type', reservation.bloodType),
-                  _buildReservationDetail(
-                      'Quantity', '${reservation.quantity} units'),
-                  _buildReservationDetail('Status', reservation.status),
-                  _buildReservationDetail(
-                      'Valid Until',
-                      DateFormat('MM/dd/yyyy').format(reservation.validUntil)
+                  Text(
+                    'Blood Type ${reservation.bloodType}',
+                    style: GoogleFonts.montserrat(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w400,
+                      color: Colors.white,
+                    ),
+                  ),
+                  SizedBox(width: 8),
+                  Text(
+                    '|',
+                    style: GoogleFonts.montserrat(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.white70,
+                    ),
+                  ),
+                  SizedBox(width: 8),
+                  Text(
+                    '${reservation.quantity} Units',
+                    style: GoogleFonts.montserrat(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w400,
+                      color: Colors.white,
+                    ),
                   ),
                 ],
               ),
             ),
+
             trailing: Icon(
               Icons.arrow_forward_ios,
-              color: Colors.white.withOpacity(0.7),
+              color: Colors.white,
               size: 20,
             ),
             onTap: () async {
@@ -1027,32 +1081,6 @@ class ReservationScreenState extends State<ReservationScreen> {
             },
           ),
         ),
-      ),
-    );
-  }
-
-  Widget _buildReservationDetail(String label, String value) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 6.0),
-      child: Row(
-        children: [
-          Text(
-            '$label: ',
-            style: GoogleFonts.roboto(
-              fontSize: 14,
-              fontWeight: FontWeight.w500,
-              color: Colors.white.withOpacity(0.9),
-            ),
-          ),
-          Text(
-            value,
-            style: GoogleFonts.roboto(
-              fontSize: 14,
-              fontWeight: FontWeight.w600,
-              color: Colors.white,
-            ),
-          ),
-        ],
       ),
     );
   }
