@@ -627,10 +627,10 @@ class _ReservationFormScreenState extends State<ReservationFormScreen>
                             toggleColor: _isFormValid()
                                 ? Colors.white
                                 : Colors.grey.shade300,
-                            iconAlignment: Alignment.centerRight,
+                            iconAlignment: Alignment.center,
                             loadingIcon: SizedBox(
-                              width: 25,
-                              height: 25,
+                              width: 30,
+                              height: 30,
                               child: CircularProgressIndicator(
                                 color: Styles.primaryColor,
                                 strokeWidth: 3,
@@ -639,23 +639,28 @@ class _ReservationFormScreenState extends State<ReservationFormScreen>
                             successIcon: const Icon(
                               Icons.check,
                               color: Colors.green,
-                              size: 30,
+                              size: 35,
                             ),
-                            icon: Icon(
-                              Icons.arrow_forward_ios,
-                              color: _isFormValid()
-                                  ? Styles.primaryColor
-                                  : Colors.grey.shade500,
-                              size: 20,
+                            icon: Container(
+                              width: 46, // Fixed width for the icon container
+                              height: 40, // Fixed height for the icon container
+                              alignment: Alignment.center, // Center the icon
+                              child: Icon(
+                                Icons.arrow_forward_ios,
+                                color: _isFormValid()
+                                    ? Styles.primaryColor
+                                    : Colors.grey.shade500,
+                                size: 20,
+                              ),
                             ),
                             height: 60,
                             child: Text(
                               _isFormValid()
-                                  ? 'Slide to Confirm Reservation'
-                                  : 'Complete all fields to continue',
+                                  ? '      Slide to Confirm Reservation'
+                                  : '      Complete all fields to continue',
                               style: GoogleFonts.montserrat(
                                 color: Colors.white,
-                                fontSize: 16,
+                                fontSize: 14,
                                 fontWeight: FontWeight.w600,
                                 letterSpacing: 0.5,
                               ),

@@ -196,7 +196,8 @@ class _ReservationDetailsScreenState extends State<ReservationDetailsScreen> {
             ),
             child: SafeArea(
               child: Padding(
-                padding: EdgeInsets.symmetric(horizontal: screenSize.width * 0.06),
+                padding:
+                    EdgeInsets.symmetric(horizontal: screenSize.width * 0.06),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
@@ -242,7 +243,8 @@ class _ReservationDetailsScreenState extends State<ReservationDetailsScreen> {
             width: 150,
             height: 150,
             fit: BoxFit.cover,
-            errorBuilder: (context, error, stackTrace) => const CircularProgressIndicator(
+            errorBuilder: (context, error, stackTrace) =>
+                const CircularProgressIndicator(
               color: Color.fromARGB(250, 212, 61, 61),
             ),
           ),
@@ -326,11 +328,9 @@ class _ReservationDetailsScreenState extends State<ReservationDetailsScreen> {
                             color: Colors.white,
                           ),
                         ),
-
                       ],
                     ),
                     SizedBox(height: screenSize.height * 0.02),
-
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                       children: [
@@ -412,7 +412,6 @@ class _ReservationDetailsScreenState extends State<ReservationDetailsScreen> {
                       ],
                     ),
                     SizedBox(height: screenSize.height * 0.02),
-
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
@@ -479,105 +478,118 @@ class _ReservationDetailsScreenState extends State<ReservationDetailsScreen> {
                 duration: const Duration(milliseconds: 1200),
                 child: Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 20),
-                  child: ActionSlider.standard(
-                    width: double.infinity,
-                    backgroundColor: Styles.primaryColor,
-                    toggleColor: Colors.white,
-                    iconAlignment: Alignment.centerRight,
-                    loadingIcon: SizedBox(
-                      width: 25,
-                      height: 25,
-                      child: CircularProgressIndicator(
-                        color: Styles.primaryColor,
-                        strokeWidth: 3,
+                  child: Container(
+                    alignment: Alignment.center,
+                    child: ActionSlider.standard(
+                      width: double.infinity,
+                      backgroundColor: Styles.primaryColor,
+                      toggleColor: Colors.white,
+                      iconAlignment: Alignment.center,
+                      loadingIcon: SizedBox(
+                        width: 40,
+                        height: 40,
+                        child: CircularProgressIndicator(
+                          color: Styles.primaryColor,
+                          strokeWidth: 3,
+                        ),
                       ),
-                    ),
-                    successIcon: const Icon(
-                      Icons.check,
-                      color: Colors.green,
-                      size: 30,
-                    ),
-                    icon: Icon(
-                      Icons.close,
-                      color: Styles.primaryColor,
-                      size: 20,
-                    ),
-                    height: 60,
-                    child: Text(
-                      'Slide to Cancel Reservation',
-                      style: GoogleFonts.montserrat(
-                        color: Colors.white,
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                        letterSpacing: 0.5,
+                      successIcon: const Icon(
+                        Icons.check,
+                        color: Colors.green,
+                        size: 30,
                       ),
-                    ),
-                    action: (controller) async {
-                      if (isCancelling) {
-                        return;
-                      }
+                      icon: Container(
+                        width: 40, // Fixed width for the icon container
+                        height: 40, // Fixed height for the icon container
+                        alignment: Alignment.center, // Center the icon
+                        child: Icon(
+                          Icons.close,
+                          color: Styles.primaryColor,
+                          size: 30,
+                        ),
+                      ),
+                      height: 60,
+                      child: Text(
+                        '     Slide to Cancel Reservation',
+                        style: GoogleFonts.montserrat(
+                          color: Colors.white,
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                          letterSpacing: 0.5,
+                        ),
+                      ),
+                      action: (controller) async {
+                        if (isCancelling) {
+                          return;
+                        }
 
-                      controller.loading();
-                      await Future.delayed(const Duration(milliseconds: 400));
+                        controller.loading();
+                        await Future.delayed(const Duration(milliseconds: 400));
 
-                      bool confirmed = await showDialog(
-                        context: context,
-                        builder: (context) => AlertDialog(
-                          backgroundColor: Colors.white,
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-                          title: Row(
-                            children: [
-                              Icon(Icons.warning_amber_rounded, color: Styles.primaryColor),
-                              const SizedBox(width: 10),
-                              Text(
-                                'Cancel Reservation',
-                                style: GoogleFonts.montserrat(
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.black87,
+                        bool confirmed = await showDialog(
+                          context: context,
+                          builder: (context) => AlertDialog(
+                            backgroundColor: Colors.white,
+                            shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(20)),
+                            title: Row(
+                              children: [
+                                Icon(Icons.warning_amber_rounded,
+                                    color: Styles.primaryColor),
+                                const SizedBox(width: 10),
+                                Text(
+                                  'Cancel Reservation',
+                                  style: GoogleFonts.montserrat(
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.black87,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            content: Text(
+                              'Are you sure you want to cancel this reservation? This action cannot be undone.',
+                              style: GoogleFonts.roboto(
+                                fontSize: 16,
+                                color: Colors.black87,
+                              ),
+                            ),
+                            actions: [
+                              TextButton(
+                                onPressed: () => Navigator.pop(context, false),
+                                child: Text(
+                                  'No, Keep It',
+                                  style: GoogleFonts.roboto(
+                                      color: Colors.grey[700]),
+                                ),
+                              ),
+                              ElevatedButton(
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Styles.primaryColor,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                ),
+                                onPressed: () => Navigator.pop(context, true),
+                                child: Text(
+                                  'Yes, Cancel',
+                                  style:
+                                      GoogleFonts.roboto(color: Colors.white),
                                 ),
                               ),
                             ],
                           ),
-                          content: Text(
-                            'Are you sure you want to cancel this reservation? This action cannot be undone.',
-                            style: GoogleFonts.roboto(
-                              fontSize: 16,
-                              color: Colors.black87,
-                            ),
-                          ),
-                          actions: [
-                            TextButton(
-                              onPressed: () => Navigator.pop(context, false),
-                              child: Text(
-                                'No, Keep It',
-                                style: GoogleFonts.roboto(color: Colors.grey[700]),
-                              ),
-                            ),
-                            ElevatedButton(
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: Styles.primaryColor,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(8),
-                                ),
-                              ),
-                              onPressed: () => Navigator.pop(context, true),
-                              child: Text(
-                                'Yes, Cancel',
-                                style: GoogleFonts.roboto(color: Colors.white),
-                              ),
-                            ),
-                          ],
-                        ),
-                      );
+                        );
 
-                      if (confirmed) {
-                        controller.success();
-                        await Future.delayed(const Duration(milliseconds: 400));
-                        await cancelReservation();
-                      } else {
-                        controller.reset();
-                      }
-                    },
+                        if (confirmed) {
+                          controller.success();
+                          await Future.delayed(
+                              const Duration(milliseconds: 400));
+                          await cancelReservation();
+                        } else {
+                          controller.reset();
+                        }
+                      },
+                    ),
                   ),
                 ),
               ),
@@ -682,7 +694,8 @@ class _ReservationDetailsScreenState extends State<ReservationDetailsScreen> {
     );
   }
 
-  Widget _buildStatItem(BuildContext context, String value, String label, IconData icon) {
+  Widget _buildStatItem(
+      BuildContext context, String value, String label, IconData icon) {
     final screenSize = MediaQuery.of(context).size;
 
     return Column(

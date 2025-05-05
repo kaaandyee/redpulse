@@ -139,6 +139,7 @@ class _ABottomBarState extends State<ABottomBar> {
   /// Builds the bottom navigation bar for narrow screens.
   Widget _buildBottomNavBar() {
     return Container(
+      margin: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(30),
         boxShadow: const [
