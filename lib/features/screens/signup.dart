@@ -2,16 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter_moving_background/enums/animation_types.dart';
 import 'package:flutter_moving_background/flutter_moving_background.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:redpulse/features/screens/admin/start.dart';
+import 'package:animate_do/animate_do.dart';
 import 'package:redpulse/features/screens/user/start.dart';
 import 'package:redpulse/services/auth.dart';
 import 'package:redpulse/services/validation.dart';
 import 'package:redpulse/utilities/constants/enums.dart';
-import 'package:redpulse/utilities/constants/styles.dart';
 import 'package:redpulse/widgets/button.dart';
 import 'package:redpulse/widgets/dropdown.dart';
 import 'package:redpulse/widgets/textfield.dart';
-import 'package:redpulse/widgets/snackbar';
+import 'AdminSignupScreen.dart';
 import 'login.dart';
 
 class SignupScreen extends StatefulWidget {
@@ -28,8 +27,7 @@ class _SignupScreenState extends State<SignupScreen> {
   final TextEditingController phoneNumberController = TextEditingController();
   final TextEditingController addressController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
-  AppRole selectedRole = AppRole.user;  // Default role set to user
-  BloodType selectedBType = BloodType.oNegative;  // Default blood type
+  BloodType selectedBType = BloodType.oNegative; // Default blood type
   bool isLoading = false;
 
   @override
@@ -56,28 +54,47 @@ class _SignupScreenState extends State<SignupScreen> {
     String firstName = firstNameController.text;
     String lastName = lastNameController.text;
 
-    // Validation checks
-    if (firstName.isEmpty || lastName.isEmpty || phoneNumber.isEmpty || address.isEmpty || password.isEmpty || email.isEmpty) {
+    // Show popup dialog instead of snackbar
+    void showPopup(String message) {
+      if (!mounted) return;
       setState(() {
         isLoading = false;
       });
-      showSnackBar(context, "Please fill in all fields.");
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: const Text("Notice"),
+            content: Text(message),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(),
+                child: const Text("OK"),
+              ),
+            ],
+          );
+        },
+      );
+    }
+
+    // Validation checks
+    if (firstName.isEmpty ||
+        lastName.isEmpty ||
+        phoneNumber.isEmpty ||
+        address.isEmpty ||
+        password.isEmpty ||
+        email.isEmpty) {
+      showPopup("Please fill in all fields.");
       return;
     }
 
     if (!isValidEmail(email)) {
-      setState(() {
-        isLoading = false;
-      });
-      showSnackBar(context, "Please enter a valid email address.");
+      showPopup("Please enter a valid email address.");
       return;
     }
 
     if (!isValidPhoneNumber(phoneNumber)) {
-      setState(() {
-        isLoading = false;
-      });
-      showSnackBar(context, "Please enter a valid phone number.");
+      showPopup("Please enter a valid phone number.");
       return;
     }
 
@@ -89,10 +106,12 @@ class _SignupScreenState extends State<SignupScreen> {
       address: address,
       firstName: firstName,
       lastName: lastName,
-      userRole: selectedRole,
+      userRole: AppRole.user, // Always set to user for this screen
       bloodType: selectedBType,
-      bloodBankId: selectedRole == AppRole.admin ? 'your_blood_bank_id_here' : null,  // Set bloodBankId only for admins
+      bloodBankId: null, // No blood bank ID for regular users
     );
+
+    if (!mounted) return;
 
     if (res == "success") {
       setState(() {
@@ -100,18 +119,20 @@ class _SignupScreenState extends State<SignupScreen> {
       });
       Navigator.of(context).pushReplacement(
         MaterialPageRoute(
-          builder: (context) => selectedRole == AppRole.admin
-              ? const AdminStart(
-              isAdminLinkedToBloodBank: false) // Modify this as needed
-              : const UserStart(), // For regular users
+          builder: (context) => const UserStart(),
         ),
       );
     } else {
-      setState(() {
-        isLoading = false;
-      });
-      showSnackBar(context, res);  // Show error message
+      showPopup(res); // Show error message in popup instead of snackbar
     }
+  }
+
+  void navigateToAdminSignup() {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) => const AdminSignupScreen(),
+      ),
+    );
   }
 
   @override
@@ -120,141 +141,313 @@ class _SignupScreenState extends State<SignupScreen> {
       body: SafeArea(
         child: MovingBackground(
           animationType: AnimationType.translation,
-          backgroundColor: const Color.fromARGB(255, 219, 216, 216),
+          backgroundColor: const Color.fromARGB(255, 248, 248, 248),
           circles: const [
-            MovingCircle(color: Color.fromARGB(95, 230, 132, 125)),
-            MovingCircle(color: Color.fromARGB(95, 230, 132, 125)),
-            MovingCircle(color: Color.fromARGB(95, 230, 132, 125)),
-            MovingCircle(color: Color.fromARGB(95, 230, 132, 125)),
+            MovingCircle(color: Color.fromARGB(65, 230, 132, 125), radius: 120),
+            MovingCircle(color: Color.fromARGB(55, 230, 132, 125), radius: 150),
+            MovingCircle(color: Color.fromARGB(45, 230, 132, 125), radius: 180),
+            MovingCircle(color: Color.fromARGB(35, 230, 132, 125), radius: 200),
           ],
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Image.asset(
-                'assets/images/logoo.png',  // Path to your logo image
-                height: 120,  // Adjust the height of the logo as needed
-                width: 120,
-                // Adjust the width of the logo as needed
-              ),
-              const SizedBox(height: 15),
-              Text("SIGN UP", style: GoogleFonts.roboto(
-                  fontSize: 30,
-                  fontWeight: FontWeight.w700,
-                  color: const Color.fromARGB(250, 212, 61, 61))),
-              const SizedBox(height: 15),
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              return SingleChildScrollView(
+                physics: const BouncingScrollPhysics(),
+                child: Padding(
+                  padding: EdgeInsets.only(
+                    bottom: MediaQuery.of(context).viewInsets.bottom,
+                  ),
+                  child: ConstrainedBox(
+                    constraints: BoxConstraints(
+                      minHeight: constraints.maxHeight,
+                    ),
+                    child: IntrinsicHeight(
+                      child: Column(
+                        children: [
+                          const SizedBox(height: 30),
 
-              Padding(
-                padding: const EdgeInsets.only(left: 25),
-                child: Align(
-                  alignment: Alignment.centerLeft,
-                  child: Text(
-                    'Basic Information',
-                    style: Styles.headerStyle6.copyWith(color: Styles.accentColor),
+                          // Logo - keeping as is
+                          Image.asset(
+                            'assets/images/logoo.png',
+                            height: 120,
+                            width: 120,
+                          ),
+
+                          const SizedBox(height: 15),
+
+                          // Title - enhanced styling
+                          FadeInDown(
+                            duration: const Duration(milliseconds: 800),
+                            child: Text(
+                              "USER SIGN UP",
+                              style: GoogleFonts.montserrat(
+                                fontSize: 28,
+                                fontWeight: FontWeight.w700,
+                                letterSpacing: 1.2,
+                                color: const Color.fromARGB(250, 212, 61, 61),
+                                shadows: [
+                                  Shadow(
+                                    blurRadius: 2.0,
+                                    color: Colors.black.withOpacity(0.1),
+                                    offset: const Offset(1, 1),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+
+                          const SizedBox(height: 30),
+
+                          // Section title
+                          FadeInDown(
+                            delay: const Duration(milliseconds: 300),
+                            child: Padding(
+                              padding: const EdgeInsets.only(left: 25),
+                              child: Align(
+                                alignment: Alignment.centerLeft,
+                                child: Text(
+                                  'Basic Information',
+                                  style: GoogleFonts.roboto(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.w600,
+                                    color: Colors.grey[800],
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+
+                          const SizedBox(height: 15),
+
+                          // Form fields with animations
+                          FadeInLeft(
+                            delay: const Duration(milliseconds: 400),
+                            child: Row(
+                              children: [
+                                Expanded(
+                                  child: TextFieldInput(
+                                    icon: Icons.person,
+                                    textEditingController: firstNameController,
+                                    hintText: 'First Name',
+                                    textInputType: TextInputType.text,
+                                    externalPadding: const EdgeInsets.only(
+                                        left: 20, right: 5, top: 0, bottom: 10),
+                                  ),
+                                ),
+                                Expanded(
+                                  child: TextFieldInput(
+                                    icon: Icons.person,
+                                    textEditingController: lastNameController,
+                                    hintText: 'Last Name',
+                                    textInputType: TextInputType.text,
+                                    externalPadding: const EdgeInsets.only(
+                                        left: 5, right: 20, top: 0, bottom: 10),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+
+                          FadeInRight(
+                            delay: const Duration(milliseconds: 500),
+                            child: TextFieldInput(
+                              icon: Icons.phone,
+                              textEditingController: phoneNumberController,
+                              hintText: 'Phone Number',
+                              textInputType: TextInputType.phone,
+                            ),
+                          ),
+
+                          FadeInLeft(
+                            delay: const Duration(milliseconds: 600),
+                            child: TextFieldInput(
+                              icon: Icons.home,
+                              textEditingController: addressController,
+                              hintText: 'Home Address',
+                              textInputType: TextInputType.text,
+                            ),
+                          ),
+
+                          FadeInRight(
+                            delay: const Duration(milliseconds: 700),
+                            child: TextFieldInput(
+                              icon: Icons.email,
+                              textEditingController: emailController,
+                              hintText: 'Email',
+                              textInputType: TextInputType.emailAddress,
+                              externalPadding: const EdgeInsets.only(
+                                  left: 20, right: 20, top: 10, bottom: 10),
+                            ),
+                          ),
+
+                          FadeInLeft(
+                            delay: const Duration(milliseconds: 800),
+                            child: TextFieldInput(
+                              icon: Icons.lock,
+                              textEditingController: passwordController,
+                              hintText: 'Password',
+                              textInputType: TextInputType.text,
+                              isPass: true,
+                            ),
+                          ),
+
+                          // Blood Type selection
+                          FadeInRight(
+                            delay: const Duration(milliseconds: 900),
+                            child: Dropdown<BloodType>(
+                              label: "Blood Type",
+                              externalPadding: const EdgeInsets.only(
+                                  top: 10, bottom: 10, left: 20, right: 20),
+                              enumValues: BloodType.values,
+                              selectedValue: selectedBType,
+                              hintText: 'Select Blood Type',
+                              onChanged: (BloodType type) {
+                                setState(() {
+                                  selectedBType = type;
+                                });
+                              },
+                            ),
+                          ),
+
+                          const SizedBox(height: 20),
+
+                          // Sign Up Button
+                          FadeInUp(
+                            delay: const Duration(milliseconds: 1000),
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 25, vertical: 10),
+                              child: isLoading
+                                  ? const CircularProgressIndicator(
+                                      color: Color.fromARGB(250, 212, 61, 61))
+                                  : MyButtons(
+                                      onTap: signupUser, text: "Sign Up"),
+                            ),
+                          ),
+
+                          const SizedBox(height: 15),
+
+                          // Divider
+                          FadeIn(
+                            delay: const Duration(milliseconds: 1100),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Expanded(
+                                  child: Divider(
+                                    color: Colors.grey[400],
+                                    thickness: 0.5,
+                                    indent: 50,
+                                    endIndent: 15,
+                                  ),
+                                ),
+                                Text(
+                                  "OR",
+                                  style: GoogleFonts.roboto(
+                                    color: Colors.grey[600],
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                                Expanded(
+                                  child: Divider(
+                                    color: Colors.grey[400],
+                                    thickness: 0.5,
+                                    indent: 15,
+                                    endIndent: 50,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+
+                          const SizedBox(height: 15),
+
+                          // Admin signup option
+                          FadeInUp(
+                            delay: const Duration(milliseconds: 1200),
+                            child: Text(
+                              "Are you registering as an Admin?",
+                              style: GoogleFonts.roboto(
+                                fontSize: 15,
+                                color: Colors.grey[700],
+                              ),
+                            ),
+                          ),
+
+                          const SizedBox(height: 10),
+
+                          FadeInUp(
+                            delay: const Duration(milliseconds: 1300),
+                            child: SizedBox(
+                              width: MediaQuery.of(context).size.width * 0.6,
+                              child: ElevatedButton(
+                                onPressed: navigateToAdminSignup,
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.blue,
+                                  foregroundColor: Colors.white,
+                                  elevation: 2,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(15),
+                                  ),
+                                  padding:
+                                      const EdgeInsets.symmetric(vertical: 15),
+                                ),
+                                child: Text(
+                                  "Admin Sign Up",
+                                  style: GoogleFonts.roboto(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+
+                          const SizedBox(height: 25),
+
+                          // Login link
+                          FadeIn(
+                            delay: const Duration(milliseconds: 1400),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Text(
+                                  "Already have an account? ",
+                                  style: GoogleFonts.roboto(
+                                    fontSize: 15,
+                                    color: Colors.grey[700],
+                                  ),
+                                ),
+                                GestureDetector(
+                                  onTap: () {
+                                    Navigator.of(context).push(
+                                      MaterialPageRoute(
+                                        builder: (context) =>
+                                            const LoginScreen(),
+                                      ),
+                                    );
+                                  },
+                                  child: Text(
+                                    "Log In",
+                                    style: GoogleFonts.roboto(
+                                      color: const Color.fromARGB(
+                                          250, 212, 61, 61),
+                                      fontSize: 15,
+                                      fontWeight: FontWeight.w700,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+
+                          const SizedBox(height: 20),
+                        ],
+                      ),
+                    ),
                   ),
                 ),
-              ),
-              const SizedBox(height: 5),
-              Row(
-                children: [
-                  Expanded(
-                    child: TextFieldInput(
-                      icon: Icons.person,
-                      textEditingController: firstNameController,
-                      hintText: 'First Name',
-                      textInputType: TextInputType.text,
-                      externalPadding: const EdgeInsets.only(left: 20, right: 5, top: 0, bottom: 10),
-                    ),
-                  ),
-                  Expanded(
-                    child: TextFieldInput(
-                      icon: Icons.person,
-                      textEditingController: lastNameController,
-                      hintText: 'Last Name',
-                      textInputType: TextInputType.text,
-                      externalPadding: const EdgeInsets.only(left: 5, right: 20, top: 0, bottom: 10),
-                    ),
-                  ),
-                ],
-              ),
-              TextFieldInput(
-                  icon: Icons.phone,
-                  textEditingController: phoneNumberController,
-                  hintText: 'Phone Number',
-                  textInputType: TextInputType.text),
-              TextFieldInput(
-                  icon: Icons.home,
-                  textEditingController: addressController,
-                  hintText: 'Home Address',
-                  textInputType: TextInputType.text),
-              TextFieldInput(
-                  icon: Icons.email,
-                  textEditingController: emailController,
-                  hintText: 'Email',
-                  textInputType: TextInputType.text,
-                  externalPadding: const EdgeInsets.only(left: 20, right: 20, top: 10, bottom: 10)),
-              TextFieldInput(
-                icon: Icons.lock,
-                textEditingController: passwordController,
-                hintText: 'Password',
-                textInputType: TextInputType.text,
-                isPass: true,
-              ),
-
-              // Role and Blood Type selection
-              Row(
-                children: [
-                  Expanded(
-                    child: Dropdown<AppRole>(
-                      label: "Role",
-                      externalPadding: const EdgeInsets.only(top: 10, bottom: 10, left: 20, right: 5),
-                      enumValues: AppRole.values,
-                      selectedValue: selectedRole,
-                      hintText: 'Select Role',
-                      onChanged: (AppRole role) {
-                        setState(() {
-                          selectedRole = role;
-                        });
-                      },
-                    ),
-                  ),
-                  Expanded(
-                    child: Dropdown<BloodType>(
-                      label: "Blood Type",
-                      externalPadding: const EdgeInsets.only(top: 10, bottom: 10, left: 5, right: 20),
-                      enumValues: BloodType.values,
-                      selectedValue: selectedBType,
-                      hintText: 'Select Blood Type',
-                      onChanged: (BloodType type) {
-                        setState(() {
-                          selectedBType = type;
-                        });
-                      },
-                    ),
-                  ),
-                ],
-              ),
-              MyButtons(onTap: signupUser, text: "Sign Up"),
-              const SizedBox(height: 5),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text("Already have an account?", style: Styles.headerStyle5.copyWith(color: Styles.accentColor)),
-                  GestureDetector(
-                    onTap: () {
-                      Navigator.of(context).push(
-                        MaterialPageRoute(
-                          builder: (context) => const LoginScreen(),
-                        ),
-                      );
-                    },
-                    child: Text(
-                      " Log In",
-                      style: Styles.headerStyle5.copyWith(color: Colors.blue),
-                    ),
-                  ),
-                ],
-              ),
-            ],
+              );
+            },
           ),
         ),
       ),

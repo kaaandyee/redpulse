@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:animated_splash_screen/animated_splash_screen.dart';
 import 'package:redpulse/features/screens/on_boarding_screen.dart';
+import 'package:redpulse/features/screens/wrapper/BiometricAuthService.dart';
+import 'package:redpulse/features/screens/wrapper/wrapper.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'wrapper/wrapper.dart';
+
+import 'BiometricAuthScreen.dart';
 
 class SplashScreen extends StatelessWidget {
   const SplashScreen({super.key});
@@ -20,25 +23,57 @@ class SplashScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder<Widget>(
-      future: _checkOnboardingStatus(),
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Scaffold(
-            body: Center(child: CircularProgressIndicator()),
-          );
-        } else {
-          return AnimatedSplashScreen(
-            duration: 2500,
-            splash: 'assets/images/splash_logo.gif',
-            splashIconSize: 2000.0,
-            centered: true,
-            nextScreen: snapshot.data!,
-            splashTransition: SplashTransition.fadeTransition,
-            backgroundColor: Colors.white,
-          );
-        }
-      },
+    return AnimatedSplashScreen(
+      duration: 2500, // 2.5 seconds
+      splash: 'assets/images/splash_logo.gif',
+      splashIconSize: 2000.0,
+      centered: true,
+      nextScreen: const AuthCheckScreen(), // Use intermediate screen
+      splashTransition: SplashTransition.fadeTransition,
+      backgroundColor: Colors.white,
+    );
+  }
+}
+
+// Intermediate screen to check auth state after splash animation
+class AuthCheckScreen extends StatefulWidget {
+  const AuthCheckScreen({super.key});
+
+  @override
+  State<AuthCheckScreen> createState() => _AuthCheckScreenState();
+}
+
+class _AuthCheckScreenState extends State<AuthCheckScreen> {
+  @override
+  void initState() {
+    super.initState();
+    _checkAuthenticationState();
+  }
+
+  Future<void> _checkAuthenticationState() async {
+    // Check if biometric auth is needed
+    final needsAuth = await BiometricAuthService.shouldAuthenticate();
+
+    if (!mounted) return;
+
+    if (needsAuth && await BiometricAuthService.isBiometricAvailable()) {
+      // Navigate to biometric auth screen
+      Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (context) => const BiometricAuthScreen()));
+    } else {
+      // Navigate to normal flow
+      Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (context) => const Wrapper()));
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return const Scaffold(
+      backgroundColor: Colors.white,
+      body: Center(
+        child: CircularProgressIndicator(),
+      ),
     );
   }
 }

@@ -1,8 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 
 import 'package:redpulse/features/models/inventory.dart';
 import 'package:redpulse/features/models/bloodbank.dart';
@@ -24,76 +22,83 @@ class AuthMethod {
     required String firstName,
     required String lastName,
     required BloodType bloodType,
-    required AppRole userRole, // Use enum instead of raw strings
-    String? bloodBankId, // Only for Admins
+    required AppRole userRole,
+    String? bloodBankId,
   }) async {
-    String res = "Some error Occurred";
+    String res = "Some error occurred";
     try {
-      if (email.isNotEmpty &&
-          password.isNotEmpty &&
-          firstName.isNotEmpty &&
-          lastName.isNotEmpty &&
-          phoneNumber.isNotEmpty &&
-          address.isNotEmpty) {
-        // Register user in auth with email and password
-        UserCredential cred = await _auth.createUserWithEmailAndPassword(
-          email: email,
-          password: password,
-        );
+      // Validate input fields
+      if (email.isEmpty ||
+          password.isEmpty ||
+          firstName.isEmpty ||
+          lastName.isEmpty ||
+          phoneNumber.isEmpty ||
+          address.isEmpty) {
+        return "Please fill in all the fields.";
+      }
 
-        // Get the current user's UID
-        String uid = cred.user?.uid ?? '';
-        String systemGeneratedId = uid;
+      // Validate password length
+      if (password.length < 6) {
+        return "Password must be at least 6 characters long.";
+      }
 
-        // Load default image from assets
-        final ByteData imageData =
-            await rootBundle.load('assets/images/default_profile.jpg');
-        final Uint8List imageBytes = imageData.buffer.asUint8List();
+      print("Attempting to create user with email: $email");
 
-        // Upload image to Firebase Storage
-        final Reference storageRef =
-            FirebaseStorage.instance.ref().child('profile_images/$uid.jpg');
-        final UploadTask uploadTask = storageRef.putData(imageBytes);
-        final TaskSnapshot snapshot = await uploadTask;
-        final String downloadUrl = await snapshot.ref.getDownloadURL();
+      // Try to register user with Firebase Auth
+      UserCredential cred = await _auth.createUserWithEmailAndPassword(
+        email: email,
+        password: password,
+      );
 
-        // Create a UserAdminModel based on role and add to Firestore
-        UserAdminModel userAdmin = UserAdminModel(
-          id: systemGeneratedId,
-          firstName: firstName,
-          lastName: lastName,
-          email: email,
-          phoneNumber: phoneNumber,
-          address: address,
-          bloodType: bloodType.label,
-          // If the property expects a string
-          role: userRole.label,
-          // For string roles
-          password: password,
-          dateCreated: DateTime.now(),
-          fullName: '$firstName $lastName',
-          profileImageUrl: downloadUrl,
-        );
+      print("User created successfully with ID: ${cred.user?.uid}");
 
-        // If the user is an Admin and no bloodBankId is provided, set bloodBankId to null
-        if (userRole == AppRole.admin) {
-          userAdmin = userAdmin.copyWith(
-              bloodBankId: bloodBankId); // Use null if no bloodBankId
-        }
+      String uid = cred.user?.uid ?? '';
 
-        // Save user data to Firestore
-        await _firestore
-            .collection("users")
-            .doc(systemGeneratedId)
-            .set(userAdmin.toJson());
+      // Set default empty profile image URL
+      String downloadUrl = '';
 
-        res = "success";
+      // Create a UserAdminModel based on role
+      UserAdminModel userAdmin = UserAdminModel(
+        id: uid,
+        firstName: firstName,
+        lastName: lastName,
+        email: email,
+        phoneNumber: phoneNumber,
+        address: address,
+        bloodType: bloodType.label,
+        role: userRole.label,
+        password: password,
+        dateCreated: DateTime.now(),
+        fullName: '$firstName $lastName',
+        profileImageUrl: downloadUrl, // Empty URL initially
+      );
+
+      // Set bloodBankId for admin role
+      if (userRole == AppRole.admin && bloodBankId != null) {
+        userAdmin = userAdmin.copyWith(bloodBankId: bloodBankId);
+      }
+
+      // Save user data to Firestore
+      await _firestore.collection("users").doc(uid).set(userAdmin.toJson());
+
+      res = "success";
+    } on FirebaseAuthException catch (e) {
+      // Handle Firebase Auth specific errors
+      print("FirebaseAuthException: ${e.code} - ${e.message}");
+      if (e.code == 'email-already-in-use') {
+        res = 'Email is already in use.';
+      } else if (e.code == 'weak-password') {
+        res = 'Password is too weak.';
+      } else if (e.code == 'invalid-email') {
+        res = 'Invalid email format.';
       } else {
-        res = "Please fill in all the fields.";
+        res = e.message ?? 'Authentication error occurred.';
       }
     } catch (err) {
-      return err.toString();
+      print("Error creating user: $err");
+      res = err.toString();
     }
+
     return res;
   }
 
@@ -174,7 +179,22 @@ class AuthMethod {
 
   // SignOut User
   Future<void> signOut() async {
-    await _auth.signOut();
+    await FirebaseAuth.instance.signOut();
+  }
+
+  Future<User?> getCurrentUser() async {
+    return FirebaseAuth.instance.currentUser;
+  }
+
+  Future<void> forceCompleteSignOut() async {
+    // Sign out from Firebase
+    await FirebaseAuth.instance.signOut();
+
+    // Clear any persistent auth state
+    await FirebaseAuth.instance.setPersistence(Persistence.NONE);
+
+    // Re-initialize persistence to default after clearing
+    await FirebaseAuth.instance.setPersistence(Persistence.LOCAL);
   }
 
   /// Fetch the first name of the currently signed-in user
@@ -407,6 +427,27 @@ class AuthMethod {
 
       // Return error message
       return "Failed to register blood bank. Please try again.";
+    }
+  }
+
+  // Add this to your AuthMethod class
+  Future<bool> isCurrentUserAdmin() async {
+    try {
+      final user = FirebaseAuth.instance.currentUser;
+      if (user == null) return false;
+
+      final userDoc = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(user.uid)
+          .get();
+
+      if (!userDoc.exists) return false;
+
+      final userData = userDoc.data();
+      return userData != null && userData['role'] == 'admin';
+    } catch (e) {
+      print("Error checking admin status: $e");
+      return false;
     }
   }
 }

@@ -1,19 +1,26 @@
 import 'dart:async';
 
+import 'package:animate_do/animate_do.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter_moving_background/flutter_moving_background.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:redpulse/features/models/users.dart';
 import 'package:redpulse/features/screens/login.dart';
 import 'package:redpulse/features/screens/user/sub/updateprofile.dart';
-import 'package:redpulse/services/auth.dart';
 import 'package:redpulse/utilities/constants/styles.dart';
+import 'package:animate_do/animate_do.dart';
+import 'package:flutter_moving_background/flutter_moving_background.dart';
+import 'package:flutter_moving_background/enums/animation_types.dart';
+import 'package:redpulse/features/screens/wrapper/BiometricAuthService.dart';
 
 import '../../../widgets/confirmLogout.dart';
 
 class ProfileScreen extends StatefulWidget {
-  const ProfileScreen({Key? key}) : super(key: key);
+  const ProfileScreen({super.key});
 
   Future<String?> get userId async {
     try {
@@ -98,35 +105,37 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final screenSize = MediaQuery.of(context).size;
+
     return Scaffold(
+      extendBodyBehindAppBar: true,
       appBar: PreferredSize(
-        preferredSize: const Size.fromHeight(120),
-        child: AppBar(
-          backgroundColor: Styles.primaryColor,
-          shape: const RoundedRectangleBorder(
-            borderRadius: BorderRadius.only(
-              topLeft: Radius.circular(30),
-              topRight: Radius.circular(30),
+        preferredSize: Size.fromHeight(screenSize.height * 0.07),
+        child: FadeInDown(
+          duration: const Duration(milliseconds: 800),
+          child: Container(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [
+                  Styles.primaryColor,
+                  Styles.primaryColor.withOpacity(0.95),
+                ],
+              ),
+              borderRadius: const BorderRadius.only(
+                bottomLeft: Radius.circular(25),
+                bottomRight: Radius.circular(25),
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.red.withOpacity(0.2),
+                  blurRadius: 15,
+                  spreadRadius: 2,
+                  offset: const Offset(0, 3),
+                ),
+              ],
             ),
-<<<<<<< Updated upstream
-          ),
-          elevation: 0,
-          flexibleSpace: Padding(
-            padding: const EdgeInsets.all(20),
-            child: Align(
-              alignment: Alignment.center,
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  const SizedBox(height: 20),
-                  Text(
-                    "Profile",
-                    style: Styles.headerStyle2.copyWith(
-                      fontSize: 22,
-                      fontWeight: FontWeight.bold,
-                      color: Styles.tertiaryColor,
-=======
             child: SafeArea(
               child: Padding(
                 padding: EdgeInsets.symmetric(
@@ -143,203 +152,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         fontWeight: FontWeight.w700,
                         color: Colors.white,
                       ),
->>>>>>> Stashed changes
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
           ),
         ),
       ),
       body: _userId == null
-<<<<<<< Updated upstream
-          ? const Center(child: CircularProgressIndicator()) // Show loading until userId is fetched.
-          : FutureBuilder<UserAdminModel?>(
-        future: _userFuture,
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
-          }
-          if (snapshot.hasError) {
-            return Center(child: Text('Error: ${snapshot.error}'));
-          }
-          if (!snapshot.hasData) {
-            return const Center(child: Text('No user data available'));
-          }
-
-          final user = snapshot.data!;
-
-          // Wrap the content in SingleChildScrollView to make it scrollable.
-          return SingleChildScrollView(
-            child: Padding(
-              padding:
-              const EdgeInsets.symmetric(horizontal: 50, vertical: 10),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Center(
-                    child: CircleAvatar(
-                      radius: 50,
-                      backgroundImage: user.profileImageUrl != null
-                          ? NetworkImage(user.profileImageUrl!)
-                          : const AssetImage(
-                          'assets/images/default_profile.jpg')
-                      as ImageProvider,
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-                  Text('Full Name:',
-                      style: Styles.headerStyle5.copyWith(
-                          fontSize: 18, color: Styles.accentColor)),
-                  Text('${user.fullName}',
-                      style: Styles.headerStyle5.copyWith(
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                          color: Styles.accentColor)),
-                  const SizedBox(height: 15),
-                  Text('Email:',
-                      style: Styles.headerStyle5.copyWith(
-                          fontSize: 18, color: Styles.accentColor)),
-                  Text('${user.email}',
-                      style: Styles.headerStyle5.copyWith(
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                          color: Styles.accentColor)),
-                  const SizedBox(height: 15),
-                  Text('Phone Number:',
-                      style: Styles.headerStyle5.copyWith(
-                          fontSize: 18, color: Styles.accentColor)),
-                  Text('${user.phoneNumber}',
-                      style: Styles.headerStyle5.copyWith(
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                          color: Styles.accentColor)),
-                  const SizedBox(height: 15),
-                  Text('Address:',
-                      style: Styles.headerStyle5.copyWith(
-                          fontSize: 18, color: Styles.accentColor)),
-                  Text('${user.address}',
-                      style: Styles.headerStyle5.copyWith(
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                          color: Styles.accentColor)),
-                  const SizedBox(height: 15),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    children: [
-                      Text('Blood Type:',
-                          style: Styles.headerStyle5.copyWith(
-                              fontSize: 18, color: Styles.accentColor)),
-                      const SizedBox(width: 62),
-                      Text('Role:',
-                          style: Styles.headerStyle5.copyWith(
-                              fontSize: 18, color: Styles.accentColor)),
-                    ],
-                  ),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    children: [
-                      Text('${user.bloodType}',
-                          style: Styles.headerStyle5.copyWith(
-                              fontSize: 20,
-                              fontWeight: FontWeight.bold,
-                              color: Styles.accentColor)),
-                      const SizedBox(width: 135),
-                      Text('${user.role}',
-                          style: Styles.headerStyle5.copyWith(
-                              fontSize: 20,
-                              fontWeight: FontWeight.bold,
-                              color: Styles.accentColor)),
-                    ],
-                  ),
-                  const SizedBox(height: 15),
-                  Text('Account Created:',
-                      style: Styles.headerStyle5.copyWith(
-                          fontSize: 18, color: Styles.accentColor)),
-                  Text(
-                    DateFormat('MM/dd/yyyy').format(user.dateCreated),
-                    style: Styles.headerStyle5.copyWith(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                        color: Styles.accentColor),
-                  ),
-                  const SizedBox(height: 30),
-                  // Logout Button
-                  ElevatedButton(
-                    onPressed: () async {
-                      // Show the confirmation dialog and await the result.
-                      final shouldLogout = await showDialog<bool>(
-                        context: context,
-                        builder: (context) => const Confirmlogout(),
-                      );
-
-                      // If the user confirms the logout, sign out and navigate to LoginScreen.
-                      if (shouldLogout == true) {
-                        await FirebaseAuth.instance.signOut();
-                        Navigator.of(context).pushAndRemoveUntil(
-                          MaterialPageRoute(
-                            builder: (context) => const LoginScreen(),
-                          ),
-                              (Route<dynamic> route) => false,
-                        );
-                      }
-                    },
-                    style: ElevatedButton.styleFrom(
-                      minimumSize: const Size(double.infinity, 50),
-                      backgroundColor: Styles.primaryColor,
-                      foregroundColor: Styles.tertiaryColor,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                    ),
-                    child: Text(
-                      'Log Out',
-                      style: Styles.headerStyle6.copyWith(
-                          color: Styles.tertiaryColor),
-                    ),
-                  ),
-                  const SizedBox(height: 30),
-                  // Edit Profile Button
-                  ElevatedButton(
-                    onPressed: () async {
-                      final user = await _userFuture;
-                      if (user != null) {
-                        bool? updated = await showDialog<bool>(
-                          context: context,
-                          builder: (context) =>
-                              UpdateProfileDialog(user: user),
-                        );
-                        if (updated == true) {
-                          setState(() {
-                            _userFuture = _fetchUserProfile(); // Refresh profile data
-                          });
-                        }
-                      }
-                    },
-                    style: ElevatedButton.styleFrom(
-                      minimumSize: const Size(double.infinity, 50),
-                      backgroundColor: Styles.primaryColor,
-                      foregroundColor: Styles.tertiaryColor,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                    ),
-                    child: Text(
-                      'Update Profile',
-                      style: Styles.headerStyle6.copyWith(
-                          color: Styles.tertiaryColor),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          );
-        },
-      ),
-    );
-  }
-=======
           ? Center(child: CircularProgressIndicator(color: Styles.primaryColor))
           : MovingBackground(
               animationType: AnimationType.translation,
@@ -585,6 +406,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                     ),
                                   );
 
+                                  await BiometricAuthService.clearAuthState();
+
                                   // Clear all authentication data
                                   final auth = FirebaseAuth.instance;
                                   await auth.signOut();
@@ -679,5 +502,4 @@ class _ProfileScreenState extends State<ProfileScreen> {
       thickness: 1,
     );
   }
->>>>>>> Stashed changes
 }

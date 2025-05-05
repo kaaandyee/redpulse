@@ -27,99 +27,112 @@ class _UpdateProfileDialogState extends State<UpdateProfileDialog> {
   String? _profileImageUrl;
 
   @override
+  @override
   void initState() {
     super.initState();
-    final names = widget.user.fullName.split(' ');
-    _firstName = names.isNotEmpty ? names.first : '';
-    _lastName = names.length > 1 ? names.sublist(1).join(' ') : '';
+    // Use existing firstName and lastName if available
+    if (widget.user.firstName != null && widget.user.lastName != null) {
+      _firstName = widget.user.firstName!;
+      _lastName = widget.user.lastName!;
+    } else {
+      // Fallback to splitting fullName
+      final names = widget.user.fullName.split(' ');
+      _firstName = names.isNotEmpty ? names.first : '';
+      _lastName = names.length > 1 ? names.sublist(1).join(' ') : '';
+    }
     _phoneNumber = widget.user.phoneNumber;
     _address = widget.user.address;
     _profileImageUrl = widget.user.profileImageUrl;
   }
 
   Future<void> _pickImage() async {
-    final pickedFile =
-    await ImagePicker().pickImage(source: ImageSource.gallery);
-    if (pickedFile != null) {
-      if (!mounted) return;
+    try {
+      final pickedFile = await ImagePicker().pickImage(
+        source: ImageSource.gallery,
+        maxWidth: 800, // Add reasonable constraints
+        maxHeight: 800,
+        imageQuality: 80, // Built-in quality reduction
+      );
+
+      if (pickedFile == null) return;
+
       setState(() {
         _isLoading = true;
       });
 
-      try {
-        Uint8List uploadData;
+      // Get image data based on platform
+      Uint8List imageData;
+      if (kIsWeb) {
+        imageData = await pickedFile.readAsBytes();
+        print("Web image size: ${imageData.length} bytes");
+      } else {
+        final File file = File(pickedFile.path);
+        imageData = await file.readAsBytes();
 
-        // On web, avoid using File and compression.
-        if (kIsWeb) {
-          // Read image bytes directly from the picked file.
-          uploadData = await pickedFile.readAsBytes();
-        } else {
-          // For mobile, use dart:io and compress/convert as needed.
-          final file = File(pickedFile.path);
-          final int fileSize = await file.length();
-          final String ext = path.extension(pickedFile.path).toLowerCase();
-          final bool isJpg = ext == '.jpg' || ext == '.jpeg';
-          final CompressFormat format =
-          isJpg ? CompressFormat.jpeg : CompressFormat.png;
-          final String extToUse = isJpg ? 'jpg' : 'png';
-          bool needCompress = fileSize > 500 * 1024 || !isJpg;
-          List<int>? imageBytes;
-
-          if (needCompress) {
-            int quality = 100;
-            do {
-              imageBytes = await FlutterImageCompress.compressWithFile(
-                pickedFile.path,
-                quality: quality,
-                format: format,
-              );
-              quality -= 10;
-            } while (imageBytes!.length > 500 * 1024 && quality > 10);
-          } else {
-            imageBytes = await file.readAsBytes();
-          }
-          uploadData = Uint8List.fromList(imageBytes);
-        }
-
-        // Upload image to Firebase Storage.
-        final String extToUse = kIsWeb
-            ? path.extension(pickedFile.name).replaceFirst('.', '')
-            : (path.extension(pickedFile.path).toLowerCase() == '.jpg' ||
-            path.extension(pickedFile.path).toLowerCase() == '.jpeg'
-            ? 'jpg'
-            : 'png');
-        final Reference storageRef = FirebaseStorage.instance
-            .ref()
-            .child('profile_images/${widget.user.id}.$extToUse');
-        final UploadTask uploadTask = storageRef.putData(uploadData);
-        final TaskSnapshot snapshot = await uploadTask;
-        final String newUrl = await snapshot.ref.getDownloadURL();
-
-        // Update Firestore with the new image URL.
-        await FirebaseFirestore.instance
-            .collection('users')
-            .doc(widget.user.id)
-            .update({'profileImageUrl': newUrl});
-
-        if (!mounted) return;
-        setState(() {
-          _isUpdated = true;
-          _profileImageUrl = newUrl;
-        });
-      } catch (e) {
-        // Only schedule a SnackBar if the widget is still mounted.
-        if (!mounted) return;
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          scaffoldMessengerKey.currentState?.showSnackBar(
-            SnackBar(content: Text('Error uploading image: $e')),
+        // Simple compression for large files
+        if (imageData.length > 500 * 1024) {
+          imageData = await FlutterImageCompress.compressWithList(
+            imageData,
+            quality: 70,
+            format: CompressFormat.jpeg,
           );
-        });
-      } finally {
-        if (!mounted) return;
-        setState(() {
-          _isLoading = false;
-        });
+          print("Compressed image size: ${imageData.length} bytes");
+        }
       }
+
+      // Generate a unique filename
+      final String fileName = '${widget.user.id}_${DateTime.now().millisecondsSinceEpoch}';
+      final Reference storageRef = FirebaseStorage.instance
+          .ref()
+          .child('profile_images/$fileName.jpg');
+
+      print("Uploading to: ${storageRef.fullPath}");
+
+      // Upload the image
+      final UploadTask uploadTask = storageRef.putData(
+        imageData,
+        SettableMetadata(contentType: 'image/jpeg'),
+      );
+
+      // Monitor upload progress
+      uploadTask.snapshotEvents.listen((TaskSnapshot snapshot) {
+        print('Upload progress: ${snapshot.bytesTransferred}/${snapshot.totalBytes}');
+      });
+
+      // Wait for upload to complete
+      final TaskSnapshot snapshot = await uploadTask;
+      final String newUrl = await snapshot.ref.getDownloadURL();
+
+      print("Upload successful. URL: $newUrl");
+
+      // Update Firestore
+      await FirebaseFirestore.instance
+          .collection('users')
+          .doc(widget.user.id)
+          .update({'profileImageUrl': newUrl});
+
+      print("Firestore updated successfully");
+
+      setState(() {
+        _profileImageUrl = newUrl;
+        _isUpdated = true;
+        _isLoading = false;
+      });
+
+      // Show success message
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Profile picture updated successfully')),
+      );
+    } catch (e) {
+      print("Error in _pickImage: $e");
+      if (!mounted) return;
+      setState(() {
+        _isLoading = false;
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error updating profile picture: $e')),
+      );
     }
   }
 

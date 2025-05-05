@@ -197,6 +197,7 @@ class _BloodBankProfileScreenState extends State<BloodBankProfileScreen> {
                               fontWeight: FontWeight.bold,
                               color: Styles.accentColor)),
                       SizedBox(height: 15),
+<<<<<<< HEAD
 <<<<<<< Updated upstream
                       Text('Blood Bank Name:',
                           style: Styles.headerStyle5.copyWith(
@@ -245,6 +246,9 @@ class _BloodBankProfileScreenState extends State<BloodBankProfileScreen> {
                       const SizedBox(height: 15),
 =======
 >>>>>>> Stashed changes
+=======
+
+>>>>>>> 2f1a807451ac93c8b55032ec34ba52310931c6c3
 
                       /*Text('Inventory ID:', style: Styles.headerStyle5.copyWith(fontSize: 18, color: Styles.accentColor)),
                       Text('${bloodBank.inventoryId ?? 'Not available'}', style: Styles.headerStyle5.copyWith(fontSize: 20, fontWeight: FontWeight.bold, color: Styles.accentColor)),
