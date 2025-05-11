@@ -11,7 +11,7 @@ import 'package:animate_do/animate_do.dart';
 class Inventory extends StatefulWidget {
   final String bloodBankId;
 
-  const Inventory({Key? key, required this.bloodBankId}) : super(key: key);
+  const Inventory({super.key, required this.bloodBankId});
 
   @override
   InventoryState createState() => InventoryState();
@@ -93,14 +93,11 @@ class InventoryState extends State<Inventory> {
       WriteBatch batch = FirebaseFirestore.instance.batch();
 
       for (var doc in inventorySnapshot.docs) {
-        batch.update(
-            doc.reference,
-            {
-              'quantity': newQuantity,
-              'lastUpdated': FieldValue.serverTimestamp(),
-              'status': _determineStatus(newQuantity),
-            }
-        );
+        batch.update(doc.reference, {
+          'quantity': newQuantity,
+          'lastUpdated': FieldValue.serverTimestamp(),
+          'status': _determineStatus(newQuantity),
+        });
       }
 
       await batch.commit();
@@ -131,7 +128,8 @@ class InventoryState extends State<Inventory> {
       builder: (BuildContext context) {
         return AlertDialog(
           backgroundColor: Colors.white,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
           title: Text(
             'Update $bloodType Units',
             style: GoogleFonts.montserrat(fontWeight: FontWeight.bold),
@@ -160,7 +158,8 @@ class InventoryState extends State<Inventory> {
               style: ElevatedButton.styleFrom(
                 backgroundColor: Styles.accentColor,
               ),
-              child: Text('Update', style: GoogleFonts.roboto(color: Colors.white)),
+              child: Text('Update',
+                  style: GoogleFonts.roboto(color: Colors.white)),
             ),
           ],
         );
@@ -176,7 +175,8 @@ class InventoryState extends State<Inventory> {
       builder: (BuildContext context) {
         return AlertDialog(
           backgroundColor: Colors.white,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
           title: Text(
             'Update All Blood Types',
             style: GoogleFonts.montserrat(fontWeight: FontWeight.bold),
@@ -205,7 +205,8 @@ class InventoryState extends State<Inventory> {
               style: ElevatedButton.styleFrom(
                 backgroundColor: Styles.accentColor,
               ),
-              child: Text('Update All', style: GoogleFonts.roboto(color: Colors.white)),
+              child: Text('Update All',
+                  style: GoogleFonts.roboto(color: Colors.white)),
             ),
           ],
         );
@@ -294,11 +295,16 @@ class InventoryState extends State<Inventory> {
             future: _inventoryFuture,
             builder: (context, snapshot) {
               if (snapshot.connectionState == ConnectionState.waiting) {
-                return const Center(child: CircularProgressIndicator(color: Colors.red));
+                return const Center(
+                    child: CircularProgressIndicator(color: Colors.red));
               } else if (snapshot.hasError) {
-                return Center(child: Text('Error: ${snapshot.error}', style: GoogleFonts.roboto()));
+                return Center(
+                    child: Text('Error: ${snapshot.error}',
+                        style: GoogleFonts.roboto()));
               } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                return Center(child: Text('No inventory found.', style: GoogleFonts.roboto()));
+                return Center(
+                    child: Text('No inventory found.',
+                        style: GoogleFonts.roboto()));
               }
 
               final inventoryList = snapshot.data!;
@@ -320,7 +326,8 @@ class InventoryState extends State<Inventory> {
                           child: BloodInventoryCard(
                             inventory: inventory,
                             onUpdateTap: () {
-                              _showUpdateDialog(inventory.bloodType, inventory.quantity);
+                              _showUpdateDialog(
+                                  inventory.bloodType, inventory.quantity);
                             },
                           ),
                         );
@@ -351,10 +358,10 @@ class BloodInventoryCard extends StatelessWidget {
   final VoidCallback? onUpdateTap;
 
   const BloodInventoryCard({
-    Key? key,
+    super.key,
     required this.inventory,
     this.onUpdateTap,
-  }) : super(key: key);
+  });
 
   Color _getStatusColor(String status) {
     switch (status.toLowerCase()) {
@@ -415,7 +422,8 @@ class BloodInventoryCard extends StatelessWidget {
                   ],
                 ),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                   decoration: BoxDecoration(
                     color: _getStatusColor(inventory.status).withOpacity(0.1),
                     borderRadius: BorderRadius.circular(20),
@@ -502,15 +510,15 @@ class BloodInventoryCard extends StatelessWidget {
                   child: ElevatedButton.icon(
                     onPressed: onUpdateTap,
                     icon: const Icon(Icons.edit),
-                    label: Text("Update Unit", style: GoogleFonts.montserrat(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                    )),
+                    label: Text("Update Unit",
+                        style: GoogleFonts.montserrat(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        )),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.red[700],
                       foregroundColor: Colors.black,
-
                       padding: const EdgeInsets.symmetric(vertical: 12),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(8),
@@ -530,9 +538,9 @@ class BloodDropIcon extends StatelessWidget {
   final String bloodType;
 
   const BloodDropIcon({
-    Key? key,
+    super.key,
     required this.bloodType,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -543,12 +551,9 @@ class BloodDropIcon extends StatelessWidget {
         child: Center(
           child: Padding(
             padding: const EdgeInsets.only(bottom: 5),
-
           ),
         ),
       ),
     );
   }
 }
-
-

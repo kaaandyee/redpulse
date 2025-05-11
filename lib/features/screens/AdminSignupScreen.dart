@@ -7,7 +7,6 @@ import 'package:redpulse/features/screens/admin/register.dart';
 import 'package:redpulse/services/auth.dart';
 import 'package:redpulse/services/validation.dart';
 import 'package:redpulse/utilities/constants/enums.dart';
-import 'package:redpulse/utilities/constants/styles.dart';
 import 'package:redpulse/widgets/button.dart';
 import 'package:redpulse/widgets/textfield.dart';
 import 'login.dart';
@@ -76,7 +75,12 @@ class _AdminSignupScreenState extends State<AdminSignupScreen> {
     }
 
     // Validation checks
-    if (firstName.isEmpty || lastName.isEmpty || phoneNumber.isEmpty || address.isEmpty || password.isEmpty || email.isEmpty) {
+    if (firstName.isEmpty ||
+        lastName.isEmpty ||
+        phoneNumber.isEmpty ||
+        address.isEmpty ||
+        password.isEmpty ||
+        email.isEmpty) {
       showPopup("Please fill in all fields.");
       return;
     }
@@ -381,13 +385,14 @@ class _AdminSignupScreenState extends State<AdminSignupScreen> {
                                     onTap: () {
                                     Navigator.of(context).push(
                                       MaterialPageRoute(
-                                        builder: (context) => const LoginScreen(),
+                                        builder: (context) =>
+                                            const LoginScreen(),
                                       ),
                                     );
                                   },
                                     child: Text(
                                       "Log In",
-                                      style: Styles.headerStyle5.copyWith(color: Styles.primaryColor, 
+                                      style: Styles.headerStyle5.copyWith(color: Styles.primaryColor,
                                       fontWeight: FontWeight.w700,
                                       )
                                     ),

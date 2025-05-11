@@ -3,20 +3,19 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:redpulse/features/screens/login.dart';
+import 'package:redpulse/features/screens/signup.dart';
 import 'package:redpulse/features/screens/splash.dart';
-import 'package:redpulse/AppRouter.dart';
 import 'package:redpulse/utilities/constants/styles.dart';
 import 'package:flutter/foundation.dart' as foundation; // For platform checking
 import 'features/screens/wrapper/wrapper.dart';
 import 'firebase_options.dart';
 
 final GlobalKey<ScaffoldMessengerState> scaffoldMessengerKey =
-GlobalKey<ScaffoldMessengerState>();
+    GlobalKey<ScaffoldMessengerState>();
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // Initialize Firebase
   if (Firebase.apps.isEmpty) {
     if (foundation.kIsWeb) {
       // Firebase initialization for web (no name required)
@@ -58,7 +57,11 @@ class MyApp extends StatelessWidget {
         primarySwatch: Colors.red,
         visualDensity: VisualDensity.adaptivePlatformDensity,
       ),
-      home: const SplashScreen(), // Make SplashScreen the first screen to appear
+      home:
+          const SplashScreen(), // Make SplashScreen the first screen to appear
+      routes: {
+        '/wrapper': (context) => Wrapper(), // Add the SignUpScreen route here
+      },
     );
   }
 }

@@ -17,18 +17,20 @@ class GoogleSignupCompletionScreen extends StatefulWidget {
   final String? photoURL;
 
   const GoogleSignupCompletionScreen({
-    Key? key,
+    super.key,
     required this.uid,
     required this.email,
     required this.displayName,
     this.photoURL,
-  }) : super(key: key);
+  });
 
   @override
-  State<GoogleSignupCompletionScreen> createState() => _GoogleSignupCompletionScreenState();
+  State<GoogleSignupCompletionScreen> createState() =>
+      _GoogleSignupCompletionScreenState();
 }
 
-class _GoogleSignupCompletionScreenState extends State<GoogleSignupCompletionScreen> {
+class _GoogleSignupCompletionScreenState
+    extends State<GoogleSignupCompletionScreen> {
   BloodType selectedBType = BloodType.oNegative;
   bool isLoading = false;
 
@@ -41,7 +43,8 @@ class _GoogleSignupCompletionScreenState extends State<GoogleSignupCompletionScr
       // Extract first and last name from display name
       List<String> nameParts = widget.displayName.split(' ');
       String firstName = nameParts.isNotEmpty ? nameParts[0] : '';
-      String lastName = nameParts.length > 1 ? nameParts.sublist(1).join(' ') : '';
+      String lastName =
+          nameParts.length > 1 ? nameParts.sublist(1).join(' ') : '';
 
       // Create user document in Firestore
       await FirebaseFirestore.instance.collection('users').doc(widget.uid).set({
@@ -63,7 +66,7 @@ class _GoogleSignupCompletionScreenState extends State<GoogleSignupCompletionScr
         Navigator.pushAndRemoveUntil(
           context,
           MaterialPageRoute(builder: (context) => const UserStart()),
-              (route) => false,
+          (route) => false,
         );
       }
     } catch (e) {
@@ -107,7 +110,8 @@ class _GoogleSignupCompletionScreenState extends State<GoogleSignupCompletionScr
                   const SizedBox(height: 30),
 
                   // Logo
-                  Image.asset('assets/images/logoo.png', height: 120, width: 120),
+                  Image.asset('assets/images/logoo.png',
+                      height: 120, width: 120),
 
                   const SizedBox(height: 20),
 
@@ -164,7 +168,9 @@ class _GoogleSignupCompletionScreenState extends State<GoogleSignupCompletionScr
                             radius: 30,
                             backgroundImage: widget.photoURL != null
                                 ? NetworkImage(widget.photoURL!)
-                                : const AssetImage('assets/images/default_profile.jpg') as ImageProvider,
+                                : const AssetImage(
+                                        'assets/images/default_profile.jpg')
+                                    as ImageProvider,
                           ),
                           const SizedBox(width: 15),
                           Expanded(
@@ -253,14 +259,15 @@ class _GoogleSignupCompletionScreenState extends State<GoogleSignupCompletionScr
                           ),
                         ),
                         child: isLoading
-                            ? const CircularProgressIndicator(color: Colors.white)
+                            ? const CircularProgressIndicator(
+                                color: Colors.white)
                             : Text(
-                          "Complete Signup",
-                          style: GoogleFonts.montserrat(
-                            fontSize: 18,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
+                                "Complete Signup",
+                                style: GoogleFonts.montserrat(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
                       ),
                     ),
                   ),

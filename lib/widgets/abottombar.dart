@@ -33,7 +33,7 @@ class ABottomBar extends StatefulWidget {
 
       // Check and retrieve the bloodBankId.
       String? bloodBankId = adminSnapshot['bloodBankId'];
-      if (bloodBankId == null || bloodBankId.isEmpty) {
+      if (bloodBankId!.isEmpty) {
         throw Exception("Admin is not linked to a blood bank.");
       }
       return bloodBankId;
@@ -139,6 +139,7 @@ class _ABottomBarState extends State<ABottomBar> {
   /// Builds the bottom navigation bar for narrow screens.
   Widget _buildBottomNavBar() {
     return Container(
+      margin: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(30),
         boxShadow: const [

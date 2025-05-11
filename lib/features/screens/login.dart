@@ -13,6 +13,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_moving_background/flutter_moving_background.dart';
 import 'package:flutter_moving_background/enums/animation_types.dart';
 import 'package:animate_do/animate_do.dart';
+import 'package:redpulse/features/screens/wrapper/BiometricAuthService.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -21,7 +22,8 @@ class LoginScreen extends StatefulWidget {
   State<LoginScreen> createState() => _LoginScreenState();
 }
 
-class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStateMixin {
+class _LoginScreenState extends State<LoginScreen>
+    with SingleTickerProviderStateMixin {
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
   bool isLoading = false;
@@ -84,6 +86,8 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
         final userData = userDoc.data() as Map<String, dynamic>;
         final bool isAdmin = userData['role'] == 'admin';
 
+        await BiometricAuthService.setLoggedIn(true);
+
         setState(() {
           isLoading = false;
         });
@@ -100,12 +104,15 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                 isAdminLinkedToBloodBank: isLinkedToBloodBank,
                 bloodBankId: bloodBankId,
               ),
-              transitionsBuilder: (context, animation, secondaryAnimation, child) {
+              transitionsBuilder:
+                  (context, animation, secondaryAnimation, child) {
                 const begin = Offset(1.0, 0.0);
                 const end = Offset.zero;
                 const curve = Curves.easeInOut;
-                var tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
-                return SlideTransition(position: animation.drive(tween), child: child);
+                var tween = Tween(begin: begin, end: end)
+                    .chain(CurveTween(curve: curve));
+                return SlideTransition(
+                    position: animation.drive(tween), child: child);
               },
             ),
           );
@@ -115,12 +122,15 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
             context,
             PageRouteBuilder(
               pageBuilder: (_, animation, __) => const UserStart(),
-              transitionsBuilder: (context, animation, secondaryAnimation, child) {
+              transitionsBuilder:
+                  (context, animation, secondaryAnimation, child) {
                 const begin = Offset(1.0, 0.0);
                 const end = Offset.zero;
                 const curve = Curves.easeInOut;
-                var tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
-                return SlideTransition(position: animation.drive(tween), child: child);
+                var tween = Tween(begin: begin, end: end)
+                    .chain(CurveTween(curve: curve));
+                return SlideTransition(
+                    position: animation.drive(tween), child: child);
               },
             ),
           );
@@ -356,14 +366,16 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                             child: Padding(
                               padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 10),
                               child: isLoading
-                                  ? const CircularProgressIndicator(color: Color.fromARGB(250, 212, 61, 61))
+                                  ? const CircularProgressIndicator(
+                                      color: Color.fromARGB(250, 212, 61, 61))
                                   : Container(
-                                decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.circular(15),
-                                  // boxShadow removed to eliminate the red glow
-                                ),
-                                child: MyButtons(onTap: loginUser, text: "Log In"),
-                              ),
+                                      decoration: BoxDecoration(
+                                        borderRadius: BorderRadius.circular(15),
+                                        // boxShadow removed to eliminate the red glow
+                                      ),
+                                      child: MyButtons(
+                                          onTap: loginUser, text: "Log In"),
+                                    ),
                             ),
                           ),
 
@@ -417,7 +429,8 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                                   GestureDetector(
                                     onTap: () {
                                       Navigator.of(context).push(
-                                        Flow3DPageRoute(page: const SignupScreen()),
+                                        Flow3DPageRoute(
+                                            page: const SignupScreen()),
                                       );
                                     },
                                     child: Text(

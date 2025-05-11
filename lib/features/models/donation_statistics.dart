@@ -74,8 +74,10 @@ class DonationStatisticsService {
             .get();
 
         final bloodBankData = bloodBankSnapshot.data();
-        final bloodBankName = bloodBankData?['bloodBankName'] ?? 'Unknown Blood Bank';
-        final bloodBankLocation = bloodBankData?['address'] ?? 'Unknown Location';
+        final bloodBankName =
+            bloodBankData?['bloodBankName'] ?? 'Unknown Blood Bank';
+        final bloodBankLocation =
+            bloodBankData?['address'] ?? 'Unknown Location';
 
         // Convert Timestamp to DateTime if needed
         final validUntil = data['validUntil'] is Timestamp
@@ -146,7 +148,8 @@ class DonationStatisticsService {
   }
 
   // Add this method to fetch donors
-  Future<List<Map<String, dynamic>>> getBloodBankDonors(String bloodBankId) async {
+  Future<List<Map<String, dynamic>>> getBloodBankDonors(
+      String bloodBankId) async {
     try {
       // Get all completed reservations for this blood bank
       final reservationsSnapshot = await _firestore
@@ -162,10 +165,8 @@ class DonationStatisticsService {
       for (var doc in reservationsSnapshot.docs) {
         final data = doc.data();
         final String userId = data['userId'];
-        if (userId != null) {
-          uniqueDonorIds.add(userId);
-          donorDonations[userId] = (donorDonations[userId] ?? 0) + 1;
-        }
+        uniqueDonorIds.add(userId);
+        donorDonations[userId] = (donorDonations[userId] ?? 0) + 1;
       }
 
       // Get donor details for each unique donor
@@ -177,7 +178,8 @@ class DonationStatisticsService {
           final userData = userDoc.data()!;
           donors.add({
             'id': donorId,
-            'name': userData['fullName'] ?? '${userData['firstName']} ${userData['lastName']}',
+            'name': userData['fullName'] ??
+                '${userData['firstName']} ${userData['lastName']}',
             'bloodType': userData['bloodType'] ?? 'Unknown',
             'donationCount': donorDonations[donorId] ?? 0,
             'profileImageUrl': userData['profileImageUrl'],

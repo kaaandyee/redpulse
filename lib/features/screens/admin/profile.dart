@@ -11,6 +11,7 @@ import 'package:redpulse/widgets/confirmLogout.dart';
 import 'package:animate_do/animate_do.dart';
 import 'package:flutter_moving_background/flutter_moving_background.dart';
 import 'package:flutter_moving_background/enums/animation_types.dart';
+import 'package:redpulse/features/screens/wrapper/BiometricAuthService.dart';
 
 class ProfileScreen extends StatefulWidget {
   final String? adminId;
@@ -125,7 +126,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
       });
 
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Blood Bank details updated successfully')),
+        const SnackBar(
+            content: Text('Blood Bank details updated successfully')),
       );
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -135,10 +137,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   void _showEditDialog(BloodBankModel bloodBank) {
-    final TextEditingController nameController = TextEditingController(text: bloodBank.bloodBankName);
-    final TextEditingController emailController = TextEditingController(text: bloodBank.email);
-    final TextEditingController addressController = TextEditingController(text: bloodBank.address);
-    final TextEditingController contactController = TextEditingController(text: bloodBank.contactNumber);
+    final TextEditingController nameController =
+        TextEditingController(text: bloodBank.bloodBankName);
+    final TextEditingController emailController =
+        TextEditingController(text: bloodBank.email);
+    final TextEditingController addressController =
+        TextEditingController(text: bloodBank.address);
+    final TextEditingController contactController =
+        TextEditingController(text: bloodBank.contactNumber);
 
     showDialog(
       context: context,
@@ -213,7 +219,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
           ElevatedButton(
             style: ElevatedButton.styleFrom(
               backgroundColor: Styles.primaryColor,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8)),
             ),
             onPressed: () {
               Navigator.pop(context);
@@ -299,276 +306,309 @@ class _ProfileScreenState extends State<ProfileScreen> {
       body: _adminId == null
           ? Center(child: CircularProgressIndicator(color: Styles.primaryColor))
           : MovingBackground(
-        animationType: AnimationType.translation,
-        backgroundColor: const Color.fromARGB(255, 248, 248, 248),
-        circles: const [
-          MovingCircle(color: Color.fromARGB(65, 230, 132, 125), radius: 120),
-          MovingCircle(color: Color.fromARGB(55, 230, 132, 125), radius: 150),
-          MovingCircle(color: Color.fromARGB(45, 230, 132, 125), radius: 180),
-          MovingCircle(color: Color.fromARGB(35, 230, 132, 125), radius: 200),
-        ],
-        child: FutureBuilder<BloodBankModel?>(
-          future: _bloodBankFuture,
-          builder: (context, snapshot) {
-            if (snapshot.connectionState == ConnectionState.waiting) {
-              return Center(child: CircularProgressIndicator(color: Styles.primaryColor));
-            }
-            if (snapshot.hasError) {
-              return Center(
-                child: FadeInUp(
-                  duration: const Duration(milliseconds: 800),
-                  child: Text(
-                    'Error: ${snapshot.error}',
-                    style: GoogleFonts.roboto(
-                      fontSize: 16,
-                      color: Colors.grey[600],
-                    ),
-                  ),
-                ),
-              );
-            }
-            if (!snapshot.hasData) {
-              return Center(
-                child: FadeInUp(
-                  duration: const Duration(milliseconds: 800),
-                  child: Text(
-                    'No blood bank data available',
-                    style: GoogleFonts.roboto(
-                      fontSize: 16,
-                      color: Colors.grey[600],
-                    ),
-                  ),
-                ),
-              );
-            }
-
-            final bloodBank = snapshot.data!;
-
-            // Parse location coordinates
-            final double latitude = bloodBank.latitude;
-            final double longitude = bloodBank.longitude;
-            final LatLng bloodBankLocation = LatLng(latitude, longitude);
-
-            return SingleChildScrollView(
-              physics: const BouncingScrollPhysics(),
-              padding: EdgeInsets.only(
-                top: screenSize.height * 0.15,
-                left: screenSize.width * 0.06,
-                right: screenSize.width * 0.06,
-                bottom: screenSize.height * 0.05,
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Blood Bank Icon/Logo
-                  Center(
-                    child: FadeInDown(
-                      duration: const Duration(milliseconds: 800),
-                      child: Container(
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          boxShadow: [
-                            BoxShadow(
-                              color: Styles.primaryColor.withOpacity(0.25),
-                              spreadRadius: 2,
-                              blurRadius: 10,
-                              offset: const Offset(0, 3),
-                            ),
-                          ],
-                        ),
-                        child: CircleAvatar(
-                          radius: screenSize.width * 0.15,
-                          backgroundColor: Styles.primaryColor.withOpacity(0.9),
-                          child: Icon(
-                            Icons.local_hospital_rounded,
-                            color: Colors.white,
-                            size: screenSize.width * 0.15,
+              animationType: AnimationType.translation,
+              backgroundColor: const Color.fromARGB(255, 248, 248, 248),
+              circles: const [
+                MovingCircle(
+                    color: Color.fromARGB(65, 230, 132, 125), radius: 120),
+                MovingCircle(
+                    color: Color.fromARGB(55, 230, 132, 125), radius: 150),
+                MovingCircle(
+                    color: Color.fromARGB(45, 230, 132, 125), radius: 180),
+                MovingCircle(
+                    color: Color.fromARGB(35, 230, 132, 125), radius: 200),
+              ],
+              child: FutureBuilder<BloodBankModel?>(
+                future: _bloodBankFuture,
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return Center(
+                        child: CircularProgressIndicator(
+                            color: Styles.primaryColor));
+                  }
+                  if (snapshot.hasError) {
+                    return Center(
+                      child: FadeInUp(
+                        duration: const Duration(milliseconds: 800),
+                        child: Text(
+                          'Error: ${snapshot.error}',
+                          style: GoogleFonts.roboto(
+                            fontSize: 16,
+                            color: Colors.grey[600],
                           ),
                         ),
                       ),
-                    ),
-                  ),
-                  SizedBox(height: screenSize.height * 0.03),
-
-                  // Blood Bank Details Card
-                  FadeInUp(
-                    duration: const Duration(milliseconds: 900),
-                    child: Container(
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(20),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.grey.withOpacity(0.2),
-                            spreadRadius: 2,
-                            blurRadius: 8,
-                            offset: const Offset(0, 3),
+                    );
+                  }
+                  if (!snapshot.hasData) {
+                    return Center(
+                      child: FadeInUp(
+                        duration: const Duration(milliseconds: 800),
+                        child: Text(
+                          'No blood bank data available',
+                          style: GoogleFonts.roboto(
+                            fontSize: 16,
+                            color: Colors.grey[600],
                           ),
-                        ],
+                        ),
                       ),
-                      padding: EdgeInsets.all(screenSize.width * 0.05),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Text(
-                                "Blood Bank Details",
-                                style: GoogleFonts.montserrat(
-                                  fontSize: screenSize.width * 0.05,
-                                  fontWeight: FontWeight.w700,
-                                  color: Styles.primaryColor,
+                    );
+                  }
+
+                  final bloodBank = snapshot.data!;
+
+                  // Parse location coordinates
+                  final double latitude = bloodBank.latitude;
+                  final double longitude = bloodBank.longitude;
+                  final LatLng bloodBankLocation = LatLng(latitude, longitude);
+
+                  return SingleChildScrollView(
+                    physics: const BouncingScrollPhysics(),
+                    padding: EdgeInsets.only(
+                      top: screenSize.height * 0.15,
+                      left: screenSize.width * 0.06,
+                      right: screenSize.width * 0.06,
+                      bottom: screenSize.height * 0.05,
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // Blood Bank Icon/Logo
+                        Center(
+                          child: FadeInDown(
+                            duration: const Duration(milliseconds: 800),
+                            child: Container(
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                boxShadow: [
+                                  BoxShadow(
+                                    color:
+                                        Styles.primaryColor.withOpacity(0.25),
+                                    spreadRadius: 2,
+                                    blurRadius: 10,
+                                    offset: const Offset(0, 3),
+                                  ),
+                                ],
+                              ),
+                              child: CircleAvatar(
+                                radius: screenSize.width * 0.15,
+                                backgroundColor:
+                                    Styles.primaryColor.withOpacity(0.9),
+                                child: Icon(
+                                  Icons.local_hospital_rounded,
+                                  color: Colors.white,
+                                  size: screenSize.width * 0.15,
                                 ),
                               ),
-                              IconButton(
-                                icon: Icon(
-                                  Icons.edit,
-                                  color: Styles.primaryColor,
-                                  size: screenSize.width * 0.06,
-                                ),
-                                onPressed: () => _showEditDialog(bloodBank),
-                              )
-                            ],
+                            ),
                           ),
-                          _buildDivider(),
-                          _buildDetailItem('Blood Bank Name', bloodBank.bloodBankName, context),
-                          _buildDivider(),
-                          _buildDetailItem('Email', bloodBank.email, context),
-                          _buildDivider(),
-                          _buildDetailItem('Address', bloodBank.address, context),
-                          _buildDivider(),
-                          _buildDetailItem('Contact Number', bloodBank.contactNumber, context),
-                          _buildDivider(),
+                        ),
+                        SizedBox(height: screenSize.height * 0.03),
 
-                          // Location Map
-                          Padding(
-                            padding: EdgeInsets.symmetric(vertical: screenSize.height * 0.01),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  'Location',
-                                  style: GoogleFonts.roboto(
-                                    fontSize: screenSize.width * 0.035,
-                                    fontWeight: FontWeight.w500,
-                                    color: Colors.grey[600],
-                                  ),
-                                ),
-                                SizedBox(height: screenSize.height * 0.01),
-                                Container(
-                                  height: 200,
-                                  decoration: BoxDecoration(
-                                    borderRadius: BorderRadius.circular(15),
-                                    border: Border.all(color: Colors.grey.shade300),
-                                    boxShadow: [
-                                      BoxShadow(
-                                        color: Colors.grey.withOpacity(0.1),
-                                        spreadRadius: 1,
-                                        blurRadius: 4,
-                                        offset: const Offset(0, 2),
-                                      ),
-                                    ],
-                                  ),
-                                  child: ClipRRect(
-                                    borderRadius: BorderRadius.circular(15),
-                                    child: GoogleMap(
-                                      initialCameraPosition: CameraPosition(
-                                        target: bloodBankLocation,
-                                        zoom: 15,
-                                      ),
-                                      markers: {
-                                        Marker(
-                                          markerId: const MarkerId('bloodBankLocation'),
-                                          position: bloodBankLocation,
-                                          infoWindow: InfoWindow(title: bloodBank.bloodBankName),
-                                        ),
-                                      },
-                                      zoomControlsEnabled: false,
-                                      myLocationButtonEnabled: false,
-                                    ),
-                                  ),
+                        // Blood Bank Details Card
+                        FadeInUp(
+                          duration: const Duration(milliseconds: 900),
+                          child: Container(
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(20),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.grey.withOpacity(0.2),
+                                  spreadRadius: 2,
+                                  blurRadius: 8,
+                                  offset: const Offset(0, 3),
                                 ),
                               ],
                             ),
-                          ),
-                          _buildDivider(),
-                          _buildDetailItem('Account Created',
-                              DateFormat('MM/dd/yyyy').format(bloodBank.dateCreated),
-                              context),
-                        ],
-                      ),
-                    ),
-                  ),
-
-                  SizedBox(height: screenSize.height * 0.03),
-
-                  // Log Out Button
-                  FadeInUp(
-                    duration: const Duration(milliseconds: 1100),
-                    child: ElevatedButton(
-                      onPressed: () async {
-                        final shouldLogout = await showDialog<bool>(
-                          context: context,
-                          builder: (context) => const Confirmlogout(),
-                        );
-
-                        if (shouldLogout == true) {
-                          try {
-                            showDialog(
-                              context: context,
-                              barrierDismissible: false,
-                              builder: (context) => const Center(
-                                child: CircularProgressIndicator(),
-                              ),
-                            );
-
-                            final auth = FirebaseAuth.instance;
-                            await auth.signOut();
-
-                            if (mounted) {
-                              Navigator.of(context).pushAndRemoveUntil(
-                                MaterialPageRoute(
-                                  builder: (context) => const LoginScreen(),
+                            padding: EdgeInsets.all(screenSize.width * 0.05),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Text(
+                                      "Blood Bank Details",
+                                      style: GoogleFonts.montserrat(
+                                        fontSize: screenSize.width * 0.05,
+                                        fontWeight: FontWeight.w700,
+                                        color: Styles.primaryColor,
+                                      ),
+                                    ),
+                                    IconButton(
+                                      icon: Icon(
+                                        Icons.edit,
+                                        color: Styles.primaryColor,
+                                        size: screenSize.width * 0.06,
+                                      ),
+                                      onPressed: () =>
+                                          _showEditDialog(bloodBank),
+                                    )
+                                  ],
                                 ),
-                                    (route) => false,
-                              );
-                            }
-                          } catch (e) {
-                            if (mounted) {
-                              Navigator.pop(context);
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(content: Text('Error signing out: $e')),
-                              );
-                            }
-                          }
-                        }
-                      },
-                      style: ElevatedButton.styleFrom(
-                        minimumSize: Size(double.infinity, screenSize.height * 0.06),
-                        backgroundColor: Colors.red.shade700,
-                        foregroundColor: Colors.white,
-                        elevation: 4,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(15),
+                                _buildDivider(),
+                                _buildDetailItem('Blood Bank Name',
+                                    bloodBank.bloodBankName, context),
+                                _buildDivider(),
+                                _buildDetailItem(
+                                    'Email', bloodBank.email, context),
+                                _buildDivider(),
+                                _buildDetailItem(
+                                    'Address', bloodBank.address, context),
+                                _buildDivider(),
+                                _buildDetailItem('Contact Number',
+                                    bloodBank.contactNumber, context),
+                                _buildDivider(),
+
+                                // Location Map
+                                Padding(
+                                  padding: EdgeInsets.symmetric(
+                                      vertical: screenSize.height * 0.01),
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        'Location',
+                                        style: GoogleFonts.roboto(
+                                          fontSize: screenSize.width * 0.035,
+                                          fontWeight: FontWeight.w500,
+                                          color: Colors.grey[600],
+                                        ),
+                                      ),
+                                      SizedBox(
+                                          height: screenSize.height * 0.01),
+                                      Container(
+                                        height: 200,
+                                        decoration: BoxDecoration(
+                                          borderRadius:
+                                              BorderRadius.circular(15),
+                                          border: Border.all(
+                                              color: Colors.grey.shade300),
+                                          boxShadow: [
+                                            BoxShadow(
+                                              color:
+                                                  Colors.grey.withOpacity(0.1),
+                                              spreadRadius: 1,
+                                              blurRadius: 4,
+                                              offset: const Offset(0, 2),
+                                            ),
+                                          ],
+                                        ),
+                                        child: ClipRRect(
+                                          borderRadius:
+                                              BorderRadius.circular(15),
+                                          child: GoogleMap(
+                                            initialCameraPosition:
+                                                CameraPosition(
+                                              target: bloodBankLocation,
+                                              zoom: 15,
+                                            ),
+                                            markers: {
+                                              Marker(
+                                                markerId: const MarkerId(
+                                                    'bloodBankLocation'),
+                                                position: bloodBankLocation,
+                                                infoWindow: InfoWindow(
+                                                    title: bloodBank
+                                                        .bloodBankName),
+                                              ),
+                                            },
+                                            zoomControlsEnabled: false,
+                                            myLocationButtonEnabled: false,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                _buildDivider(),
+                                _buildDetailItem(
+                                    'Account Created',
+                                    DateFormat('MM/dd/yyyy')
+                                        .format(bloodBank.dateCreated),
+                                    context),
+                              ],
+                            ),
+                          ),
                         ),
-                      ),
-                      child: Text(
-                        'Log Out',
-                        style: GoogleFonts.montserrat(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
-                          color: Colors.white,
+
+                        SizedBox(height: screenSize.height * 0.03),
+
+                        // Log Out Button
+                        FadeInUp(
+                          duration: const Duration(milliseconds: 1100),
+                          child: ElevatedButton(
+                            onPressed: () async {
+                              final shouldLogout = await showDialog<bool>(
+                                context: context,
+                                builder: (context) => const Confirmlogout(),
+                              );
+
+                              if (shouldLogout == true) {
+                                try {
+                                  showDialog(
+                                    context: context,
+                                    barrierDismissible: false,
+                                    builder: (context) => const Center(
+                                      child: CircularProgressIndicator(),
+                                    ),
+                                  );
+
+                                  await BiometricAuthService.clearAuthState();
+
+                                  final auth = FirebaseAuth.instance;
+                                  await auth.signOut();
+
+                                  if (mounted) {
+                                    Navigator.of(context).pushAndRemoveUntil(
+                                      MaterialPageRoute(
+                                        builder: (context) =>
+                                            const LoginScreen(),
+                                      ),
+                                      (route) => false,
+                                    );
+                                  }
+                                } catch (e) {
+                                  if (mounted) {
+                                    Navigator.pop(context);
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(
+                                          content:
+                                              Text('Error signing out: $e')),
+                                    );
+                                  }
+                                }
+                              }
+                            },
+                            style: ElevatedButton.styleFrom(
+                              minimumSize: Size(
+                                  double.infinity, screenSize.height * 0.06),
+                              backgroundColor: Colors.red.shade700,
+                              foregroundColor: Colors.white,
+                              elevation: 4,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(15),
+                              ),
+                            ),
+                            child: Text(
+                              'Log Out',
+                              style: GoogleFonts.montserrat(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w600,
+                                color: Colors.white,
+                              ),
+                            ),
+                          ),
                         ),
-                      ),
+                      ],
                     ),
-                  ),
-                ],
+                  );
+                },
               ),
-            );
-          },
-        ),
-      ),
+            ),
     );
   }
 

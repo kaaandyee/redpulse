@@ -48,7 +48,7 @@ class BloodBankDetailsScreenState extends State<BloodBankDetailsScreen> {
         bloodType: data['bloodType'] as String? ?? 'Unknown',
         quantity: data['quantity'] as int? ?? 0,
         lastUpdated:
-        (data['lastUpdated'] as Timestamp?)?.toDate() ?? DateTime.now(),
+            (data['lastUpdated'] as Timestamp?)?.toDate() ?? DateTime.now(),
         status: data['status'] as String? ?? 'Unknown',
         bloodBankId: widget.bloodBankId,
       );
@@ -143,7 +143,8 @@ class BloodBankDetailsScreenState extends State<BloodBankDetailsScreen> {
                   title: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      const Icon(Icons.local_hospital, color: Colors.white, size: 22),
+                      const Icon(Icons.local_hospital,
+                          color: Colors.white, size: 22),
                       SizedBox(width: screenSize.width * 0.02),
                       Flexible(
                         child: Text(
@@ -167,10 +168,14 @@ class BloodBankDetailsScreenState extends State<BloodBankDetailsScreen> {
             animationType: AnimationType.translation,
             backgroundColor: const Color.fromARGB(255, 248, 248, 248),
             circles: const [
-              MovingCircle(color: Color.fromARGB(65, 230, 132, 125), radius: 120),
-              MovingCircle(color: Color.fromARGB(55, 230, 132, 125), radius: 150),
-              MovingCircle(color: Color.fromARGB(45, 230, 132, 125), radius: 180),
-              MovingCircle(color: Color.fromARGB(35, 230, 132, 125), radius: 200),
+              MovingCircle(
+                  color: Color.fromARGB(65, 230, 132, 125), radius: 120),
+              MovingCircle(
+                  color: Color.fromARGB(55, 230, 132, 125), radius: 150),
+              MovingCircle(
+                  color: Color.fromARGB(45, 230, 132, 125), radius: 180),
+              MovingCircle(
+                  color: Color.fromARGB(35, 230, 132, 125), radius: 200),
             ],
             child: _buildBody(screenSize),
           ),
@@ -217,9 +222,7 @@ class BloodBankDetailsScreenState extends State<BloodBankDetailsScreen> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Icon(Icons.inventory_2_outlined,
-                    size: 60,
-                    color: Colors.grey[400]
-                ),
+                    size: 60, color: Colors.grey[400]),
                 const SizedBox(height: 16),
                 Text(
                   'No inventory available',
@@ -296,10 +299,12 @@ class BloodBankDetailsScreenState extends State<BloodBankDetailsScreen> {
                                 SizedBox(width: 15),
                                 Expanded(
                                   child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
                                     children: [
                                       Row(
-                                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.spaceBetween,
                                         children: [
                                           Text(
                                             "${inventory.quantity} units",
@@ -325,7 +330,8 @@ class BloodBankDetailsScreenState extends State<BloodBankDetailsScreen> {
                             width: double.infinity,
                             height: 6,
                             decoration: BoxDecoration(
-                              color: _getColorForStatus(inventory.status).withOpacity(0.2),
+                              color: _getColorForStatus(inventory.status)
+                                  .withOpacity(0.2),
                               borderRadius: const BorderRadius.only(
                                 bottomLeft: Radius.circular(15),
                                 bottomRight: Radius.circular(15),
@@ -363,27 +369,27 @@ class BloodBankDetailsScreenState extends State<BloodBankDetailsScreen> {
                     ),
                     child: _isLoading
                         ? SizedBox(
-                      width: 24,
-                      height: 24,
-                      child: CircularProgressIndicator(
-                        color: Colors.white,
-                        strokeWidth: 2.0,
-                      ),
-                    )
+                            width: 24,
+                            height: 24,
+                            child: CircularProgressIndicator(
+                              color: Colors.white,
+                              strokeWidth: 2.0,
+                            ),
+                          )
                         : Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        const Icon(Icons.calendar_today_outlined),
-                        const SizedBox(width: 10),
-                        Text(
-                          "Make Reservation",
-                          style: GoogleFonts.montserrat(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w600,
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              const Icon(Icons.calendar_today_outlined),
+                              const SizedBox(width: 10),
+                              Text(
+                                "Make Reservation",
+                                style: GoogleFonts.montserrat(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ],
                           ),
-                        ),
-                      ],
-                    ),
                   ),
                 ),
               ),
@@ -418,10 +424,7 @@ class BloodBankDetailsScreenState extends State<BloodBankDetailsScreen> {
             const SizedBox(height: 20),
             Text(
               "Loading blood bank details...",
-              style: GoogleFonts.roboto(
-                  fontSize: 16,
-                  color: Colors.grey[700]
-              ),
+              style: GoogleFonts.roboto(fontSize: 16, color: Colors.grey[700]),
             ),
           ],
         ),

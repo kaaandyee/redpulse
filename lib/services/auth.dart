@@ -1,8 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 
 import 'package:redpulse/features/models/inventory.dart';
 import 'package:redpulse/features/models/bloodbank.dart';
@@ -30,8 +28,12 @@ class AuthMethod {
     String res = "Some error occurred";
     try {
       // Validate input fields
-      if (email.isEmpty || password.isEmpty || firstName.isEmpty ||
-          lastName.isEmpty || phoneNumber.isEmpty || address.isEmpty) {
+      if (email.isEmpty ||
+          password.isEmpty ||
+          firstName.isEmpty ||
+          lastName.isEmpty ||
+          phoneNumber.isEmpty ||
+          address.isEmpty) {
         return "Please fill in all the fields.";
       }
 
@@ -77,10 +79,7 @@ class AuthMethod {
       }
 
       // Save user data to Firestore
-      await _firestore
-          .collection("users")
-          .doc(uid)
-          .set(userAdmin.toJson());
+      await _firestore.collection("users").doc(uid).set(userAdmin.toJson());
 
       res = "success";
     } on FirebaseAuthException catch (e) {
@@ -134,7 +133,7 @@ class AuthMethod {
 
           // Get the user's data as a Map
           Map<String, dynamic> userData =
-          userSnapshot.data() as Map<String, dynamic>;
+              userSnapshot.data() as Map<String, dynamic>;
 
           // Get the user's role and check if they are an admin
           String role = userData['role'];
@@ -153,17 +152,16 @@ class AuthMethod {
           if (isAdmin) {
             Navigator.of(context).pushReplacement(
               MaterialPageRoute(
-                builder: (context) =>
-                    AdminStart(
-                      isAdminLinkedToBloodBank: isAdminLinkedToBloodBank,
-                    ),
+                builder: (context) => AdminStart(
+                  isAdminLinkedToBloodBank: isAdminLinkedToBloodBank,
+                ),
               ),
             );
           } else {
             Navigator.of(context).pushReplacement(
               MaterialPageRoute(
                 builder: (context) =>
-                const UserStart(), // Regular user homepage
+                    const UserStart(), // Regular user homepage
               ),
             );
           }
@@ -208,7 +206,7 @@ class AuthMethod {
       if (currentUser != null) {
         // Fetch the user's document from Firestore
         DocumentSnapshot userDoc =
-        await _firestore.collection('users').doc(currentUser.uid).get();
+            await _firestore.collection('users').doc(currentUser.uid).get();
 
         // Check if the document exists and safely access the 'fullName' field
         if (userDoc.exists) {
@@ -239,7 +237,7 @@ class AuthMethod {
       if (currentUser != null) {
         // Fetch the user's document from Firestore using the user's UID
         DocumentSnapshot userDoc =
-        await _firestore.collection('users').doc(currentUser.uid).get();
+            await _firestore.collection('users').doc(currentUser.uid).get();
 
         // Check if the document exists and access the 'id' field
         if (userDoc.exists) {
@@ -258,8 +256,7 @@ class AuthMethod {
                 .get();
 
             print(
-                "Admin query result: ${adminQuerySnapshot
-                    .docs}"); // Debugging line
+                "Admin query result: ${adminQuerySnapshot.docs}"); // Debugging line
 
             if (adminQuerySnapshot.docs.isNotEmpty) {
               var adminDoc = adminQuerySnapshot.docs.first;
@@ -392,14 +389,8 @@ class AuthMethod {
       String adminId = await getAdminId();
 
       // Generate unique Firestore IDs
-      String bloodBankId = _firestore
-          .collection("bloodbanks")
-          .doc()
-          .id;
-      String inventoryId = _firestore
-          .collection("inventories")
-          .doc()
-          .id;
+      String bloodBankId = _firestore.collection("bloodbanks").doc().id;
+      String inventoryId = _firestore.collection("inventories").doc().id;
 
       // Create a BloodBankModel object with inventoryId
       BloodBankModel bloodBank = BloodBankModel(
@@ -459,7 +450,4 @@ class AuthMethod {
       return false;
     }
   }
-
-
-
 }

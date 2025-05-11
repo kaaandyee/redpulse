@@ -198,7 +198,8 @@ class _ReservationDetailsScreenState extends State<ReservationDetailsScreen> {
             ),
             child: SafeArea(
               child: Padding(
-                padding: EdgeInsets.symmetric(horizontal: screenSize.width * 0.06),
+                padding:
+                    EdgeInsets.symmetric(horizontal: screenSize.width * 0.06),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
@@ -244,7 +245,8 @@ class _ReservationDetailsScreenState extends State<ReservationDetailsScreen> {
             width: 150,
             height: 150,
             fit: BoxFit.cover,
-            errorBuilder: (context, error, stackTrace) => const CircularProgressIndicator(
+            errorBuilder: (context, error, stackTrace) =>
+                const CircularProgressIndicator(
               color: Color.fromARGB(250, 212, 61, 61),
             ),
           ),
@@ -349,7 +351,6 @@ class _ReservationDetailsScreenState extends State<ReservationDetailsScreen> {
                             color: Colors.white,
                           ),
                         ),
-
                       ],
                     ),
                     SizedBox(height: screenSize.height * 0.02),
@@ -440,7 +441,6 @@ class _ReservationDetailsScreenState extends State<ReservationDetailsScreen> {
                       ],
                     ),
                     SizedBox(height: screenSize.height * 0.02),
-
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
@@ -583,40 +583,50 @@ class _ReservationDetailsScreenState extends State<ReservationDetailsScreen> {
                               fontSize: 14,
                               color: Colors.black87,
                             ),
-                          ),
-                          actions: [
-                            TextButton(
-                              onPressed: () => Navigator.pop(context, false),
-                              child: Text(
-                                'No, Keep It',
-                                style: GoogleFonts.roboto(color: Colors.grey[700]),
+                            content: Text(
+                              'Are you sure you want to cancel this reservation? This action cannot be undone.',
+                              style: GoogleFonts.roboto(
+                                fontSize: 16,
+                                color: Colors.black87,
                               ),
                             ),
-                            ElevatedButton(
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: Styles.primaryColor,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(8),
+                            actions: [
+                              TextButton(
+                                onPressed: () => Navigator.pop(context, false),
+                                child: Text(
+                                  'No, Keep It',
+                                  style: GoogleFonts.roboto(
+                                      color: Colors.grey[700]),
                                 ),
                               ),
-                              onPressed: () => Navigator.pop(context, true),
-                              child: Text(
-                                'Yes, Cancel',
-                                style: GoogleFonts.roboto(color: Colors.white),
+                              ElevatedButton(
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Styles.primaryColor,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                ),
+                                onPressed: () => Navigator.pop(context, true),
+                                child: Text(
+                                  'Yes, Cancel',
+                                  style:
+                                      GoogleFonts.roboto(color: Colors.white),
+                                ),
                               ),
-                            ),
-                          ],
-                        ),
-                      );
+                            ],
+                          ),
+                        );
 
-                      if (confirmed) {
-                        controller.success();
-                        await Future.delayed(const Duration(milliseconds: 400));
-                        await cancelReservation();
-                      } else {
-                        controller.reset();
-                      }
-                    },
+                        if (confirmed) {
+                          controller.success();
+                          await Future.delayed(
+                              const Duration(milliseconds: 400));
+                          await cancelReservation();
+                        } else {
+                          controller.reset();
+                        }
+                      },
+                    ),
                   ),
                 ),
               ),
@@ -691,7 +701,6 @@ Widget _buildInfoBox({
 
 }) {
   final screenSize = MediaQuery.of(context).size;
-
   Widget content;
 
   if (icon != null) {

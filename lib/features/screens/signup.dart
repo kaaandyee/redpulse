@@ -7,7 +7,6 @@ import 'package:redpulse/features/screens/user/start.dart';
 import 'package:redpulse/services/auth.dart';
 import 'package:redpulse/services/validation.dart';
 import 'package:redpulse/utilities/constants/enums.dart';
-import 'package:redpulse/utilities/constants/styles.dart';
 import 'package:redpulse/widgets/button.dart';
 import 'package:redpulse/widgets/dropdown.dart';
 import 'package:redpulse/widgets/textfield.dart';
@@ -28,7 +27,7 @@ class _SignupScreenState extends State<SignupScreen> {
   final TextEditingController phoneNumberController = TextEditingController();
   final TextEditingController addressController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
-  BloodType selectedBType = BloodType.oNegative;  // Default blood type
+  BloodType selectedBType = BloodType.oNegative; // Default blood type
   bool isLoading = false;
 
   @override
@@ -79,7 +78,12 @@ class _SignupScreenState extends State<SignupScreen> {
     }
 
     // Validation checks
-    if (firstName.isEmpty || lastName.isEmpty || phoneNumber.isEmpty || address.isEmpty || password.isEmpty || email.isEmpty) {
+    if (firstName.isEmpty ||
+        lastName.isEmpty ||
+        phoneNumber.isEmpty ||
+        address.isEmpty ||
+        password.isEmpty ||
+        email.isEmpty) {
       showPopup("Please fill in all fields.");
       return;
     }
@@ -119,7 +123,7 @@ class _SignupScreenState extends State<SignupScreen> {
         ),
       );
     } else {
-      showPopup(res);  // Show error message in popup instead of snackbar
+      showPopup(res); // Show error message in popup instead of snackbar
     }
   }
 
@@ -347,8 +351,10 @@ class _SignupScreenState extends State<SignupScreen> {
                             child: Padding(
                               padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 10),
                               child: isLoading
-                                  ? const CircularProgressIndicator(color: Color.fromARGB(250, 212, 61, 61))
-                                  : MyButtons(onTap: signupUser, text: "Sign Up"),
+                                  ? const CircularProgressIndicator(
+                                      color: Color.fromARGB(250, 212, 61, 61))
+                                  : MyButtons(
+                                      onTap: signupUser, text: "Sign Up"),
                             ),
                           ),
                           FadeIn(

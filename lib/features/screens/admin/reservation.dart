@@ -11,8 +11,7 @@ import 'package:google_fonts/google_fonts.dart';
 class AdminReservationScreen extends StatefulWidget {
   final String bloodBankId;
 
-  const AdminReservationScreen({Key? key, required this.bloodBankId})
-      : super(key: key);
+  const AdminReservationScreen({super.key, required this.bloodBankId});
 
   @override
   State<AdminReservationScreen> createState() => _AdminReservationScreenState();
@@ -32,10 +31,21 @@ class _AdminReservationScreenState extends State<AdminReservationScreen> {
 
   final TextEditingController _searchController = TextEditingController();
   final List<String> bloodTypes = [
-    'A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'
+    'A+',
+    'A-',
+    'B+',
+    'B-',
+    'AB+',
+    'AB-',
+    'O+',
+    'O-'
   ];
   final List<String> statusTypes = [
-    'Pending', 'Reserved', 'Cancelled', 'Completed', 'All'
+    'Pending',
+    'Reserved',
+    'Cancelled',
+    'Completed',
+    'All'
   ];
 
   @override
@@ -76,42 +86,47 @@ Future<void> _fetchReservations() async {
         if (userDoc.exists) {
           userName = userDoc.data()?['fullName'] ?? 'Unknown User';
         }
-      }
 
-      // Safer timestamp handling
-      DateTime? reservedAt;
-      if (data['reservedAt'] != null) {
-        try {
-          if (data['reservedAt'] is Timestamp) {
-            reservedAt = (data['reservedAt'] as Timestamp).toDate();
-          } else if (data['reservedAt'] is String) {
-            // Try to parse if it's a string date
-            reservedAt = DateTime.tryParse(data['reservedAt']);
+        // Safer timestamp handling
+        DateTime? reservedAt;
+        if (data['reservedAt'] != null) {
+          try {
+            if (data['reservedAt'] is Timestamp) {
+              reservedAt = (data['reservedAt'] as Timestamp).toDate();
+            } else if (data['reservedAt'] is String) {
+              // Try to parse if it's a string date
+              reservedAt = DateTime.tryParse(data['reservedAt']);
+            }
+          } catch (e) {
+            print("Error parsing reservedAt: $e");
           }
-        } catch (e) {
-          print("Error parsing reservedAt: $e");
         }
-      }
 
-      DateTime? validUntil;
-      if (data['validUntil'] != null) {
-        try {
-          if (data['validUntil'] is Timestamp) {
-            validUntil = (data['validUntil'] as Timestamp).toDate();
-          } else if (data['validUntil'] is String) {
-            validUntil = DateTime.tryParse(data['validUntil']);
+        DateTime? validUntil;
+        if (data['validUntil'] != null) {
+          try {
+            if (data['validUntil'] is Timestamp) {
+              validUntil = (data['validUntil'] as Timestamp).toDate();
+            } else if (data['validUntil'] is String) {
+              validUntil = DateTime.tryParse(data['validUntil']);
+            }
+          } catch (e) {
+            print("Error parsing validUntil: $e");
           }
-        } catch (e) {
-          print("Error parsing validUntil: $e");
         }
+
+        reservations.add({
+          'id': doc.id,
+          ...data,
+          'userName': userName,
+          'reservationDate': reservedAt,
+          'validUntil': validUntil,
+        });
       }
 
-      reservations.add({
-        'id': doc.id,
-        ...data,
-        'userName': userName,
-        'reservationDate': reservedAt,
-        'validUntil': validUntil,
+      setState(() {
+        _reservations = reservations;
+        _isLoading = false;
       });
     }
 
@@ -127,15 +142,24 @@ Future<void> _fetchReservations() async {
     setState(() {
     });
   }
-}
 
   // --- FILTERS ---
-  List<Map<String, dynamic>> filterReservations(List<Map<String, dynamic>> reservations) {
+  List<Map<String, dynamic>> filterReservations(
+      List<Map<String, dynamic>> reservations) {
     return reservations.where((reservation) {
       bool matchesSearch = searchQuery.isEmpty ||
-          (reservation['userName']?.toLowerCase().contains(searchQuery.toLowerCase()) ?? false) ||
-          (reservation['bloodType']?.toLowerCase().contains(searchQuery.toLowerCase()) ?? false) ||
-          (reservation['status']?.toLowerCase().contains(searchQuery.toLowerCase()) ?? false);
+          (reservation['userName']
+                  ?.toLowerCase()
+                  .contains(searchQuery.toLowerCase()) ??
+              false) ||
+          (reservation['bloodType']
+                  ?.toLowerCase()
+                  .contains(searchQuery.toLowerCase()) ??
+              false) ||
+          (reservation['status']
+                  ?.toLowerCase()
+                  .contains(searchQuery.toLowerCase()) ??
+              false);
 
       bool matchesStatus = selectedStatusFilter == null ||
           selectedStatusFilter == 'All' ||
@@ -145,9 +169,13 @@ Future<void> _fetchReservations() async {
           reservation['bloodType'] == selectedBloodTypeFilter;
 
       bool matchesDateRange = true;
-      if (startDateFilter != null && endDateFilter != null && reservation['validUntil'] != null) {
-        matchesDateRange = reservation['validUntil'].isAfter(startDateFilter!) &&
-            reservation['validUntil'].isBefore(endDateFilter!.add(const Duration(days: 1)));
+      if (startDateFilter != null &&
+          endDateFilter != null &&
+          reservation['validUntil'] != null) {
+        matchesDateRange =
+            reservation['validUntil'].isAfter(startDateFilter!) &&
+                reservation['validUntil']
+                    .isBefore(endDateFilter!.add(const Duration(days: 1)));
       }
 
       bool matchesQuantity = true;
@@ -158,17 +186,23 @@ Future<void> _fetchReservations() async {
         matchesQuantity = (reservation['quantity'] ?? 0) <= maxQuantityFilter!;
       }
 
-      return matchesSearch && matchesStatus && matchesBloodType && matchesDateRange && matchesQuantity;
+      return matchesSearch &&
+          matchesStatus &&
+          matchesBloodType &&
+          matchesDateRange &&
+          matchesQuantity;
     }).toList();
   }
 
-  List<Map<String, dynamic>> sortReservations(List<Map<String, dynamic>> reservations) {
+  List<Map<String, dynamic>> sortReservations(
+      List<Map<String, dynamic>> reservations) {
     reservations.sort((a, b) {
       if (a['status'] == 'Pending' && b['status'] != 'Pending') return -1;
       if (a['status'] != 'Pending' && b['status'] == 'Pending') return 1;
       if (a['status'] == 'Completed' && b['status'] != 'Completed') return 1;
       if (a['status'] != 'Completed' && b['status'] == 'Completed') return -1;
-      return (b['validUntil'] ?? DateTime(2000)).compareTo(a['validUntil'] ?? DateTime(2000));
+      return (b['validUntil'] ?? DateTime(2000))
+          .compareTo(a['validUntil'] ?? DateTime(2000));
     });
     return reservations;
   }
@@ -183,7 +217,9 @@ Future<void> _fetchReservations() async {
           return Container(
             padding: EdgeInsets.only(
               bottom: MediaQuery.of(context).viewInsets.bottom + 20,
-              top: 20, left: 20, right: 20,
+              top: 20,
+              left: 20,
+              right: 20,
             ),
             decoration: const BoxDecoration(
               color: Colors.white,
@@ -200,9 +236,12 @@ Future<void> _fetchReservations() async {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text('Filter Reservations',
+                      Text(
+                        'Filter Reservations',
                         style: GoogleFonts.montserrat(
-                          fontSize: 22, fontWeight: FontWeight.w700, color: Styles.primaryColor,
+                          fontSize: 22,
+                          fontWeight: FontWeight.w700,
+                          color: Styles.primaryColor,
                         ),
                       ),
                       IconButton(
@@ -212,49 +251,61 @@ Future<void> _fetchReservations() async {
                     ],
                   ),
                   const SizedBox(height: 20),
-                  Text('Status', style: GoogleFonts.montserrat(fontSize: 16, fontWeight: FontWeight.w600)),
+                  Text('Status',
+                      style: GoogleFonts.montserrat(
+                          fontSize: 16, fontWeight: FontWeight.w600)),
                   const SizedBox(height: 10),
                   Wrap(
                     spacing: 10,
-                    children: statusTypes.map((status) =>
-                        ChoiceChip(
-                          label: Text(status),
-                          selected: selectedStatusFilter == status,
-                          onSelected: (selected) {
-                            setModalState(() {
-                              selectedStatusFilter = selected ? status : null;
-                            });
-                          },
-                          selectedColor: Styles.primaryColor,
-                          labelStyle: TextStyle(
-                            color: selectedStatusFilter == status ? Colors.white : Colors.black,
-                          ),
-                        )
-                    ).toList(),
+                    children: statusTypes
+                        .map((status) => ChoiceChip(
+                              label: Text(status),
+                              selected: selectedStatusFilter == status,
+                              onSelected: (selected) {
+                                setModalState(() {
+                                  selectedStatusFilter =
+                                      selected ? status : null;
+                                });
+                              },
+                              selectedColor: Styles.primaryColor,
+                              labelStyle: TextStyle(
+                                color: selectedStatusFilter == status
+                                    ? Colors.white
+                                    : Colors.black,
+                              ),
+                            ))
+                        .toList(),
                   ),
                   const SizedBox(height: 20),
-                  Text('Blood Type', style: GoogleFonts.montserrat(fontSize: 16, fontWeight: FontWeight.w600)),
+                  Text('Blood Type',
+                      style: GoogleFonts.montserrat(
+                          fontSize: 16, fontWeight: FontWeight.w600)),
                   const SizedBox(height: 10),
                   Wrap(
                     spacing: 10,
-                    children: bloodTypes.map((type) =>
-                        ChoiceChip(
-                          label: Text(type),
-                          selected: selectedBloodTypeFilter == type,
-                          onSelected: (selected) {
-                            setModalState(() {
-                              selectedBloodTypeFilter = selected ? type : null;
-                            });
-                          },
-                          selectedColor: Styles.primaryColor,
-                          labelStyle: TextStyle(
-                            color: selectedBloodTypeFilter == type ? Colors.white : Colors.black,
-                          ),
-                        )
-                    ).toList(),
+                    children: bloodTypes
+                        .map((type) => ChoiceChip(
+                              label: Text(type),
+                              selected: selectedBloodTypeFilter == type,
+                              onSelected: (selected) {
+                                setModalState(() {
+                                  selectedBloodTypeFilter =
+                                      selected ? type : null;
+                                });
+                              },
+                              selectedColor: Styles.primaryColor,
+                              labelStyle: TextStyle(
+                                color: selectedBloodTypeFilter == type
+                                    ? Colors.white
+                                    : Colors.black,
+                              ),
+                            ))
+                        .toList(),
                   ),
                   const SizedBox(height: 20),
-                  Text('Valid Until Date Range', style: GoogleFonts.montserrat(fontSize: 16, fontWeight: FontWeight.w600)),
+                  Text('Valid Until Date Range',
+                      style: GoogleFonts.montserrat(
+                          fontSize: 16, fontWeight: FontWeight.w600)),
                   const SizedBox(height: 10),
                   Row(
                     children: [
@@ -275,7 +326,8 @@ Future<void> _fetchReservations() async {
                           },
                           child: Text(
                             startDateFilter != null
-                                ? DateFormat('MM/dd/yyyy').format(startDateFilter!)
+                                ? DateFormat('MM/dd/yyyy')
+                                    .format(startDateFilter!)
                                 : 'Start Date',
                           ),
                         ),
@@ -298,7 +350,8 @@ Future<void> _fetchReservations() async {
                           },
                           child: Text(
                             endDateFilter != null
-                                ? DateFormat('MM/dd/yyyy').format(endDateFilter!)
+                                ? DateFormat('MM/dd/yyyy')
+                                    .format(endDateFilter!)
                                 : 'End Date',
                           ),
                         ),
@@ -306,7 +359,9 @@ Future<void> _fetchReservations() async {
                     ],
                   ),
                   const SizedBox(height: 20),
-                  Text('Quantity Range', style: GoogleFonts.montserrat(fontSize: 16, fontWeight: FontWeight.w600)),
+                  Text('Quantity Range',
+                      style: GoogleFonts.montserrat(
+                          fontSize: 16, fontWeight: FontWeight.w600)),
                   const SizedBox(height: 10),
                   Row(
                     children: [
@@ -320,7 +375,8 @@ Future<void> _fetchReservations() async {
                           initialValue: minQuantityFilter?.toString(),
                           onChanged: (value) {
                             setModalState(() {
-                              minQuantityFilter = value.isNotEmpty ? int.tryParse(value) : null;
+                              minQuantityFilter =
+                                  value.isNotEmpty ? int.tryParse(value) : null;
                             });
                           },
                         ),
@@ -336,7 +392,8 @@ Future<void> _fetchReservations() async {
                           initialValue: maxQuantityFilter?.toString(),
                           onChanged: (value) {
                             setModalState(() {
-                              maxQuantityFilter = value.isNotEmpty ? int.tryParse(value) : null;
+                              maxQuantityFilter =
+                                  value.isNotEmpty ? int.tryParse(value) : null;
                             });
                           },
                         ),
@@ -358,7 +415,9 @@ Future<void> _fetchReservations() async {
                               maxQuantityFilter = null;
                             });
                           },
-                          child: Text('Reset', style: GoogleFonts.roboto(color: Colors.grey[700])),
+                          child: Text('Reset',
+                              style:
+                                  GoogleFonts.roboto(color: Colors.grey[700])),
                         ),
                       ),
                       const SizedBox(width: 10),
@@ -371,7 +430,8 @@ Future<void> _fetchReservations() async {
                             setState(() {});
                             Navigator.pop(context);
                           },
-                          child: Text('Apply', style: GoogleFonts.roboto(color: Colors.white)),
+                          child: Text('Apply',
+                              style: GoogleFonts.roboto(color: Colors.white)),
                         ),
                       ),
                     ],
@@ -541,7 +601,8 @@ Future<void> _fetchReservations() async {
 
         // Try to find user name in existing reservations to avoid unnecessary Firebase calls
         for (var existing in _reservations) {
-          if (existing['id'] == doc.id && existing['userName'] != 'Unknown User') {
+          if (existing['id'] == doc.id &&
+              existing['userName'] != 'Unknown User') {
             userName = existing['userName'];
             break;
           }
@@ -638,29 +699,40 @@ Widget build(BuildContext context) {
               spreadRadius: 2,
               offset: const Offset(0, 3),
             ),
-          ],
-        ),
-        child: SafeArea(
-          child: Padding(
-            padding: EdgeInsets.symmetric(
-              horizontal: screenSize.width * 0.06,
-              vertical: screenSize.height * 0.015,
+            borderRadius: const BorderRadius.only(
+              bottomLeft: Radius.circular(25),
+              bottomRight: Radius.circular(25),
             ),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    Icon(Icons.calendar_today,
-                        color: Colors.white, size: 32),
-                    const SizedBox(width: 12),
-                    Text(
-                      "Reservations",
-                      style: GoogleFonts.montserrat(
-                        fontSize: screenSize.width * 0.06,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
+            boxShadow: [
+              BoxShadow(
+                color: Colors.red.withOpacity(0.2),
+                blurRadius: 15,
+                spreadRadius: 2,
+                offset: const Offset(0, 3),
+              ),
+            ],
+          ),
+          child: SafeArea(
+            child: Padding(
+              padding: EdgeInsets.symmetric(
+                horizontal: screenSize.width * 0.06,
+                vertical: screenSize.height * 0.015,
+              ),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Icon(Icons.calendar_today, color: Colors.white, size: 32),
+                      const SizedBox(width: 12),
+                      Text(
+                        "Reservations",
+                        style: GoogleFonts.montserrat(
+                          fontSize: screenSize.width * 0.06,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
                       ),
                     ),
                     const Spacer(),
@@ -712,26 +784,21 @@ Widget build(BuildContext context) {
                     fillColor: Colors.white,
                     contentPadding: const EdgeInsets.symmetric(vertical: 12),
                   ),
-                  onChanged: (value) {
-                    setState(() {
-                      searchQuery = value;
-                    });
-                  },
                 ),
-              ),
-              const SizedBox(width: 10),
-              InkWell(
-                onTap: _showFilterDialog,
-                child: Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: Styles.primaryColor,
-                    borderRadius: BorderRadius.circular(10),
+                const SizedBox(width: 10),
+                InkWell(
+                  onTap: _showFilterDialog,
+                  child: Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: Styles.primaryColor,
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: const Icon(Icons.filter_list, color: Colors.white),
                   ),
-                  child: const Icon(Icons.filter_list, color: Colors.white),
-                ),
-              )
-            ],
+                )
+              ],
+            ),
           ),
         ),
 
@@ -794,15 +861,38 @@ Widget build(BuildContext context) {
                     ),
                   ),
 
-        // Reservations list with Stream and pull-down refresh
-        Expanded(
-          child: StreamBuilder<QuerySnapshot>(
-            stream: FirebaseFirestore.instance
-                .collection('reservations')
-                .where('bloodBankId', isEqualTo: widget.bloodBankId)
-                .snapshots(),
-            builder: (context, snapshot) {
-              if (snapshot.hasError) {
+          // Reservations list with Stream and pull-down refresh
+          Expanded(
+            child: StreamBuilder<QuerySnapshot>(
+              stream: FirebaseFirestore.instance
+                  .collection('reservations')
+                  .where('bloodBankId', isEqualTo: widget.bloodBankId)
+                  .snapshots(),
+              builder: (context, snapshot) {
+                if (snapshot.hasError) {
+                  return RefreshIndicator(
+                    onRefresh: _fetchReservations,
+                    child: ListView(
+                      physics: const AlwaysScrollableScrollPhysics(),
+                      children: [
+                        SizedBox(
+                          height: MediaQuery.of(context).size.height * 0.7,
+                          child: Center(
+                            child: Text('Error: ${snapshot.error}'),
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                }
+
+                // Use the stream data if available
+                if (snapshot.hasData &&
+                    snapshot.connectionState == ConnectionState.active) {
+                  // Process the updated data in the background
+                  _processStreamData(snapshot.data!.docs);
+                }
+
                 return RefreshIndicator(
                   onRefresh: _fetchReservations,
                   color: Colors.red,
@@ -858,8 +948,8 @@ Widget build(BuildContext context) {
                                       fontSize: 14,
                                       color: Colors.grey[500],
                                     ),
-                                  ),
-                                ],
+                                  ],
+                                ),
                               ),
                             ),
                           ),
@@ -902,9 +992,8 @@ Widget build(BuildContext context) {
               );
             },
           ),
-        ),
-      ],
-    ),
-  );
-}
+        ],
+      ),
+    );
+  }
 }
