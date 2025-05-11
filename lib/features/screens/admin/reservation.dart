@@ -1,9 +1,12 @@
+// ignore_for_file: avoid_print, deprecated_member_use
+
+import 'package:animate_do/animate_do.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:intl/intl.dart';
+import 'package:redpulse/features/screens/admin/sub/adminreservation.dart';
 import 'package:redpulse/utilities/constants/styles.dart';
 import 'package:google_fonts/google_fonts.dart';
-import '../user/sub/reservationdetails.dart';
 
 class AdminReservationScreen extends StatefulWidget {
   final String bloodBankId;
@@ -16,8 +19,6 @@ class AdminReservationScreen extends StatefulWidget {
 
 class _AdminReservationScreenState extends State<AdminReservationScreen> {
   List<Map<String, dynamic>> _reservations = [];
-  bool _isLoading = true;
-  String _errorMessage = '';
   String searchQuery = '';
 
   // Filter options
@@ -53,40 +54,37 @@ class _AdminReservationScreenState extends State<AdminReservationScreen> {
     _fetchReservations();
   }
 
-  Future<void> _fetchReservations() async {
-    setState(() {
-      _isLoading = true;
-      _errorMessage = '';
-    });
+Future<void> _fetchReservations() async {
+  setState(() {
+  });
 
-    try {
-      // Add debug output to verify bloodBankId
-      print("Fetching reservations for bloodBankId: ${widget.bloodBankId}");
+  try {
+    // Add debug output to verify bloodBankId
+    print("Fetching reservations for bloodBankId: ${widget.bloodBankId}");
 
-      final reservationSnapshot = await FirebaseFirestore.instance
-          .collection('reservations')
-          .where('bloodBankId', isEqualTo: widget.bloodBankId)
-          .get();
+    final reservationSnapshot = await FirebaseFirestore.instance
+        .collection('reservations')
+        .where('bloodBankId', isEqualTo: widget.bloodBankId)
+        .get();
 
-      // Debug: Check if query returned documents
-      print("Query returned ${reservationSnapshot.docs.length} documents");
+    // Debug: Check if query returned documents
+    print("Query returned ${reservationSnapshot.docs.length} documents");
 
-      List<Map<String, dynamic>> reservations = [];
-      for (var doc in reservationSnapshot.docs) {
-        Map<String, dynamic> data = doc.data();
-        // Debug: Print document data
-        print("Document ID: ${doc.id}, Data: $data");
+    List<Map<String, dynamic>> reservations = [];
+    for (var doc in reservationSnapshot.docs) {
+      Map<String, dynamic> data = doc.data();
+      // Debug: Print document data
+      print("Document ID: ${doc.id}, Data: $data");
 
-        String userId = data['userId'] ?? '';
-        String userName = 'Unknown User';
-        if (userId.isNotEmpty) {
-          final userDoc = await FirebaseFirestore.instance
-              .collection('users')
-              .doc(userId)
-              .get();
-          if (userDoc.exists) {
-            userName = userDoc.data()?['fullName'] ?? 'Unknown User';
-          }
+      String userId = data['userId'] ?? '';
+      String userName = 'Unknown User';
+      if (userId.isNotEmpty) {
+        final userDoc = await FirebaseFirestore.instance
+            .collection('users')
+            .doc(userId)
+            .get();
+        if (userDoc.exists) {
+          userName = userDoc.data()?['fullName'] ?? 'Unknown User';
         }
 
         // Safer timestamp handling
@@ -130,16 +128,19 @@ class _AdminReservationScreenState extends State<AdminReservationScreen> {
         _reservations = reservations;
         _isLoading = false;
       });
-
-      // Debug: Print resulting reservations
-      print("Processed ${_reservations.length} reservations");
-    } catch (e) {
-      print("Error in _fetchReservations: $e");
-      setState(() {
-        _errorMessage = 'Error loading reservations: $e';
-        _isLoading = false;
-      });
     }
+
+    setState(() {
+      _reservations = reservations;
+    });
+
+    // Debug: Print resulting reservations
+    print("Processed ${_reservations.length} reservations");
+
+  } catch (e) {
+    print("Error in _fetchReservations: $e");
+    setState(() {
+    });
   }
 
   // --- FILTERS ---
@@ -490,11 +491,13 @@ class _AdminReservationScreenState extends State<AdminReservationScreen> {
       tileColor = Colors.blue[700] ?? Colors.blue;
       statusIcon = Icons.task_alt;
     } else {
-      tileColor = Styles.tertiaryColor;
+      tileColor = Styles.complementColor;
       statusIcon = Icons.info;
     }
 
-    return Padding(
+    return FadeInUp(
+    duration: Duration(milliseconds: 800 + (index * 100)),
+    child: Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 5),
       child: Card(
         elevation: 4,
@@ -505,8 +508,7 @@ class _AdminReservationScreenState extends State<AdminReservationScreen> {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(15),
           ),
-          contentPadding:
-              const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
+          contentPadding: const EdgeInsets.symmetric(vertical: 16, horizontal: 15),
           tileColor: tileColor,
           leading: Container(
             padding: const EdgeInsets.all(8),
@@ -516,47 +518,62 @@ class _AdminReservationScreenState extends State<AdminReservationScreen> {
             ),
             child: Icon(
               statusIcon,
-              size: 36,
+              size: 30,
               color: Colors.white,
             ),
           ),
           title: Text(
             reservation['userName'] ?? 'Unknown User',
             style: GoogleFonts.montserrat(
-              fontSize: 18,
+              fontSize: 16,
               fontWeight: FontWeight.bold,
               color: Colors.white,
             ),
           ),
           subtitle: Padding(
-            padding: const EdgeInsets.only(top: 8.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+            padding: const EdgeInsets.only(top: 0.0),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.start,
               children: [
-                _buildReservationDetail('Blood Type', reservation['bloodType']),
-                _buildReservationDetail(
-                    'Quantity', '${reservation['quantity']} units'),
-                _buildReservationDetail('Status', reservation['status']),
-                _buildReservationDetail(
-                  'Valid Until',
-                  reservation['validUntil'] != null
-                      ? DateFormat('MM/dd/yyyy')
-                          .format(reservation['validUntil'])
-                      : 'N/A',
+                Text(
+                  'Blood Type ${reservation['bloodType']}',
+                  style: GoogleFonts.montserrat(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w400,
+                    color: Colors.white,
+                  ),
+                ),
+                SizedBox(width: 8),
+                Text(
+                  '|',
+                  style: GoogleFonts.montserrat(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.white70,
+                  ),
+                ),
+                SizedBox(width: 8),
+                Text(
+                  '${reservation['quantity']} Units',
+                  style: GoogleFonts.montserrat(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w400,
+                    color: Colors.white,
+                  ),
                 ),
               ],
             ),
           ),
           trailing: Icon(
             Icons.arrow_forward_ios,
-            color: Colors.white.withOpacity(0.7),
+            color: Colors.white,
             size: 20,
           ),
           onTap: () async {
             await Navigator.push(
               context,
               MaterialPageRoute(
-                builder: (context) => ReservationDetailsScreen(
+                builder: (context) => AdminReservationDetailsScreen(
                   reservationId: reservation['id'],
                 ),
               ),
@@ -565,34 +582,10 @@ class _AdminReservationScreenState extends State<AdminReservationScreen> {
           },
         ),
       ),
-    );
+    ),
+  );
   }
 
-  Widget _buildReservationDetail(String label, String value) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 6.0),
-      child: Row(
-        children: [
-          Text(
-            '$label: ',
-            style: GoogleFonts.roboto(
-              fontSize: 14,
-              fontWeight: FontWeight.w500,
-              color: Colors.white.withOpacity(0.9),
-            ),
-          ),
-          Text(
-            value,
-            style: GoogleFonts.roboto(
-              fontSize: 14,
-              fontWeight: FontWeight.w600,
-              color: Colors.white,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
 
   // Add this method to process stream data
   Future<void> _processStreamData(List<QueryDocumentSnapshot> docs) async {
@@ -666,34 +659,45 @@ class _AdminReservationScreenState extends State<AdminReservationScreen> {
     }
   }
 
-  @override
-  Widget build(BuildContext context) {
-    final screenSize = MediaQuery.of(context).size;
+@override
+Widget build(BuildContext context) {
+  final screenSize = MediaQuery.of(context).size;
 
-    // Filter and sort reservations
-    var filtered = filterReservations(_reservations);
-    var sorted = sortReservations(filtered);
+  // Filter and sort reservations
+  var filtered = filterReservations(_reservations);
+  var sorted = sortReservations(filtered);
 
-    // Section reservations
-    var pending = sorted.where((r) => r['status'] == 'Pending').toList();
-    var completed = sorted.where((r) => r['status'] == 'Completed').toList();
-    var other = sorted
-        .where((r) => r['status'] != 'Pending' && r['status'] != 'Completed')
-        .toList();
+  // Section reservations
+  var pending = sorted.where((r) => r['status'] == 'Pending').toList();
+  var completed = sorted.where((r) => r['status'] == 'Completed').toList();
+  var reserved = sorted.where((r) => r['status'] == 'Reserved').toList();
+  var cancelled = sorted.where((r) => r['status'] == 'Cancelled').toList();
 
-    return Scaffold(
-      extendBodyBehindAppBar: true,
-      appBar: PreferredSize(
-        preferredSize: Size.fromHeight(screenSize.height * 0.11),
-        child: Container(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
-              colors: [
-                Styles.primaryColor,
-                Styles.primaryColor.withOpacity(0.95),
-              ],
+  return Scaffold(
+    backgroundColor: Color.fromARGB(255, 248, 248, 248),
+    extendBodyBehindAppBar: true,
+    appBar: PreferredSize(
+      preferredSize: Size.fromHeight(screenSize.height * 0.11),
+      child: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              Styles.primaryColor,
+              Styles.primaryColor.withOpacity(0.95),
+            ],
+          ),
+          borderRadius: const BorderRadius.only(
+            bottomLeft: Radius.circular(25),
+            bottomRight: Radius.circular(25),
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.red.withOpacity(0.2),
+              blurRadius: 15,
+              spreadRadius: 2,
+              offset: const Offset(0, 3),
             ),
             borderRadius: const BorderRadius.only(
               bottomLeft: Radius.circular(25),
@@ -730,47 +734,55 @@ class _AdminReservationScreenState extends State<AdminReservationScreen> {
                           color: Colors.white,
                         ),
                       ),
-                      const Spacer(),
-                      IconButton(
-                        icon: const Icon(Icons.refresh, color: Colors.white),
-                        onPressed: _fetchReservations,
-                      )
-                    ],
-                  ),
-                ],
-              ),
+                    ),
+                    const Spacer(),
+                  ],
+                ),
+              ],
             ),
           ),
         ),
       ),
-      body: Column(
-        children: [
-          SizedBox(height: screenSize.height * 0.18),
+    ),
+    body: Column(
+      children: [
+        SizedBox(height: screenSize.height * 0.18),
 
-          // Search bar and filter button
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20),
-            child: Row(
-              children: [
-                Expanded(
-                  child: TextField(
-                    controller: _searchController,
-                    decoration: InputDecoration(
-                      hintText: 'Search reservations...',
-                      prefixIcon: const Icon(Icons.search),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(10),
-                        borderSide: BorderSide.none,
-                      ),
-                      filled: true,
-                      fillColor: Colors.grey[200],
-                      contentPadding: const EdgeInsets.symmetric(vertical: 12),
+        // Search bar and filter button
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20),
+          child: Row(
+            children: [
+              Expanded(
+                child: TextField(
+                  controller: _searchController,
+                  cursorColor: Colors.black,
+                  decoration: InputDecoration(
+                    hintText: 'Reservations...',
+                    hintStyle: GoogleFonts.roboto(
+                                        color: Colors.grey[500],),
+                                prefixIcon: Icon(
+                                  Icons.search,
+                                  color: Styles.primaryColor,
+                                ),
+                                suffixIcon: searchQuery.isNotEmpty
+                                    ? IconButton(
+                                  icon: Icon(
+                                      Icons.clear, color: Styles.primaryColor,),
+                                  onPressed: () {
+                                    setState(() {
+                                      _searchController.clear();
+                                      searchQuery = '';
+                                    });
+                                  },
+                                ): null,
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10),
+                      borderSide: BorderSide.none,
                     ),
-                    onChanged: (value) {
-                      setState(() {
-                        searchQuery = value;
-                      });
-                    },
+                    filled: true,
+                    fillColor: Colors.white,
+                    contentPadding: const EdgeInsets.symmetric(vertical: 12),
                   ),
                 ),
                 const SizedBox(width: 10),
@@ -788,72 +800,66 @@ class _AdminReservationScreenState extends State<AdminReservationScreen> {
               ],
             ),
           ),
+        ),
 
-          const SizedBox(height: 10),
-
+        const SizedBox(height: 10),
           // Active filters display
-          if (selectedStatusFilter != null ||
-              selectedBloodTypeFilter != null ||
-              startDateFilter != null ||
-              minQuantityFilter != null)
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
-              child: Container(
-                width: double.infinity,
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                decoration: BoxDecoration(
-                  color: Colors.blue.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: Colors.blue.withOpacity(0.3)),
-                ),
-                child: Wrap(
-                  spacing: 8,
-                  runSpacing: 8,
-                  children: [
-                    if (selectedStatusFilter != null)
-                      Chip(
-                        label: Text(selectedStatusFilter!),
-                        onDeleted: () =>
-                            setState(() => selectedStatusFilter = null),
-                        backgroundColor: Colors.blue.withOpacity(0.2),
-                      ),
-                    if (selectedBloodTypeFilter != null)
-                      Chip(
-                        label: Text(selectedBloodTypeFilter!),
-                        onDeleted: () =>
-                            setState(() => selectedBloodTypeFilter = null),
-                        backgroundColor: Colors.red.withOpacity(0.2),
-                      ),
-                    if (startDateFilter != null && endDateFilter != null)
-                      Chip(
-                        label: Text(
-                            '${DateFormat('MM/dd/yy').format(startDateFilter!)} - ${DateFormat('MM/dd/yy').format(endDateFilter!)}'),
-                        onDeleted: () => setState(() {
-                          startDateFilter = null;
-                          endDateFilter = null;
-                        }),
-                        backgroundColor: Colors.green.withOpacity(0.2),
-                      ),
-                    if (minQuantityFilter != null || maxQuantityFilter != null)
-                      Chip(
-                        label: Text(
-                          minQuantityFilter != null && maxQuantityFilter != null
-                              ? '${minQuantityFilter!} - ${maxQuantityFilter!} units'
-                              : minQuantityFilter != null
-                                  ? '≥ ${minQuantityFilter!} units'
-                                  : '≤ ${maxQuantityFilter!} units',
+                if (selectedStatusFilter != null ||
+                    selectedBloodTypeFilter != null ||
+                    startDateFilter != null || minQuantityFilter != null)
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    child: FadeInDown(
+                      duration: const Duration(milliseconds: 950),
+                      child: Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 15, vertical: 8),
+                        decoration: BoxDecoration(
+                          color: Colors.blue.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(10),
+                          border: Border.all(
+                              color: Colors.blue.withOpacity(0.3)),
                         ),
-                        onDeleted: () => setState(() {
-                          minQuantityFilter = null;
-                          maxQuantityFilter = null;
-                        }),
-                        backgroundColor: Colors.purple.withOpacity(0.2),
+                        child: Row(
+                          children: [
+                            Icon(Icons.filter_alt_outlined,
+                                color: Colors.blue[700], size: 18),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: Text(
+                                'Filters applied',
+                                style: GoogleFonts.roboto(
+                                  color: Colors.blue[700],
+                                  fontSize: 14,
+                                ),
+                              ),
+                            ),
+                            GestureDetector(
+                              onTap: () {
+                                setState(() {
+                                  selectedStatusFilter = null;
+                                  selectedBloodTypeFilter = null;
+                                  startDateFilter = null;
+                                  endDateFilter = null;
+                                  minQuantityFilter = null;
+                                  maxQuantityFilter = null;
+                                });
+                              },
+                              child: Text(
+                                'Clear all',
+                                style: GoogleFonts.roboto(
+                                  color: Colors.blue[700],
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
-                  ],
-                ),
-              ),
-            ),
+                    ),
+                  ),
 
           // Reservations list with Stream and pull-down refresh
           Expanded(
@@ -889,77 +895,102 @@ class _AdminReservationScreenState extends State<AdminReservationScreen> {
 
                 return RefreshIndicator(
                   onRefresh: _fetchReservations,
-                  child: pending.isEmpty && other.isEmpty && completed.isEmpty
-                      ? ListView(
-                          physics: const AlwaysScrollableScrollPhysics(),
-                          children: [
-                            SizedBox(
-                              height: MediaQuery.of(context).size.height * 0.5,
-                              child: Center(
-                                child: Column(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    Icon(Icons.search_off,
-                                        size: 60, color: Colors.grey[400]),
-                                    const SizedBox(height: 16),
-                                    Text(
-                                      'No reservations found',
-                                      style: GoogleFonts.montserrat(
-                                        fontSize: 18,
-                                        fontWeight: FontWeight.bold,
-                                        color: Colors.grey[700],
-                                      ),
+                  color: Colors.red,
+                  backgroundColor: Colors.white,
+                  child: ListView(
+                    physics: const AlwaysScrollableScrollPhysics(),
+                    children: [
+                      SizedBox(
+                        height: MediaQuery.of(context).size.height * 0.5,
+                        child: Center(
+                          child: Text('Error: ${snapshot.error}'),
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              }
+
+              // Use the stream data if available
+              if (snapshot.hasData && snapshot.connectionState == ConnectionState.active) {
+                // Process the updated data in the background
+                _processStreamData(snapshot.data!.docs);
+              }
+
+              return RefreshIndicator(
+                onRefresh: _fetchReservations,
+                color: Styles.primaryColor,
+                backgroundColor: Colors.white,
+                child: pending.isEmpty && reserved.isEmpty && completed.isEmpty
+                    ? ListView(
+                        physics: const AlwaysScrollableScrollPhysics(),
+                        children: [
+                          SizedBox(
+                            height: MediaQuery.of(context).size.height * 0.2,
+                            child: Center(
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(Icons.search_off, size: 60, color: Colors.grey[400]),
+                                  const SizedBox(height: 16),
+                                  Text(
+                                    'No reservations found',
+                                    style: TextStyle(
+                                      fontSize: 18,
+                                      color: Colors.grey[600],
+                                      fontWeight: FontWeight.bold,
                                     ),
-                                    const SizedBox(height: 8),
-                                    Text(
-                                      'Pull down to refresh',
-                                      style: GoogleFonts.roboto(
-                                        fontSize: 14,
-                                        color: Colors.grey[500],
-                                      ),
+                                  ),
+                                  const SizedBox(height: 8),
+                                  Text(
+                                    'Pull down to refresh',
+                                    style: TextStyle(
+                                      fontSize: 14,
+                                      color: Colors.grey[500],
                                     ),
                                   ],
                                 ),
                               ),
                             ),
-                          ],
-                        )
-                      : ListView(
-                          physics: const AlwaysScrollableScrollPhysics(),
-                          padding: const EdgeInsets.only(bottom: 20),
-                          children: [
-                            if (pending.isNotEmpty)
-                              _buildSectionHeader('Pending Reservations'),
-                            if (pending.isNotEmpty)
-                              ...pending.asMap().entries.map((entry) {
-                                int index = entry.key;
-                                var reservation = entry.value;
-                                return _buildReservationTile(
-                                    reservation, index);
-                              }),
-                            if (other.isNotEmpty)
-                              _buildSectionHeader('Active Reservations'),
-                            if (other.isNotEmpty)
-                              ...other.asMap().entries.map((entry) {
-                                int index = entry.key;
-                                var reservation = entry.value;
-                                return _buildReservationTile(
-                                    reservation, index);
-                              }),
-                            if (completed.isNotEmpty)
-                              _buildSectionHeader('Completed Reservations'),
-                            if (completed.isNotEmpty)
-                              ...completed.asMap().entries.map((entry) {
-                                int index = entry.key;
-                                var reservation = entry.value;
-                                return _buildReservationTile(
-                                    reservation, index);
-                              }),
-                          ],
-                        ),
-                );
-              },
-            ),
+                          ),
+                        ],
+                      )
+                    : ListView(
+                        physics: const AlwaysScrollableScrollPhysics(),
+                        padding: const EdgeInsets.only(bottom: 20),
+                        children: [
+                          if (pending.isNotEmpty) _buildSectionHeader('Pending Reservations'),
+                          if (pending.isNotEmpty)
+                            ...pending.asMap().entries.map((entry) {
+                              int index = entry.key;
+                              var reservation = entry.value;
+                              return _buildReservationTile(reservation, index);
+                            }),
+                          if (reserved.isNotEmpty) _buildSectionHeader('Approved Reservations'),
+                          if (reserved.isNotEmpty)
+                            ...reserved.asMap().entries.map((entry) {
+                              int index = entry.key;
+                              var reservation = entry.value;
+                              return _buildReservationTile(reservation, index);
+                            }),
+                          if (completed.isNotEmpty) _buildSectionHeader('Completed Reservations'),
+                          if (completed.isNotEmpty)
+                            ...completed.asMap().entries.map((entry) {
+                              int index = entry.key;
+                              var reservation = entry.value;
+                              return _buildReservationTile(reservation, index);
+                            }),
+                          if (cancelled.isNotEmpty) _buildSectionHeader('Cancelled Reservations'),
+                          if (cancelled.isNotEmpty)
+                            ...cancelled.asMap().entries.map((entry) {
+                              int index = entry.key;
+                              var reservation = entry.value;
+                              return _buildReservationTile(reservation, index);
+                            }),
+                        ],
+                      ),
+              );
+            },
           ),
         ],
       ),

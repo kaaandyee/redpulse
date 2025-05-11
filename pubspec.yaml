@@ -70,6 +70,7 @@ dependencies:
   smooth_page_indicator: ^1.2.1
   shared_preferences: ^2.5.3
   local_auth: ^2.3.0
+  flutter_slidable: ^3.0.0
 
 
 flutter_launcher_icons:

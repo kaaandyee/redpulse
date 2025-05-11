@@ -1,3 +1,5 @@
+// ignore_for_file: deprecated_member_use
+
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -325,24 +327,16 @@ class _ReservationFormScreenState extends State<ReservationFormScreen>
                                 child: _buildSectionTitle(
                                     'Select Blood Type', Icons.water_drop),
                               ),
-                              SizedBox(height: screenSize.height * 0.015),
-                              FadeInRight(
-                                duration: const Duration(milliseconds: 1000),
-                                child: Container(
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 15),
-                                  decoration: BoxDecoration(
-                                    color: Colors.white,
-                                    borderRadius: BorderRadius.circular(15),
-                                    border:
-                                        Border.all(color: Colors.grey.shade300),
-                                    boxShadow: [
-                                      BoxShadow(
-                                        color: Colors.grey.withOpacity(0.1),
-                                        blurRadius: 4,
-                                        offset: const Offset(0, 2),
-                                      ),
-                                    ],
+                              child: DropdownButtonHideUnderline(
+                                child: DropdownButton<String>(
+                                  isExpanded: true,
+                                  value: selectedBloodType,
+                                  hint: Text(
+                                    'Select a blood type',
+                                    style: GoogleFonts.roboto(
+                                      color: Colors.grey[600],
+                                      fontSize: 16,
+                                    ),
                                   ),
                                   child: DropdownButtonHideUnderline(
                                     child: DropdownButton<String>(
@@ -567,14 +561,29 @@ class _ReservationFormScreenState extends State<ReservationFormScreen>
                               ),
                             ],
                           ),
-                          padding: EdgeInsets.all(screenSize.width * 0.06),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              FadeInLeft(
-                                duration: const Duration(milliseconds: 1100),
-                                child: _buildSectionTitle('Medical Reason',
-                                    Icons.medical_information),
+                          SizedBox(height: screenSize.height * 0.015),
+                          FadeInRight(
+                            duration: const Duration(milliseconds: 1200),
+                            child: TextField(
+                              controller: medicalReasonController,
+                              maxLines: 4,
+                              decoration: InputDecoration(
+                                hintText: 'Kindly explain your reason for this blood reservation.',
+                                hintStyle: GoogleFonts.roboto(color: Colors.grey),
+                                filled: true,
+                                fillColor: Colors.grey.shade50,
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(15),
+                                  borderSide: BorderSide(color: Colors.grey.shade300),
+                                ),
+                                focusedBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(15),
+                                  borderSide: BorderSide(color: Styles.primaryColor),
+                                ),
+                                enabledBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(15),
+                                  borderSide: BorderSide(color: Colors.grey.shade300),
+                                ),
                               ),
                               SizedBox(height: screenSize.height * 0.015),
                               FadeInRight(
@@ -610,141 +619,146 @@ class _ReservationFormScreenState extends State<ReservationFormScreen>
                                   ),
                                 ),
                               ),
-                            ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+
+                  SizedBox(height: screenSize.height * 0.04),
+
+                  FadeInUp(
+                    duration: const Duration(milliseconds: 1200),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 0),
+                      child: ActionSlider.standard(
+                        width: double.infinity,
+                        backgroundColor: _isFormValid()
+                            ? Styles.primaryColor
+                            : Colors.grey.shade400,
+                        toggleColor: _isFormValid() ? Colors.white : Colors.grey.shade300,
+                        iconAlignment: Alignment.center,
+                        loadingIcon: SizedBox(
+                          width: 25,
+                          height: 25,
+                          child: CircularProgressIndicator(
+                            color: Styles.primaryColor,
+                            strokeWidth: 3,
                           ),
                         ),
-                      ),
-                      SizedBox(height: screenSize.height * 0.04),
-                      FadeInUp(
-                        duration: const Duration(milliseconds: 1200),
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 20),
-                          child: ActionSlider.standard(
-                            width: double.infinity,
-                            backgroundColor: _isFormValid()
-                                ? Styles.primaryColor
-                                : Colors.grey.shade400,
-                            toggleColor: _isFormValid()
-                                ? Colors.white
-                                : Colors.grey.shade300,
-                            iconAlignment: Alignment.center,
-                            loadingIcon: SizedBox(
-                              width: 30,
-                              height: 30,
-                              child: CircularProgressIndicator(
-                                color: Styles.primaryColor,
-                                strokeWidth: 3,
-                              ),
-                            ),
-                            successIcon: const Icon(
-                              Icons.check,
-                              color: Colors.green,
-                              size: 35,
-                            ),
-                            icon: Container(
-                              width: 46, // Fixed width for the icon container
-                              height: 40, // Fixed height for the icon container
-                              alignment: Alignment.center, // Center the icon
-                              child: Icon(
-                                Icons.arrow_forward_ios,
-                                color: _isFormValid()
-                                    ? Styles.primaryColor
-                                    : Colors.grey.shade500,
-                                size: 20,
-                              ),
-                            ),
-                            height: 60,
-                            child: Text(
-                              _isFormValid()
-                                  ? '      Slide to Confirm Reservation'
-                                  : '      Complete all fields to continue',
+                        successIcon: const Icon(
+                          Icons.check,
+                          color: Colors.green,
+                          size: 30,
+                        ),
+                        icon: Icon(
+                          Icons.arrow_forward_ios,
+                          color: _isFormValid() ? Styles.primaryColor : Colors.grey.shade500,
+                          size: 20,
+                        ),
+                        height: 60,
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            const SizedBox(width: 10),
+                            Text(
+                              'Complete All Fields',
                               style: GoogleFonts.montserrat(
                                 color: Colors.white,
-                                fontSize: 14,
+                                fontSize: 15,
                                 fontWeight: FontWeight.w600,
                                 letterSpacing: 0.5,
                               ),
                             ),
-                            action: (controller) async {
-                              if (isSubmitting || !_isFormValid()) {
-                                // Reset immediately if form is invalid
-                                if (!_isFormValid()) {
-                                  controller.reset();
-                                  return;
-                                }
-                                return;
-                              }
+                          ],
+                        ),
+                        action: (controller) async {
+                          if (isSubmitting || !_isFormValid()) {
+                            // Reset immediately if form is invalid
+                            if (!_isFormValid()) {
+                              controller.reset();
+                              return;
+                            }
+                            return;
+                          }
 
-                              controller.loading();
-                              await Future.delayed(
-                                  const Duration(milliseconds: 400));
+                          controller.loading();
+                          await Future.delayed(const Duration(milliseconds: 400));
 
-                              bool confirmed = await showDialog(
-                                context: context,
-                                builder: (context) => AlertDialog(
-                                  backgroundColor: Colors.white,
-                                  shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(20)),
-                                  title: Row(
-                                    children: [
-                                      Icon(Icons.help_outline,
-                                          color: Styles.primaryColor),
-                                      const SizedBox(width: 10),
-                                      Text(
-                                        'Confirm Reservation',
-                                        style: GoogleFonts.montserrat(
-                                          fontWeight: FontWeight.bold,
-                                          color: Colors.black87,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                  content: Text(
-                                    'Are you sure you want to reserve $quantity units of ${selectedBloodType ?? "blood"}?',
-                                    style: GoogleFonts.roboto(
+                          bool confirmed = await showDialog(
+                            context: context,
+                            builder: (context) => AlertDialog(
+                              backgroundColor: Colors.white,
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                              title: Row(
+                                children: [
+                                  Icon(Icons.help_outline, color: Styles.primaryColor),
+                                  const SizedBox(width: 10),
+                                  Text(
+                                    'Confirm Reservation',
+                                    style: GoogleFonts.montserrat(
                                       fontSize: 16,
+                                      fontWeight: FontWeight.bold,
                                       color: Colors.black87,
                                     ),
                                   ),
-                                  actions: [
-                                    TextButton(
-                                      onPressed: () =>
-                                          Navigator.pop(context, false),
-                                      child: Text(
-                                        'Cancel',
-                                        style: GoogleFonts.roboto(
-                                            color: Colors.grey[700]),
-                                      ),
-                                    ),
-                                    ElevatedButton(
-                                      style: ElevatedButton.styleFrom(
-                                        backgroundColor: Styles.primaryColor,
-                                        shape: RoundedRectangleBorder(
-                                          borderRadius:
-                                              BorderRadius.circular(8),
+                                ],
+                              ),
+                              content: Text(
+                                'Are you sure you want to reserve $quantity units of Blood Type ${selectedBloodType ?? "blood"}?',
+                                style: GoogleFonts.roboto(
+                                  fontSize: 14,
+                                  color: Colors.black87,
+                                ),
+                              ),
+                              actions: [
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                                  children: [
+                                    Expanded(
+                                      child: TextButton(
+                                        onPressed: () => Navigator.pop(context, false),
+                                        child: Text(
+                                          'Cancel',
+                                          style: GoogleFonts.roboto(color: Colors.grey[700]),
                                         ),
                                       ),
-                                      onPressed: () =>
-                                          Navigator.pop(context, true),
-                                      child: Text(
-                                        'Confirm',
-                                        style: GoogleFonts.roboto(
-                                            color: Colors.white),
+                                    ),
+                                    const SizedBox(width: 10), // Space between buttons
+                                    Expanded(
+                                      child: ElevatedButton(
+                                        style: ElevatedButton.styleFrom(
+                                          backgroundColor: Styles.primaryColor,
+                                          shape: RoundedRectangleBorder(
+                                            borderRadius: BorderRadius.circular(8),
+                                          ),
+                                        ),
+                                        onPressed: () => Navigator.pop(context, true),
+                                        child: Text(
+                                          'Confirm',
+                                          style: GoogleFonts.roboto(color: Colors.white),
+                                        ),
                                       ),
                                     ),
                                   ],
                                 ),
-                              );
+                              ],
 
-                              if (confirmed) {
-                                controller.success();
-                                await _reserveBlood();
-                              } else {
-                                controller.reset();
-                              }
-                            },
-                          ),
-                        ),
+                            ),
+                          );
+
+                          if (confirmed) {
+                            controller.success();
+                            await _reserveBlood();
+
+                            // Navigate back to Blood Bank Details screen
+                             Navigator.of(context).pop(); // Pops current reservation screen
+                          } else {
+                            controller.reset();
+                          }
+
+                        },
                       ),
                     ],
                   ),

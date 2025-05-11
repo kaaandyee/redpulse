@@ -471,6 +471,7 @@ Future<void> _locateNearestBloodBank({BloodType? bloodType}) async {
                     Expanded(child:                   
                         //Search TextField
                         Card(
+                          color: Colors.white,
                           elevation: 5,
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(15),
@@ -491,7 +492,7 @@ Future<void> _locateNearestBloodBank({BloodType? bloodType}) async {
                                     decoration: InputDecoration(
                                       hintText: 'Blood Bank or Type...',
                                       hintStyle: GoogleFonts.roboto(
-                                        color: Colors.grey[400],
+                                        color: Colors.grey[500],
                                       ),
                                       border: InputBorder.none,
                                     ),
@@ -502,7 +503,7 @@ Future<void> _locateNearestBloodBank({BloodType? bloodType}) async {
                                 ),
                                 if (_searchController.text.isNotEmpty)
                                   IconButton(
-                                    icon: const Icon(Icons.clear),
+                                    icon: Icon(Icons.clear, color: Styles.primaryColor,),
                                     onPressed: () {
                                       setState(() {
                                         _searchController.clear();

@@ -151,7 +151,7 @@ class BloodBankDetailsScreenState extends State<BloodBankDetailsScreen> {
                           bloodBankName,
                           style: GoogleFonts.montserrat(
                             fontSize: 18,
-                            fontWeight: FontWeight.w600,
+                            fontWeight: FontWeight.w700,
                             color: Colors.white,
                           ),
                           overflow: TextOverflow.ellipsis,
@@ -240,66 +240,16 @@ class BloodBankDetailsScreenState extends State<BloodBankDetailsScreen> {
 
         return Column(
           children: [
-            SizedBox(height: screenSize.height * 0.12), // Space for AppBar
-            Padding(
-              padding: EdgeInsets.symmetric(
-                horizontal: screenSize.width * 0.06,
-                vertical: screenSize.height * 0.01,
-              ),
-              child: FadeInDown(
-                duration: const Duration(milliseconds: 800),
-                child: Container(
-                  padding: EdgeInsets.all(15),
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                      colors: [
-                        Styles.primaryColor.withOpacity(0.9),
-                        Styles.primaryColor.withOpacity(0.8),
-                      ],
-                    ),
-                    borderRadius: BorderRadius.circular(15),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.red.withOpacity(0.2),
-                        spreadRadius: 1,
-                        blurRadius: 6,
-                        offset: const Offset(0, 2),
-                      ),
-                    ],
-                  ),
-                  child: Row(
-                    children: [
-                      Icon(
-                        Icons.water_drop_outlined,
-                        color: Colors.white,
-                        size: screenSize.width * 0.06,
-                      ),
-                      SizedBox(width: 10),
-                      Expanded(
-                        child: Text(
-                          "Available Blood Units",
-                          style: GoogleFonts.montserrat(
-                            fontSize: screenSize.width * 0.045,
-                            fontWeight: FontWeight.w600,
-                            color: Colors.white,
-                          ),
-                        ),
-                      ),
-                      Text(
-                        "${inventoryList.length} types",
-                        style: GoogleFonts.roboto(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w500,
-                          color: Colors.white.withOpacity(0.9),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
+            SizedBox(height: screenSize.height * 0.16), // Space for AppBar
+            Text(
+              "Available Blood Types",
+              style: GoogleFonts.montserrat(
+                fontSize: screenSize.width * 0.045,
+                fontWeight: FontWeight.w600,
+                color: Styles.primaryColor,
               ),
             ),
+            SizedBox(height: 8),
             Expanded(
               child: ListView.builder(
                 padding: EdgeInsets.symmetric(
@@ -334,7 +284,7 @@ class BloodBankDetailsScreenState extends State<BloodBankDetailsScreen> {
                                 Container(
                                   padding: const EdgeInsets.all(12),
                                   decoration: BoxDecoration(
-                                    color: Styles.primaryColor.withOpacity(0.1),
+                                    //color: Styles.primaryColor,
                                     borderRadius: BorderRadius.circular(10),
                                   ),
                                   child: Text(
@@ -357,26 +307,19 @@ class BloodBankDetailsScreenState extends State<BloodBankDetailsScreen> {
                                             MainAxisAlignment.spaceBetween,
                                         children: [
                                           Text(
-                                            "Available Units",
-                                            style: GoogleFonts.roboto(
-                                              fontSize: 16,
-                                              color: Colors.grey[700],
+                                            "${inventory.quantity} units",
+                                            style: GoogleFonts.montserrat(
+                                              fontSize: 18,
+                                              fontWeight: FontWeight.w600,
+                                              color: inventory.quantity > 0
+                                                  ? Colors.green.shade700
+                                                  : Colors.red.shade700,
                                             ),
                                           ),
                                           StatusBadge(status: inventory.status),
                                         ],
                                       ),
                                       SizedBox(height: 5),
-                                      Text(
-                                        "${inventory.quantity} units",
-                                        style: GoogleFonts.montserrat(
-                                          fontSize: 18,
-                                          fontWeight: FontWeight.w600,
-                                          color: inventory.quantity > 0
-                                              ? Colors.green.shade700
-                                              : Colors.red.shade700,
-                                        ),
-                                      ),
                                     ],
                                   ),
                                 ),

@@ -1,3 +1,5 @@
+// ignore_for_file: avoid_print, deprecated_member_use, use_build_context_synchronously
+
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:redpulse/features/models/reservation.dart';
@@ -86,7 +88,7 @@ class _ReservationDetailsScreenState extends State<ReservationDetailsScreen> {
         await FirebaseFirestore.instance
             .collection('reservations')
             .doc(widget.reservationId)
-            .delete();
+            .update({'status': 'Cancelled'});
 
         // Navigate back immediately
         Navigator.pop(context, true);
@@ -164,11 +166,11 @@ class _ReservationDetailsScreenState extends State<ReservationDetailsScreen> {
   @override
   Widget build(BuildContext context) {
     final screenSize = MediaQuery.of(context).size;
-
     return Scaffold(
       extendBodyBehindAppBar: true,
       appBar: PreferredSize(
         preferredSize: Size.fromHeight(screenSize.height * 0.11),
+        
         child: FadeInDown(
           duration: const Duration(milliseconds: 800),
           child: Container(
@@ -262,6 +264,27 @@ class _ReservationDetailsScreenState extends State<ReservationDetailsScreen> {
   }
 
   Widget _buildContent(BuildContext context, Size screenSize) {
+    Color tileColor;
+    IconData statusIcon;
+
+    final status = reservation?.status ?? 'Unknown';
+
+    if (status == 'Pending') {
+      tileColor = Styles.frontColor;
+      statusIcon = Icons.hourglass_empty;
+    } else if (status == 'Reserved') {
+      tileColor = Colors.green[700] ?? Colors.green;
+      statusIcon = Icons.check_circle;
+    } else if (status == 'Cancelled') {
+      tileColor = Styles.complementColor;
+      statusIcon = Icons.cancel;
+    } else if (status == 'Completed') {
+      tileColor = Colors.blue[700] ?? Colors.blue;
+      statusIcon = Icons.task_alt;
+    } else {
+      tileColor = Styles.tertiaryColor;
+      statusIcon = Icons.info;
+    }
     return Container(
       decoration: BoxDecoration(
         color: const Color.fromARGB(255, 248, 248, 248),
@@ -334,26 +357,32 @@ class _ReservationDetailsScreenState extends State<ReservationDetailsScreen> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                       children: [
-                        _buildBloodTypeBox(
-                          context,
-                          reservation?.bloodType ?? 'N/A',
+                        // Blood Type Box (using _buildInfoBox)
+                        _buildInfoBox(
+                          context: context,
+                          label: "Blood Type",
+                          value: reservation?.bloodType ?? 'N/A',
                         ),
+
                         _buildDivider(),
-                        _buildStatItem(
-                          context,
-                          "${reservation?.quantity ?? 0}",
-                          "Quantity",
-                          Icons.water_drop_outlined,
+
+                        // Quantity Box (same height/design as blood type)
+                        _buildInfoBox(
+                          context: context,
+                          label: "Units", 
+                          value: "${reservation?.quantity ?? 0}",
                         ),
+
                         _buildDivider(),
-                        _buildStatItem(
-                          context,
-                          reservation?.status ?? 'N/A',
-                          "Status",
-                          Icons.info_outline,
+                        _buildInfoBox(
+                          context: context,
+                          icon: statusIcon,
+                          backgroundColor: tileColor, label: reservation?.status ?? 'N/A', value: null,
                         ),
                       ],
                     ),
+
+
                   ],
                 ),
               ),
@@ -472,79 +501,87 @@ class _ReservationDetailsScreenState extends State<ReservationDetailsScreen> {
             ),
             SizedBox(height: screenSize.height * 0.04),
 
-            // Only show Cancel Button if status is not Completed
-            if (reservation?.status != 'Completed')
+            if (reservation?.status == 'Pending' || reservation?.status == 'Reserved')
               FadeInUp(
                 duration: const Duration(milliseconds: 1200),
                 child: Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 20),
-                  child: Container(
-                    alignment: Alignment.center,
-                    child: ActionSlider.standard(
-                      width: double.infinity,
-                      backgroundColor: Styles.primaryColor,
-                      toggleColor: Colors.white,
-                      iconAlignment: Alignment.center,
-                      loadingIcon: SizedBox(
-                        width: 40,
-                        height: 40,
-                        child: CircularProgressIndicator(
-                          color: Styles.primaryColor,
-                          strokeWidth: 3,
-                        ),
+                  child: ActionSlider.standard(
+                    width: double.infinity,
+                    backgroundColor: Styles.primaryColor,
+                    toggleColor: Colors.white,
+                    iconAlignment: Alignment.center,
+                    loadingIcon: SizedBox(
+                      width: 25,
+                      height: 25,
+                      child: CircularProgressIndicator(
+                        color: Styles.primaryColor,
+                        strokeWidth: 3,
                       ),
-                      successIcon: const Icon(
-                        Icons.check,
-                        color: Colors.green,
-                        size: 30,
-                      ),
-                      icon: Container(
-                        width: 40, // Fixed width for the icon container
-                        height: 40, // Fixed height for the icon container
-                        alignment: Alignment.center, // Center the icon
-                        child: Icon(
+                    ),
+                    successIcon: const Icon(
+                      Icons.check,
+                      color: Colors.green,
+                      size: 30,
+                    ),
+                    icon: Icon(
+                      Icons.close,
+                      color: Styles.primaryColor,
+                      size: 20,
+                    ),
+                    height: 60,
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
                           Icons.close,
                           color: Styles.primaryColor,
-                          size: 30,
+                          size: 20,
                         ),
-                      ),
-                      height: 60,
-                      child: Text(
-                        '     Slide to Cancel Reservation',
-                        style: GoogleFonts.montserrat(
-                          color: Colors.white,
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
-                          letterSpacing: 0.5,
+                        const SizedBox(width: 10),
+                        Text(
+                          'Slide to Cancel Reservation',
+                          style: GoogleFonts.montserrat(
+                            color: Colors.white,
+                            fontSize: 15,
+                            fontWeight: FontWeight.w600,
+                            letterSpacing: 0.5,
+                          ),
                         ),
-                      ),
-                      action: (controller) async {
-                        if (isCancelling) {
-                          return;
-                        }
+                      ],
+                    ),
+                    action: (controller) async {
+                      if (isCancelling) {
+                        return;
+                      }
 
-                        controller.loading();
-                        await Future.delayed(const Duration(milliseconds: 400));
+                      controller.loading();
+                      await Future.delayed(const Duration(milliseconds: 400));
 
-                        bool confirmed = await showDialog(
-                          context: context,
-                          builder: (context) => AlertDialog(
-                            backgroundColor: Colors.white,
-                            shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(20)),
-                            title: Row(
-                              children: [
-                                Icon(Icons.warning_amber_rounded,
-                                    color: Styles.primaryColor),
-                                const SizedBox(width: 10),
-                                Text(
-                                  'Cancel Reservation',
-                                  style: GoogleFonts.montserrat(
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.black87,
-                                  ),
+                      bool confirmed = await showDialog(
+                        context: context,
+                        builder: (context) => AlertDialog(
+                          backgroundColor: Colors.white,
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                          title: Row(
+                            children: [
+                              Icon(Icons.warning_amber_rounded, color: Styles.primaryColor),
+                              const SizedBox(width: 10),
+                              Text(
+                                'Cancel Reservation',
+                                style: GoogleFonts.montserrat(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.black87,
                                 ),
-                              ],
+                              ),
+                            ],
+                          ),
+                          content: Text(
+                            'Are you sure you want to cancel this reservation? This action cannot be undone.',
+                            style: GoogleFonts.roboto(
+                              fontSize: 14,
+                              color: Colors.black87,
                             ),
                             content: Text(
                               'Are you sure you want to cancel this reservation? This action cannot be undone.',
@@ -655,83 +692,78 @@ class _ReservationDetailsScreenState extends State<ReservationDetailsScreen> {
     );
   }
 
-  Widget _buildBloodTypeBox(BuildContext context, String bloodType) {
-    final screenSize = MediaQuery.of(context).size;
+Widget _buildInfoBox({
+  required BuildContext context,
+  required String label,
+  required dynamic value, // Can be String, IconData, etc.
+  Color? backgroundColor,
+  IconData? icon,
 
-    return Column(
-      children: [
-        Container(
-          padding: EdgeInsets.all(screenSize.width * 0.03),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(12),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.red.withOpacity(0.2),
-                spreadRadius: 1,
-                blurRadius: 4,
-              ),
-            ],
+}) {
+  final screenSize = MediaQuery.of(context).size;
+  Widget content;
+
+  if (icon != null) {
+    // If there's an icon, show icon inside colored circle
+    content = Container(
+      padding: EdgeInsets.all(screenSize.width * 0.035),
+      decoration: BoxDecoration(
+        color: backgroundColor ?? Styles.primaryColor,
+        shape: BoxShape.circle,
+        boxShadow: [
+          BoxShadow(
+            color: (backgroundColor ?? Styles.primaryColor).withOpacity(0.3),
+            spreadRadius: 1,
+            blurRadius: 4,
           ),
-          child: Text(
-            bloodType,
-            style: GoogleFonts.montserrat(
-              fontSize: screenSize.width * 0.05,
-              fontWeight: FontWeight.w700,
-              color: Styles.primaryColor,
-            ),
+        ],
+      ),
+      child: Icon(
+        icon,
+        size: screenSize.width * 0.06,
+        color: Colors.white,
+      ),
+    );
+  } else {
+    // Otherwise, treat it as text value
+    content = Container(
+      padding: EdgeInsets.all(screenSize.width * 0.03),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.red.withOpacity(0.2),
+            spreadRadius: 1,
+            blurRadius: 4,
           ),
+        ],
+      ),
+      child: Text(
+        value.toString(),
+        style: GoogleFonts.montserrat(
+          fontSize: screenSize.width * 0.05,
+          fontWeight: FontWeight.w700,
+          color: Styles.primaryColor,
         ),
-        SizedBox(height: screenSize.height * 0.008),
-        Text(
-          "Blood Type",
-          style: GoogleFonts.roboto(
-            fontSize: screenSize.width * 0.03,
-            color: Colors.white.withOpacity(0.9),
-          ),
-        ),
-      ],
+      ),
     );
   }
 
-  Widget _buildStatItem(
-      BuildContext context, String value, String label, IconData icon) {
-    final screenSize = MediaQuery.of(context).size;
-
-    return Column(
-      children: [
-        Container(
-          padding: EdgeInsets.all(screenSize.width * 0.025),
-          decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.2),
-            borderRadius: BorderRadius.circular(12),
-          ),
-          child: Icon(
-            icon,
-            color: Colors.white,
-            size: screenSize.width * 0.05,
-          ),
+  return Column(
+    children: [
+      content,
+      SizedBox(height: screenSize.height * 0.008),
+      Text(
+        label,
+        style: GoogleFonts.roboto(
+          fontSize: screenSize.width * 0.03,
+          color: Colors.white.withOpacity(0.9),
         ),
-        SizedBox(height: screenSize.height * 0.008),
-        Text(
-          value,
-          style: GoogleFonts.montserrat(
-            fontSize: screenSize.width * 0.045,
-            fontWeight: FontWeight.w700,
-            color: Colors.white,
-          ),
-        ),
-        Text(
-          label,
-          style: GoogleFonts.roboto(
-            fontSize: screenSize.width * 0.03,
-            color: Colors.white.withOpacity(0.9),
-          ),
-        ),
-      ],
-    );
-  }
-
+      ),
+    ],
+  );
+}
   Widget _buildDivider() {
     return Container(
       height: 40,

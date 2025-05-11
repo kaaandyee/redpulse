@@ -38,6 +38,7 @@ class TextFieldInput extends StatelessWidget {
           style: Styles.headerStyle5.copyWith(
               color: Styles.accentColor, fontSize: 14), // Smaller font
           controller: textEditingController,
+          cursorColor: Colors.black,
           decoration: InputDecoration(
             prefixIcon: icon != null
                 ? Icon(icon, color: Colors.black54, size: 20) // ✅ Smaller icon

@@ -4,8 +4,8 @@ import 'package:redpulse/features/screens/on_boarding_screen.dart';
 import 'package:redpulse/features/screens/wrapper/BiometricAuthService.dart';
 import 'package:redpulse/features/screens/wrapper/wrapper.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-
 import 'BiometricAuthScreen.dart';
+import 'wrapper/wrapper.dart';
 
 class SplashScreen extends StatelessWidget {
   const SplashScreen({super.key});
@@ -24,7 +24,7 @@ class SplashScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return AnimatedSplashScreen(
-      duration: 2500, // 2.5 seconds
+      duration: 2500,
       splash: 'assets/images/splash_logo.gif',
       splashIconSize: 2000.0,
       centered: true,

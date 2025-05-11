@@ -1,23 +1,17 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:redpulse/features/screens/user/start.dart';
 import 'package:redpulse/services/auth.dart';
-import 'package:redpulse/services/googleauth.dart';
 import 'package:redpulse/services/password.dart';
 import 'package:redpulse/utilities/constants/styles.dart';
 import 'package:redpulse/widgets/button.dart';
-import 'package:redpulse/widgets/snackbar';
 import 'package:redpulse/widgets/textfield.dart';
 import '../../utilities/flowTransition.dart';
 import 'admin/home.dart';
-import 'google_signup_completion.dart';
 import 'signup.dart';
-import 'package:action_slider/action_slider.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_moving_background/flutter_moving_background.dart';
 import 'package:flutter_moving_background/enums/animation_types.dart';
-import 'package:lottie/lottie.dart';
 import 'package:animate_do/animate_do.dart';
 import 'package:redpulse/features/screens/wrapper/BiometricAuthService.dart';
 
@@ -34,7 +28,6 @@ class _LoginScreenState extends State<LoginScreen>
   final TextEditingController passwordController = TextEditingController();
   bool isLoading = false;
   late AnimationController _animationController;
-  late Animation<double> _fadeAnimation;
 
   @override
   void initState() {
@@ -42,12 +35,6 @@ class _LoginScreenState extends State<LoginScreen>
     _animationController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 1500),
-    );
-    _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
-      CurvedAnimation(
-        parent: _animationController,
-        curve: Curves.easeInOut,
-      ),
     );
     _animationController.forward();
   }
@@ -262,7 +249,7 @@ class _LoginScreenState extends State<LoginScreen>
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          const SizedBox(height: 30),
+                          const SizedBox(height: 40),
 
                           // App Logo with Animation
                           FadeIn(
@@ -290,7 +277,7 @@ class _LoginScreenState extends State<LoginScreen>
                             ),
                           ),
 
-                          const SizedBox(height: 15),
+                          const SizedBox(height: 35),
 
                           // App Title
                           FadeInDown(
@@ -298,10 +285,10 @@ class _LoginScreenState extends State<LoginScreen>
                             child: Text(
                               "RedPulse",
                               style: GoogleFonts.montserrat(
-                                fontSize: 32,
+                                fontSize: 40,
                                 fontWeight: FontWeight.w700,
                                 letterSpacing: 1.2,
-                                color: const Color.fromARGB(250, 212, 61, 61),
+                                color: Styles.primaryColor,
                                 shadows: [
                                   Shadow(
                                     blurRadius: 2.0,
@@ -312,52 +299,49 @@ class _LoginScreenState extends State<LoginScreen>
                               ),
                             ),
                           ),
+                          FadeInDown(
+                            duration: const Duration(milliseconds: 800),
+                            child: Text(
+                              "Save Lives, One Drop at A Time",
+                              style: GoogleFonts.roboto(
+                                fontSize: 16,
+                                color: Styles.primaryColor,
+                              ),
+                            ),
+                          ),
 
-                          const SizedBox(height: 50),
+                          const SizedBox(height: 35),
 
                           // Login Title
                           FadeInDown(
                             delay: const Duration(milliseconds: 400),
                             child: Text(
-                              "Welcome Back",
+                              "Sign In to Continue",
                               style: GoogleFonts.roboto(
-                                fontSize: 26,
+                                fontSize: 18,
                                 fontWeight: FontWeight.w600,
-                                color: Colors.grey[800],
+                                color: Colors.grey[700],
                               ),
                             ),
                           ),
-
                           const SizedBox(height: 10),
-
-                          FadeInDown(
-                            delay: const Duration(milliseconds: 500),
-                            child: Text(
-                              "Sign in to continue",
-                              style: GoogleFonts.roboto(
-                                fontSize: 16,
-                                color: Colors.grey[600],
-                              ),
-                            ),
-                          ),
-
-                          const SizedBox(height: 40),
 
                           // Login Fields
                           Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 25),
+                            padding: const EdgeInsets.symmetric(horizontal: 15),
                             child: Column(
                               children: [
                                 FadeInLeft(
                                   delay: const Duration(milliseconds: 600),
                                   child: TextFieldInput(
                                     icon: Icons.email,
+                                    
                                     textEditingController: emailController,
                                     hintText: 'Email',
                                     textInputType: TextInputType.emailAddress,
                                   ),
                                 ),
-                                const SizedBox(height: 20),
+                                const SizedBox(height: 10),
                                 FadeInRight(
                                   delay: const Duration(milliseconds: 700),
                                   child: TextFieldInput(
@@ -371,20 +355,16 @@ class _LoginScreenState extends State<LoginScreen>
                               ],
                             ),
                           ),
-
+                          const SizedBox(height: 10),
                           FadeInUp(
                             delay: const Duration(milliseconds: 800),
                             child: const ForgotPassword(),
                           ),
-
-                          const SizedBox(height: 10),
-
                           // Login Button
                           FadeInUp(
                             delay: const Duration(milliseconds: 900),
                             child: Padding(
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 25, vertical: 10),
+                              padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 10),
                               child: isLoading
                                   ? const CircularProgressIndicator(
                                       color: Color.fromARGB(250, 212, 61, 61))
@@ -399,8 +379,6 @@ class _LoginScreenState extends State<LoginScreen>
                             ),
                           ),
 
-                          const SizedBox(height: 25),
-
                           FadeIn(
                             delay: const Duration(milliseconds: 1000),
                             child: Row(
@@ -410,15 +388,16 @@ class _LoginScreenState extends State<LoginScreen>
                                   child: Divider(
                                     color: Colors.grey[400],
                                     thickness: 0.5,
-                                    indent: 50,
+                                    indent: 37,
                                     endIndent: 15,
                                   ),
                                 ),
                                 Text(
                                   "OR",
                                   style: GoogleFonts.roboto(
-                                    color: Colors.grey[600],
+                                    fontSize: 15,
                                     fontWeight: FontWeight.w500,
+                                    color: Colors.grey[700],
                                   ),
                                 ),
                                 Expanded(
@@ -426,121 +405,13 @@ class _LoginScreenState extends State<LoginScreen>
                                     color: Colors.grey[400],
                                     thickness: 0.5,
                                     indent: 15,
-                                    endIndent: 50,
+                                    endIndent: 37,
                                   ),
                                 ),
                               ],
                             ),
                           ),
-
-                          const SizedBox(height: 25),
-
-                          FadeInUp(
-                            delay: const Duration(milliseconds: 1100),
-                            child: Padding(
-                              padding:
-                                  const EdgeInsets.symmetric(horizontal: 25),
-                              child: ElevatedButton(
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: Colors.white,
-                                  foregroundColor: Colors.black87,
-                                  elevation: 2,
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(15),
-                                  ),
-                                  padding:
-                                      const EdgeInsets.symmetric(vertical: 15),
-                                ),
-                                onPressed: () async {
-                                  setState(() {
-                                    isLoading = true;
-                                  });
-
-                                  try {
-                                    // Sign in with Google
-                                    final result = await FirebaseServices()
-                                        .signInWithGoogle();
-                                    final user = result['user'] as User;
-
-                                    // Check if user exists in Firestore
-                                    final userDoc = await FirebaseFirestore
-                                        .instance
-                                        .collection('users')
-                                        .doc(user.uid)
-                                        .get();
-
-                                    if (userDoc.exists) {
-                                      // User exists, navigate to home
-                                      await BiometricAuthService.setLoggedIn(
-                                          true);
-
-                                      Navigator.pushReplacement(
-                                        context,
-                                        MaterialPageRoute(
-                                          builder: (context) =>
-                                              const UserStart(),
-                                        ),
-                                      );
-                                    } else {
-                                      // New user, navigate to simplified signup
-                                      Navigator.push(
-                                        context,
-                                        MaterialPageRoute(
-                                          builder: (context) =>
-                                              GoogleSignupCompletionScreen(
-                                            uid: user.uid,
-                                            email: user.email ?? '',
-                                            displayName: user.displayName ?? '',
-                                            photoURL: user.photoURL,
-                                          ),
-                                        ),
-                                      );
-                                    }
-                                  } catch (e) {
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      SnackBar(
-                                        content:
-                                            Text("Google sign-in failed: $e"),
-                                        backgroundColor: Colors.red,
-                                      ),
-                                    );
-                                  } finally {
-                                    if (mounted) {
-                                      setState(() {
-                                        isLoading = false;
-                                      });
-                                    }
-                                  }
-                                },
-                                child: Row(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    Image.asset(
-                                      'assets/images/google_logo.png',
-                                      height: 24,
-                                      errorBuilder:
-                                          (context, error, stackTrace) =>
-                                              const Icon(
-                                        Icons.g_mobiledata,
-                                        color: Colors.red,
-                                        size: 24,
-                                      ),
-                                    ),
-                                    const SizedBox(width: 10),
-                                    Text(
-                                      "Continue with Google",
-                                      style: GoogleFonts.roboto(
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.w500,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ),
-                          ),
-
-                          const SizedBox(height: 30),
+                          const SizedBox(height: 10),
 
                           // Sign Up Link
                           FadeIn(
@@ -551,12 +422,10 @@ class _LoginScreenState extends State<LoginScreen>
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
                                   Text(
-                                    "Don't have an account? ",
-                                    style: GoogleFonts.roboto(
-                                      fontSize: 15,
-                                      color: Colors.grey[700],
-                                    ),
+                                    "Don't have an account?",
+                                    style: Styles.headerStyle5.copyWith(color: Colors.grey)
                                   ),
+                                  SizedBox(width: 5),
                                   GestureDetector(
                                     onTap: () {
                                       Navigator.of(context).push(
@@ -566,12 +435,9 @@ class _LoginScreenState extends State<LoginScreen>
                                     },
                                     child: Text(
                                       "Sign Up",
-                                      style: GoogleFonts.roboto(
-                                        color: const Color.fromARGB(
-                                            250, 212, 61, 61),
-                                        fontSize: 15,
-                                        fontWeight: FontWeight.w700,
-                                      ),
+                                      style: Styles.headerStyle5.copyWith(color: Styles.primaryColor, 
+                                      fontWeight: FontWeight.w700,
+                                      )
                                     ),
                                   ),
                                 ],
