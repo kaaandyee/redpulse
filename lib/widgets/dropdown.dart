@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:redpulse/utilities/constants/styles.dart';
 
 class Dropdown<T> extends StatefulWidget {
@@ -9,7 +10,8 @@ class Dropdown<T> extends StatefulWidget {
   final String label; // Label for the dropdown
   final EdgeInsets externalPadding; // Padding for the outer container
   final double height; // Height of the dropdown
-  final double width; // Width of the dropdown
+  final double width; 
+// Width of the dropdown
 
   const Dropdown({
     super.key,
@@ -43,8 +45,11 @@ class DropdownState<T> extends State<Dropdown<T>> {
             padding: const EdgeInsets.only(left: 5),
             // Move the label a bit to the right
             child: Text(widget.label,
-                style: Styles.headerStyle6.copyWith(
-                    color: Styles.accentColor, fontSize: 15) // Style the label
+                style: GoogleFonts.roboto(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.w600,
+                                    color: Colors.grey[700],
+                                  ), // Style the label
                 ),
           ),
 
@@ -99,74 +104,3 @@ class DropdownState<T> extends State<Dropdown<T>> {
     );
   }
 }
-
-
-
-
-
-
-/*import 'package:flutter/material.dart';
-import 'package:redpulse/utilities/constants/styles.dart';
-import 'package:redpulse/utilities/helpers.dart';
-
-class Dropdown<T> extends StatefulWidget {
-  final List<T> enumValues;
-  final T selectedValue;
-  final Function(T) onChanged;
-  final String hintText;
-
-  const Dropdown({
-    super.key,
-    required this.enumValues,
-    required this.selectedValue,
-    required this.onChanged,
-    required this.hintText,
-  });
-
-  @override
-  State<Dropdown<T>> createState() => DropdownState<T>();
-}
-
-class DropdownState<T> extends State<Dropdown<T>> {
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 20),
-      child: Container(
-        decoration: BoxDecoration(
-          color: const Color.fromARGB(255, 238, 238, 238), // Background color similar to TextField
-          borderRadius: BorderRadius.circular(10), // Rounded corners
-          //border: Border.all(color: Colors.grey), // Border color
-        ),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 15), // Content padding
-
-          child: DropdownButton<T>(
-          value: widget.selectedValue,
-          items: widget.enumValues.map((T value) {
-            final label = (value as dynamic).label;
-            return DropdownMenuItem<T>(
-              value: value,
-              child: Text(label, style: Styles.headerStyle5.copyWith(color: Styles.accentColor)), // Convert enum to string
-            );
-          }).toList(),
-          onChanged: (T? newValue) {
-          if (newValue != null) {
-            widget.onChanged(newValue);
-          }
-          },
-          hint: Text(widget.hintText, style: Styles.headerStyle5.copyWith(color: Styles.accentColor)),
-        
-          isExpanded: true, // Makes dropdown full width
-          icon: const Icon(Icons.arrow_drop_down),
-          iconSize: 30,
-          dropdownColor: Colors.white,
-          elevation: 3,
-          style: Styles.headerStyle5.copyWith(color: Styles.accentColor), // Apply the same style for selected value
-          ),
-        )
-      
-    ),
-    );
-  }
-}*/

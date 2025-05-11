@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:redpulse/features/screens/AdminSignupScreen.dart';
 import 'package:redpulse/features/screens/admin/start.dart';
 import 'package:redpulse/services/auth.dart';
 import 'package:redpulse/services/validation.dart';
@@ -222,10 +224,26 @@ class RegisterFormState extends State<RegisterForm> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("Blood Bank Registration", style: TextStyle(color: Styles.accentColor)),
+        title: Text("Blood Bank Registration", style: GoogleFonts.montserrat(
+                            fontSize: 18,
+                            fontWeight: FontWeight.w700,
+                            color: Colors.white,
+                          ),),
         backgroundColor: Styles.primaryColor,
         elevation: 0,
-        iconTheme: IconThemeData(color: Styles.accentColor),
+        iconTheme: IconThemeData(color: Styles.tertiaryColor),
+        leading: IconButton(
+                    icon: const Icon(
+                      Icons.arrow_back_ios_new_outlined,
+                      size: 22,
+                      color: Colors.white,
+                    ),
+                    onPressed: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => AdminSignupScreen()),
+                    ),
+
+                  ),
       ),
       backgroundColor: Colors.white,
       body: SafeArea(
@@ -236,12 +254,19 @@ class RegisterFormState extends State<RegisterForm> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 const SizedBox(height: 20),
-                Text("REGISTER BLOOD BANK", style: Styles.headerStyle8),
+                Text("Register Blood Bank", style: GoogleFonts.roboto(
+                                fontSize: 25,
+                                fontWeight: FontWeight.w800,
+                                color: Styles.primaryColor,
+                              ),),
                 Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 5),
                   child: Text(
-                    "Step 2: Complete your admin account by registering your blood bank details",
-                    style: Styles.headerStyle5,
+                    "Complete the blood bank information",
+                    style: GoogleFonts.roboto(
+                                fontSize: 16,
+                                color: Styles.primaryColor,
+                              ),
                     textAlign: TextAlign.center,
                   ),
                 ),
@@ -249,7 +274,7 @@ class RegisterFormState extends State<RegisterForm> {
 
                 // Information card about blood bank details
                 Container(
-                  margin: const EdgeInsets.symmetric(vertical: 10),
+                  margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
                   padding: const EdgeInsets.all(15),
                   decoration: BoxDecoration(
                       color: Colors.blue.withOpacity(0.1),
@@ -267,7 +292,7 @@ class RegisterFormState extends State<RegisterForm> {
                       ),
                       const SizedBox(height: 5),
                       Text(
-                        "These details will be shown to users searching for blood banks and will appear in your admin dashboard.",
+                        "These details will be shown to users searching for blood banks and will appear in your profile.",
                         style: TextStyle(fontSize: 12, color: Colors.black87),
                         textAlign: TextAlign.center,
                       ),
@@ -291,7 +316,7 @@ class RegisterFormState extends State<RegisterForm> {
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Text(
-                    "Your email, address, and phone number have been carried over from the previous step.",
+                    "Your email, address, and phone number have been automatically transferred from the previous step.",
                     style: TextStyle(fontSize: 13, color: Colors.grey.shade700),
                     textAlign: TextAlign.center,
                   ),
@@ -304,14 +329,18 @@ class RegisterFormState extends State<RegisterForm> {
                     alignment: Alignment.centerLeft,
                     child: Text(
                       'Blood Bank Location',
-                      style: Styles.headerStyle6.copyWith(color: Styles.accentColor),
+                      style: GoogleFonts.roboto(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.w600,
+                                    color: Colors.grey[800],
+                                  ),
                     ),
                   ),
                 ),
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 25, vertical: 5),
                   child: Text(
-                    "Tap on the map to set your blood bank location or drag the marker to adjust",
+                    "Tap on the map to set your blood bank location or drag the marker to adjust.",
                     style: TextStyle(fontSize: 12, color: Colors.grey.shade700),
                   ),
                 ),

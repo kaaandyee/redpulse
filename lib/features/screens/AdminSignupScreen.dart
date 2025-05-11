@@ -165,233 +165,237 @@ class _AdminSignupScreenState extends State<AdminSignupScreen> {
                     child: IntrinsicHeight(
                       child: Column(
                         children: [
-                          const SizedBox(height: 20),
+                          const SizedBox(height: 40),
 
-                          // Logo - keeping as is
-                          Image.asset(
-                            'assets/images/logoo.png',
-                            height: 120,
-                            width: 120,
+                          // App Logo with Animation
+                          FadeIn(
+                            duration: const Duration(milliseconds: 1000),
+                            child: Pulse(
+                              duration: const Duration(milliseconds: 2000),
+                              infinite: true,
+                              child: Container(
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.red.withOpacity(0.2),
+                                      spreadRadius: 5,
+                                      blurRadius: 15,
+                                    ),
+                                  ],
+                                ),
+                                child: Image.asset(
+                                  'assets/images/logoo.png',
+                                  height: 120,
+                                  width: 120,
+                                ),
+                              ),
+                            ),
                           ),
 
-                          const SizedBox(height: 15),
+                          const SizedBox(height: 35),
 
-                          // Title with enhanced styling
+                          // App Title
                           FadeInDown(
                             duration: const Duration(milliseconds: 800),
-                            child: Text(
-                              "BLOOD BANK ADMINISTRATOR",
-                              style: GoogleFonts.montserrat(
-                                fontSize: 22,
-                                fontWeight: FontWeight.w700,
-                                letterSpacing: 1,
-                                color: const Color.fromARGB(250, 212, 61, 61),
-                                shadows: [
-                                  Shadow(
-                                    blurRadius: 2.0,
-                                    color: Colors.black.withOpacity(0.1),
-                                    offset: const Offset(1, 1),
-                                  ),
-                                ],
-                              ),
-                              textAlign: TextAlign.center,
-                            ),
-                          ),
-
-                          const SizedBox(height: 10),
-
-                          // Subtitle
-                          FadeInDown(
-                            delay: const Duration(milliseconds: 400),
-                            child: Padding(
-                              padding: const EdgeInsets.symmetric(horizontal: 25),
-                              child: Text(
-                                "Step 1: Create your administrator account",
-                                style: GoogleFonts.roboto(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w500,
-                                  color: Colors.grey[700],
-                                ),
-                                textAlign: TextAlign.center,
-                              ),
-                            ),
-                          ),
-
-                          const SizedBox(height: 30),
-
-                          // Section heading
-                          FadeInDown(
-                            delay: const Duration(milliseconds: 500),
-                            child: Padding(
-                              padding: const EdgeInsets.only(left: 25),
-                              child: Align(
-                                alignment: Alignment.centerLeft,
-                                child: Text(
-                                  'Administrator Information',
-                                  style: GoogleFonts.roboto(
-                                    fontSize: 18,
-                                    fontWeight: FontWeight.w600,
-                                    color: Colors.grey[800],
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ),
-
-                          const SizedBox(height: 15),
-
-                          // Form fields with animations
-                          FadeInLeft(
-                            delay: const Duration(milliseconds: 600),
-                            child: Row(
+                            child: Column(
                               children: [
-                                Expanded(
-                                  child: TextFieldInput(
-                                    icon: Icons.person,
-                                    textEditingController: firstNameController,
-                                    hintText: 'First Name',
-                                    textInputType: TextInputType.text,
-                                    externalPadding: const EdgeInsets.only(left: 20, right: 5, top: 0, bottom: 10),
+                                Text(
+                                  "Blood Bank",
+                                  style: GoogleFonts.montserrat(
+                                    fontSize: 30,
+                                    fontWeight: FontWeight.w700,
+                                    letterSpacing: 1.2,
+                                    color: Styles.primaryColor,
+                                    shadows: [
+                                      Shadow(
+                                        blurRadius: 2.0,
+                                        color: Colors.black.withOpacity(0.1),
+                                        offset: const Offset(1, 1),
+                                      ),
+                                    ],
                                   ),
                                 ),
-                                Expanded(
-                                  child: TextFieldInput(
-                                    icon: Icons.person,
-                                    textEditingController: lastNameController,
-                                    hintText: 'Last Name',
-                                    textInputType: TextInputType.text,
-                                    externalPadding: const EdgeInsets.only(left: 5, right: 20, top: 0, bottom: 10),
+                                Text(
+                                  "Administrator",
+                                  style: GoogleFonts.montserrat(
+                                    fontSize: 30,
+                                    fontWeight: FontWeight.w700,
+                                    letterSpacing: 1.2,
+                                    color: Styles.primaryColor,
+                                    shadows: [
+                                      Shadow(
+                                        blurRadius: 2.0,
+                                        color: Colors.black.withOpacity(0.1),
+                                        offset: const Offset(1, 1),
+                                      ),
+                                    ],
                                   ),
                                 ),
                               ],
                             ),
+                            
                           ),
-
-                          FadeInRight(
-                            delay: const Duration(milliseconds: 700),
-                            child: TextFieldInput(
-                              icon: Icons.phone,
-                              textEditingController: phoneNumberController,
-                              hintText: 'Phone Number',
-                              textInputType: TextInputType.phone,
-                            ),
-                          ),
-
-                          FadeInLeft(
-                            delay: const Duration(milliseconds: 800),
-                            child: TextFieldInput(
-                              icon: Icons.home,
-                              textEditingController: addressController,
-                              hintText: 'Home Address',
-                              textInputType: TextInputType.text,
-                            ),
-                          ),
-
-                          FadeInRight(
-                            delay: const Duration(milliseconds: 900),
-                            child: TextFieldInput(
-                              icon: Icons.email,
-                              textEditingController: emailController,
-                              hintText: 'Email',
-                              textInputType: TextInputType.emailAddress,
-                              externalPadding: const EdgeInsets.only(left: 20, right: 20, top: 10, bottom: 10),
-                            ),
-                          ),
-
-                          FadeInLeft(
-                            delay: const Duration(milliseconds: 1000),
-                            child: TextFieldInput(
-                              icon: Icons.lock,
-                              textEditingController: passwordController,
-                              hintText: 'Password',
-                              textInputType: TextInputType.text,
-                              isPass: true,
-                            ),
-                          ),
-
-                          const SizedBox(height: 20),
-
-                          // Divider with text
-                          FadeIn(
-                            delay: const Duration(milliseconds: 1100),
-                            child: Padding(
-                              padding: const EdgeInsets.symmetric(horizontal: 20),
-                              child: Row(
-                                children: [
-                                  Expanded(child: Divider(color: Colors.grey[400], thickness: 0.5)),
-                                  Padding(
-                                    padding: const EdgeInsets.symmetric(horizontal: 10),
-                                    child: Text(
-                                      "After signup, you'll register your blood bank",
-                                      style: GoogleFonts.roboto(
-                                        color: Colors.grey[600],
-                                        fontSize: 13,
-                                      ),
-                                    ),
-                                  ),
-                                  Expanded(child: Divider(color: Colors.grey[400], thickness: 0.5)),
-                                ],
+                          FadeInDown(
+                            duration: const Duration(milliseconds: 800),
+                            child: Text(
+                              "Create your administrator account",
+                              style: GoogleFonts.roboto(
+                                fontSize: 16,
+                                color: Styles.primaryColor,
                               ),
                             ),
                           ),
 
-                          const SizedBox(height: 25),
+                          const SizedBox(height: 35),
 
-                          // Continue button
-                          FadeInUp(
-                            delay: const Duration(milliseconds: 1200),
+                          // Section heading
+                         // Section title
+                          FadeInDown(
+                            delay: const Duration(milliseconds: 300),
                             child: Padding(
-                              padding: const EdgeInsets.symmetric(horizontal: 25, vertical: 10),
-                              child: isLoading
-                                  ? const CircularProgressIndicator(color: Color.fromARGB(250, 212, 61, 61))
-                                  : Container(
-                                decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.circular(15),
-                                ),
-                                child: MyButtons(
-                                  onTap: signupAdmin,
-                                  text: "Continue to Blood Bank Registration",
-                                ),
-                              ),
-                            ),
-                          ),
-
-                          const SizedBox(height: 25),
-
-                          // Login link
-                          FadeIn(
-                            delay: const Duration(milliseconds: 1300),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Text(
-                                  "Already have an account? ",
+                              padding: const EdgeInsets.only(left: 35),
+                              child: Align(
+                                alignment: Alignment.centerLeft,
+                               child: Text(
+                                  "Basic Information",
                                   style: GoogleFonts.roboto(
-                                    fontSize: 15,
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.w600,
                                     color: Colors.grey[700],
                                   ),
                                 ),
-                                GestureDetector(
-                                  onTap: () {
+                              ),
+                            ),
+                          ),
+
+                          const SizedBox(height: 10),
+                          // Form fields with animations
+                          FadeInRight(
+                            delay: const Duration(milliseconds: 500),
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: 15),
+                              child: TextFieldInput(
+                                icon: Icons.person,
+                                textEditingController: firstNameController,
+                                hintText: 'First Name',
+                                textInputType: TextInputType.text,
+                              ),
+                            ),
+                          ),const SizedBox(height: 10),
+
+                          FadeInLeft(
+                            delay: const Duration(milliseconds: 600),
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: 15),
+                              child: TextFieldInput(
+                                icon: Icons.person,
+                                textEditingController: lastNameController,
+                                hintText: 'Last Name',
+                                textInputType: TextInputType.text,
+                              ),
+                            ),
+                          ),const SizedBox(height: 10),
+
+                          FadeInRight(
+                            delay: const Duration(milliseconds: 700),
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: 15),
+                              child: TextFieldInput(
+                                icon: Icons.phone,
+                                textEditingController: phoneNumberController,
+                                hintText: 'Phone Number',
+                                textInputType: TextInputType.phone,
+                              ),
+                            ),
+                          ),const SizedBox(height: 10),
+
+                          FadeInLeft(
+                            delay: const Duration(milliseconds: 800),
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: 15),
+                              child: TextFieldInput(
+                                icon: Icons.home,
+                                textEditingController: addressController,
+                                hintText: 'Home Address',
+                                textInputType: TextInputType.text,
+                              ),
+                            ),
+                          ),const SizedBox(height: 10),
+
+                          FadeInRight(
+                            delay: const Duration(milliseconds: 900),
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: 15),
+                              child: TextFieldInput(
+                                icon: Icons.email,
+                                textEditingController: emailController,
+                                hintText: 'Email',
+                                textInputType: TextInputType.emailAddress,
+                                externalPadding: const EdgeInsets.only(left: 20, right: 20, top: 10, bottom: 10),
+                              ),
+                            ),
+                          ),const SizedBox(height: 10),
+
+                          FadeInLeft(
+                            delay: const Duration(milliseconds: 1000),
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: 15),
+                              child: TextFieldInput(
+                                icon: Icons.lock,
+                                textEditingController: passwordController,
+                                hintText: 'Password',
+                                textInputType: TextInputType.text,
+                                isPass: true,
+                              ),
+                            ),
+                          ),
+
+
+                          // Continue button
+                          FadeInUp(
+                            delay: const Duration(milliseconds: 1000),
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 10),
+                              child: isLoading
+                                  ? const CircularProgressIndicator(color: Color.fromARGB(250, 212, 61, 61))
+                                  : MyButtons(onTap: signupAdmin, text: "Blood Bank Registration"),
+                            ),
+                          ),
+
+                          // Login link
+                          //const SizedBox(height: 10),
+                          FadeIn(
+                            delay: const Duration(milliseconds: 1200),
+                            child: Padding(
+                              padding: const EdgeInsets.only(bottom: 30),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Text(
+                                    "Already have an account?",
+                                    style: Styles.headerStyle5.copyWith(color: Colors.grey)
+                                  ),
+                                  SizedBox(width: 5),
+                                  GestureDetector(
+                                    onTap: () {
                                     Navigator.of(context).push(
                                       MaterialPageRoute(
                                         builder: (context) => const LoginScreen(),
                                       ),
                                     );
                                   },
-                                  child: Text(
-                                    "Log In",
-                                    style: GoogleFonts.roboto(
-                                      color: const Color.fromARGB(250, 212, 61, 61),
-                                      fontSize: 15,
+                                    child: Text(
+                                      "Log In",
+                                      style: Styles.headerStyle5.copyWith(color: Styles.primaryColor, 
                                       fontWeight: FontWeight.w700,
+                                      )
                                     ),
                                   ),
-                                ),
-                              ],
+                                ],
+                              ),
                             ),
                           ),
-
                           const SizedBox(height: 20),
                         ],
                       ),
